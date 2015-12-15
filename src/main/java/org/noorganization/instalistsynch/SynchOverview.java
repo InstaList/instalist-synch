@@ -7,11 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import de.tavendo.autobahn.Autobahn;
-import de.tavendo.autobahn.AutobahnConnection;
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
+import de.tavendo.autobahn.Wamp;
+import de.tavendo.autobahn.WampConnection;
+
 
 interface ISimpleCallback {
     void onMessageReceived(String _msg);
@@ -20,7 +18,7 @@ interface ISimpleCallback {
 public class SynchOverview extends AppCompatActivity implements ISimpleCallback {
 
     private static String LOG_TAG = SynchOverview.class.getSimpleName();
-    private final AutobahnConnection mConnection = new AutobahnConnection();
+    private final Wamp mConnection = new WampConnection();
     private final String mWsUri = "ws://instalist.noorganization.org:80/ws";
     private final String mBaseUrl = "";
     private ISimpleCallback mCallback;
@@ -57,7 +55,7 @@ public class SynchOverview extends AppCompatActivity implements ISimpleCallback 
 
     private void startSocket() {
 
-        mConnection.connect(mWsUri, new Autobahn.SessionHandler() {
+        mConnection.connect(mWsUri, new Wamp.ConnectionHandler() {
             @Override
             public void onOpen() {
                 Log.d(LOG_TAG, "Connected to " + mWsUri);
@@ -73,12 +71,12 @@ public class SynchOverview extends AppCompatActivity implements ISimpleCallback 
     }
 
     private void rpcCall(){
-        mConnection.call("instalist/get_tagged_product", String.class, new Autobahn.CallHandler() {
+        mConnection.call("instalist/get_tagged_product", TaggedProduct.class, new Wamp.CallHandler() {
             @Override
             public void onResult(Object _o) {
-                String string = (String) _o;
-                Log.d(LOG_TAG, "Got echo " + string);
-                mCallback.onMessageReceived(string);
+                TaggedProduct testTaggedProduct = (TaggedProduct) _o;
+                Log.d(LOG_TAG, "Got echo " + testTaggedProduct);
+                mCallback.onMessageReceived(testTaggedProduct.toString());
             }
 
             @Override
