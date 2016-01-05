@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">InstalistSynch</string>
+    <string name="abc_sycnhronization">Synchronization</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="abc_login">Login</string>
+    <string name="abc_username_exists">Username already exists.</string>
 </resources>
