@@ -3,9 +3,13 @@ package org.noorganization.instalistsynch.auth;
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
+import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+
+import org.noorganization.instalistsynch.activity.SynchOverview;
 
 /**
  * Created by tinos_000 on 05.01.2016.
@@ -14,15 +18,19 @@ import android.os.Bundle;
  */
 public class Authenticator extends AbstractAccountAuthenticator {
 
+
+    private Context mContext;
     // Simple constructor
     public Authenticator(Context context) {
         super(context);
+        mContext = context;
     }
 
     // Editing properties is not supported
     @Override
     public Bundle editProperties(
             AccountAuthenticatorResponse r, String s) {
+        // add here an intent creation with a bundle with params to edit them in a activity
         throw new UnsupportedOperationException();
     }
 
@@ -34,7 +42,8 @@ public class Authenticator extends AbstractAccountAuthenticator {
             String s2,
             String[] strings,
             Bundle bundle) throws NetworkErrorException {
-        return null;
+        bundle.putParcelable(AccountManager.KEY_INTENT, new Intent(this.mContext, SynchOverview.class));
+        return bundle;
     }
 
     // Ignore attempts to confirm credentials
