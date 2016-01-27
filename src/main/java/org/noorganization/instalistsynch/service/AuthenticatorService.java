@@ -10,6 +10,7 @@ import org.noorganization.instalistsynch.auth.Authenticator;
 
 /**
  * A bound service that instantiates the authenticator when started.
+ * Is called by Accountmanager to get a token for example.
  * Created by tinos_000 on 05.01.2016.
  */
 public class AuthenticatorService extends Service {
@@ -26,5 +27,10 @@ public class AuthenticatorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mAuthenticator.getIBinder();
+    }
+
+
+    public String userSignIn(String name, String password, String authTokenType) {
+        return null;
     }
 }

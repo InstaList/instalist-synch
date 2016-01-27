@@ -1,8 +1,11 @@
 package org.noorganization.instalistsynch.activity;
 
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -14,12 +17,32 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.noorganization.instalistsynch.R;
+import org.noorganization.instalistsynch.service.AuthenticatorService;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AccountAuthenticatorActivity {
 
+    /**
+     * Key for type of account.
+     */
+    public static final String KEY_ACCOUNT_TYPE = "account_type";
+    /**
+     * Key for auth type.
+     */
+    public static final String KEY_AUTH_TYPE = "auth_type";
+    /**
+     * Key for is new account.
+     */
+    public static final String KEY_IS_ADDING_NEW_ACCOUNT_TYPE = "is_new_account";
+    /**
+     * The standard type of a user, no special thing.
+     */
+    private static final String STANDARD_USER_TYPE = "standard_user";
+
+
+    private static AuthenticatorService smAuthenticatorService;
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -32,10 +55,16 @@ public class LoginActivity extends AppCompatActivity {
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+
+    /**
+     * The auth type of the token.
+     */
+    private final String mAuthTokenType = "AUTH_TOKEN_TODO";
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -43,10 +72,15 @@ public class LoginActivity extends AppCompatActivity {
     private View mProgressView;
     private View mLoginFormView;
 
+    private AccountManager mAccountManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        mAccountManager = AccountManager.get(this);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
@@ -144,11 +178,30 @@ public class LoginActivity extends AppCompatActivity {
         return password.length() > 4;
     }
 
+    private void finishLogin(Intent _intent) {
+        String accountName = _intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+        String accountPassword = _intent.getStringExtra(AccountManager.KEY_PASSWORD);
+        final Account account = new Account(accountName, _intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
+
+        if(getIntent().getBooleanExtra(KEY_IS_ADDING_NEW_ACCOUNT_TYPE, false)){
+            // if account is newly added
+            String authToken = _intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
+            String authTokenType = mAuthTokenType;
+            mAccountManager.addAccountExplicitly(account, accountPassword, null);
+            mAccountManager.setAuthToken(account,authTokenType, authToken);
+        } else {
+            mAccountManager.setPassword(account, accountPassword);
+        }
+        setAccountAuthenticatorResult(_intent.getExtras());
+        setResult(RESULT_OK, _intent);
+        finish();
+    }
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Intent> {
 
         private final String mEmail;
         private final String mPassword;
@@ -159,39 +212,22 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Intent doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
+            String authToken = smAuthenticatorService.userSignIn(mEmail, mPassword, mAuthTokenType);
+            final Intent result = new Intent();
+            result.putExtra(AccountManager.KEY_ACCOUNT_NAME, mEmail);
+            result.putExtra(AccountManager.KEY_ACCOUNT_TYPE, STANDARD_USER_TYPE);
+            result.putExtra(AccountManager.KEY_AUTHTOKEN, authToken);
+            result.putExtra(AccountManager.KEY_PASSWORD, mPassword);
+            return result;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Intent _result) {
             mAuthTask = null;
             showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
+            finishLogin(_result);
         }
 
         @Override
@@ -200,5 +236,7 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
         }
     }
+
+
 }
 

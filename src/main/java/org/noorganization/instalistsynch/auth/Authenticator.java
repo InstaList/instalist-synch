@@ -2,14 +2,18 @@ package org.noorganization.instalistsynch.auth;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
+import org.noorganization.instalistsynch.activity.LoginActivity;
 import org.noorganization.instalistsynch.activity.SynchOverview;
+import org.noorganization.instalistsynch.service.AuthenticatorService;
 
 /**
  * Created by tinos_000 on 05.01.2016.
@@ -18,8 +22,12 @@ import org.noorganization.instalistsynch.activity.SynchOverview;
  */
 public class Authenticator extends AbstractAccountAuthenticator {
 
-
+    /**
+     * The context of the application.
+     */
     private Context mContext;
+    private static AuthenticatorService smAuthenticatorService;
+
     // Simple constructor
     public Authenticator(Context context) {
         super(context);
@@ -34,19 +42,23 @@ public class Authenticator extends AbstractAccountAuthenticator {
         throw new UnsupportedOperationException();
     }
 
-    // Don't add additional accounts
+    // add additional accounts should be possible.
     @Override
-    public Bundle addAccount(
-            AccountAuthenticatorResponse r,
-            String s,
-            String s2,
-            String[] strings,
-            Bundle bundle) throws NetworkErrorException {
-        bundle.putParcelable(AccountManager.KEY_INTENT, new Intent(this.mContext, SynchOverview.class));
+    public Bundle addAccount(AccountAuthenticatorResponse _response, String _accountType, String _authTokenType, String[] _requiredFeatures, Bundle _options) throws NetworkErrorException {
+
+        final Intent intent = new Intent(mContext, LoginActivity.class);
+        intent.putExtra(LoginActivity.KEY_ACCOUNT_TYPE, _accountType);
+        intent.putExtra(LoginActivity.KEY_AUTH_TYPE, _authTokenType);
+        intent.putExtra(LoginActivity.KEY_IS_ADDING_NEW_ACCOUNT_TYPE, true);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, _response);
+
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
         return bundle;
     }
 
     // Ignore attempts to confirm credentials
+    // used if you want to do verification with a gmail account for example
     @Override
     public Bundle confirmCredentials(
             AccountAuthenticatorResponse r,
@@ -57,13 +69,41 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     // Getting an authentication token is not supported
     @Override
-    public Bundle getAuthToken(
-            AccountAuthenticatorResponse r,
-            Account account,
-            String s,
-            Bundle bundle) throws NetworkErrorException {
-        // TODO implement
-        throw new UnsupportedOperationException();
+    public Bundle getAuthToken(AccountAuthenticatorResponse _response, Account _account, String _authTokenType, Bundle _options) throws NetworkErrorException {
+
+        // get the username and password from Account Manager and also ask for an AuthToken
+        final AccountManager accountManager = AccountManager.get(mContext);
+        String authToken = accountManager.peekAuthToken(_account, _authTokenType);
+
+        if(TextUtils.isEmpty(authToken)){
+            final String password = accountManager.getPassword(_account);
+            if(password != null){
+                // TODO check how to sign in
+                authToken = smAuthenticatorService.userSignIn(_account.name, password, _authTokenType);
+            }
+        }
+
+        // if the auth toke is set, return the bundle with all neccessary data
+        // TODO: maybe introduce authtoken type
+        if(!TextUtils.isEmpty(authToken)){
+            final Bundle result = new Bundle();
+            result.putString(AccountManager.KEY_ACCOUNT_NAME, _account.name);
+            result.putString(AccountManager.KEY_ACCOUNT_TYPE, _account.type);
+            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+            return result;
+        }
+
+        // no auth token taken, because password cannot be taken
+        // prompt user with login screen again
+        final Intent intent = new Intent(mContext, LoginActivity.class);
+        intent.putExtra( AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, _response);
+        intent.putExtra(LoginActivity.KEY_ACCOUNT_TYPE, _account.type);
+        intent.putExtra(LoginActivity.KEY_AUTH_TYPE, _authTokenType);
+        // name cannot be null, because each account has a name
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, _account.name);
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+        return bundle;
     }
 
     // Getting a label for the auth token is not supported
