@@ -15,9 +15,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.noorganization.instalistsynch.R;
-import org.noorganization.instalistsynch.service.AuthenticatorService;
+import org.noorganization.instalistsynch.controller.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.impl.ServerAuthenticationFactory;
+import org.noorganization.instalistsynch.controller.impl.ServerAuthtentication;
+import org.noorganization.instalistsynch.utils.NetworkUtils;
 
 /**
  * A login screen that offers login via email/password.
@@ -42,7 +46,11 @@ public class LoginActivity extends AccountAuthenticatorActivity {
     private static final String STANDARD_USER_TYPE = "standard_user";
 
 
-    private static AuthenticatorService smAuthenticatorService;
+    /**
+     * Handles the sign in and sign up process.
+     */
+    private IServerAuthenticate mAuthenticator;
+
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -80,6 +88,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
         setContentView(R.layout.activity_login);
 
         mAccountManager = AccountManager.get(this);
+        mAuthenticator = ServerAuthenticationFactory.getDefaultServerAuthentication();
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -164,7 +173,11 @@ public class LoginActivity extends AccountAuthenticatorActivity {
             // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            if(!NetworkUtils.isConnected(this)) {
+                mAuthTask.execute((Void) null);
+            } else {
+                Toast.makeText(this, R.string.no_internet_conn, Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -214,7 +227,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
         @Override
         protected Intent doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-            String authToken = smAuthenticatorService.userSignIn(mEmail, mPassword, mAuthTokenType);
+            String authToken = mAuthenticator.userSignIn(mEmail, mPassword, mAuthTokenType);
             final Intent result = new Intent();
             result.putExtra(AccountManager.KEY_ACCOUNT_NAME, mEmail);
             result.putExtra(AccountManager.KEY_ACCOUNT_TYPE, STANDARD_USER_TYPE);

@@ -29,8 +29,4 @@ public class AuthenticatorService extends Service {
         return mAuthenticator.getIBinder();
     }
 
-
-    public String userSignIn(String name, String password, String authTokenType) {
-        return null;
-    }
 }

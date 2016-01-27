@@ -13,6 +13,9 @@ import android.text.TextUtils;
 
 import org.noorganization.instalistsynch.activity.LoginActivity;
 import org.noorganization.instalistsynch.activity.SynchOverview;
+import org.noorganization.instalistsynch.controller.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.impl.ServerAuthenticationFactory;
+import org.noorganization.instalistsynch.controller.impl.ServerAuthtentication;
 import org.noorganization.instalistsynch.service.AuthenticatorService;
 
 /**
@@ -26,12 +29,18 @@ public class Authenticator extends AbstractAccountAuthenticator {
      * The context of the application.
      */
     private Context mContext;
-    private static AuthenticatorService smAuthenticatorService;
+
+    /**
+     * Handles the sign in and sign up process.
+     */
+    private IServerAuthenticate mAuthenticator;
+
 
     // Simple constructor
     public Authenticator(Context context) {
         super(context);
         mContext = context;
+        mAuthenticator = ServerAuthenticationFactory.getDefaultServerAuthentication();
     }
 
     // Editing properties is not supported
@@ -78,17 +87,16 @@ public class Authenticator extends AbstractAccountAuthenticator {
         if(TextUtils.isEmpty(authToken)){
             final String password = accountManager.getPassword(_account);
             if(password != null){
-                // TODO check how to sign in
-                authToken = smAuthenticatorService.userSignIn(_account.name, password, _authTokenType);
+                authToken = mAuthenticator.userSignIn(_account.name, password, _authTokenType);
             }
         }
 
-        // if the auth toke is set, return the bundle with all neccessary data
-        // TODO: maybe introduce authtoken type
+        // if the auth token is set, return the bundle with all neccessary data
         if(!TextUtils.isEmpty(authToken)){
             final Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ACCOUNT_NAME, _account.name);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, _account.type);
+            result.putString(LoginActivity.KEY_AUTH_TYPE, _authTokenType);
             result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
             return result;
         }
