@@ -99,5 +99,6 @@
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="autobahn-android-0.5.2-20130326.141418-1" level="project" />
     <orderEntry type="library" exported="" name="okhttp-3.0.0-RC1" level="project" />
+    <orderEntry type="module" module-name="instantlistcommondata" exported="" />
   </component>
 </module>

@@ -1,6 +1,17 @@
 package org.noorganization.instalistsynch.network.api;
 
+import org.noorganization.instalist.model.Category;
+import org.noorganization.instalist.model.Ingredient;
+import org.noorganization.instalist.model.ListEntry;
+import org.noorganization.instalist.model.Product;
+import org.noorganization.instalist.model.Recipe;
+import org.noorganization.instalist.model.ShoppingList;
+import org.noorganization.instalist.model.Tag;
+import org.noorganization.instalist.model.TaggedProduct;
+import org.noorganization.instalist.model.Unit;
 import org.noorganization.instalistsynch.model.Group;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -172,7 +183,7 @@ public interface InstantListApiService {
      * @return the list of lists changed since this date.
      */
     @GET("lists")
-    Call<List<ShoppingList>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<ShoppingList>> getShoppingLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a ShoppingList by its id.
@@ -228,7 +239,7 @@ public interface InstantListApiService {
      * @return the list of recipes changed since this date.
      */
     @GET("recipes")
-    Call<List<Recipe>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<Recipe>> getRecipes(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Recipe by its id.
@@ -294,7 +305,7 @@ public interface InstantListApiService {
      * @return the list of taggedProducts changed since this date.
      */
     @GET("taggedProducts")
-    Call<List<TaggedProduct>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<TaggedProduct>> getTaggedProducts(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a TaggedProduct by its id.
@@ -350,7 +361,7 @@ public interface InstantListApiService {
      * @return the list of tags changed since this date.
      */
     @GET("tags")
-    Call<List<Tag>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<Tag>> getTags(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Tag by its id.
@@ -406,7 +417,7 @@ public interface InstantListApiService {
      * @return the list of listEntries changed since this date.
      */
     @GET("listEntries")
-    Call<List<ListEntry>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<ListEntry>> getListEntries(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a ListEntry by its id.
@@ -462,7 +473,7 @@ public interface InstantListApiService {
      * @return the list of units changed since this date.
      */
     @GET("units")
-    Call<List<Unit>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<Unit>> getUnits(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Unit by its id.
@@ -518,7 +529,7 @@ public interface InstantListApiService {
      * @return the list of ingredients changed since this date.
      */
     @GET("ingredients")
-    Call<List<Ingredient>> getLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<Ingredient>> getIngredients(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Ingredient by its id.
