@@ -79,4 +79,8 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="no_internet_conn">Error! No internet connection. Please establish a connection.</string>
+    <string name="error_register">There was an error while register the group  with the message:</string>
+    <string name="error_join">An error occured while joining group with message:</string>
+    <string name="network_response_error">Network response can not be read.</string>
+    <string name="server_sent_not_unique_id_retry">Server has sent none unique id. Please try again!</string>
 </resources>

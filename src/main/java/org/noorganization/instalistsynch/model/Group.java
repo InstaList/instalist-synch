@@ -8,6 +8,11 @@ public class Group {
     public String mTempId;
     public String mSecret;
 
+    /**
+     * The group that holds the temporary group id.
+     * @param mTempId the temporary group id.
+     * @param mSecret the generated secret.
+     */
     public Group(String mTempId, String mSecret) {
         this.mTempId = mTempId;
         this.mSecret = mSecret;
