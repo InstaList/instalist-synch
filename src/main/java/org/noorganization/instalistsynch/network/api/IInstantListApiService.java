@@ -10,6 +10,15 @@ import org.noorganization.instalist.model.Tag;
 import org.noorganization.instalist.model.TaggedProduct;
 import org.noorganization.instalist.model.Unit;
 import org.noorganization.instalistsynch.model.Group;
+import org.noorganization.instalistsynch.model.network.response.CategoryResponse;
+import org.noorganization.instalistsynch.model.network.response.IngredientResponse;
+import org.noorganization.instalistsynch.model.network.response.ListEntryResponse;
+import org.noorganization.instalistsynch.model.network.response.ProductResponse;
+import org.noorganization.instalistsynch.model.network.response.RecipeResponse;
+import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
+import org.noorganization.instalistsynch.model.network.response.TagResponse;
+import org.noorganization.instalistsynch.model.network.response.TaggedProductResponse;
+import org.noorganization.instalistsynch.model.network.response.UnitResponse;
 
 import java.util.List;
 
@@ -27,10 +36,10 @@ import retrofit2.http.Query;
  * This interface defines all possible api interactions with the server.
  * Created by tinos_000 on 28.01.2016.
  */
-public interface InstantListApiService {
+public interface IInstantListApiService {
 
 
-    //region auth
+    //region Auth
 
     /**
      * Try to register a new group.
@@ -60,7 +69,7 @@ public interface InstantListApiService {
 
     //endregion
 
-    //region category
+    //region Category
 
     /**
      * Get the categories since the given time.
@@ -70,7 +79,7 @@ public interface InstantListApiService {
      * @return the list of categories changed since this date.
      */
     @GET("categories")
-    Call<List<Category>> getCategories(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<CategoryResponse>> getCategories(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a category by its id.
@@ -80,7 +89,7 @@ public interface InstantListApiService {
      * @return the associated category.
      */
     @GET("categories/{uuid}")
-    Call<Category> getCategory(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<CategoryResponse> getCategory(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a category with the given id.
@@ -127,7 +136,7 @@ public interface InstantListApiService {
      * @return the list of products changed since this date.
      */
     @GET("products")
-    Call<List<Product>> getProducts(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<ProductResponse>> getProducts(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Product by its id.
@@ -137,7 +146,7 @@ public interface InstantListApiService {
      * @return the associated Product.
      */
     @GET("products/{uuid}")
-    Call<Product> getProduct(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<ProductResponse> getProduct(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a Product with the given id.
@@ -183,7 +192,7 @@ public interface InstantListApiService {
      * @return the list of lists changed since this date.
      */
     @GET("lists")
-    Call<List<ShoppingList>> getShoppingLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<ShoppingListResponse>> getShoppingLists(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a ShoppingList by its id.
@@ -193,7 +202,7 @@ public interface InstantListApiService {
      * @return the associated ShoppingList.
      */
     @GET("lists/{uuid}")
-    Call<ShoppingList> getShoppingList(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<ShoppingListResponse> getShoppingList(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a ShoppingList with the given id.
@@ -239,7 +248,7 @@ public interface InstantListApiService {
      * @return the list of recipes changed since this date.
      */
     @GET("recipes")
-    Call<List<Recipe>> getRecipes(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<RecipeResponse>> getRecipes(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Recipe by its id.
@@ -249,7 +258,7 @@ public interface InstantListApiService {
      * @return the associated Recipe.
      */
     @GET("recipes/{uuid}")
-    Call<Recipe> getRecipe(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RecipeResponse> getRecipe(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Get a Recipe by its id.
@@ -259,7 +268,7 @@ public interface InstantListApiService {
      * @return the associated Recipe.
      */
     @GET("recipes/{uuid}/ingredients")
-    Call<List<Ingredient>> getRecipeIngredients(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<List<IngredientResponse>> getRecipeIngredients(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a Recipe with the given id.
@@ -305,7 +314,7 @@ public interface InstantListApiService {
      * @return the list of taggedProducts changed since this date.
      */
     @GET("taggedProducts")
-    Call<List<TaggedProduct>> getTaggedProducts(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<TaggedProductResponse>> getTaggedProducts(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a TaggedProduct by its id.
@@ -315,7 +324,7 @@ public interface InstantListApiService {
      * @return the associated TaggedProduct.
      */
     @GET("taggedProducts/{uuid}")
-    Call<TaggedProduct> getTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<TaggedProductResponse> getTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a TaggedProduct with the given id.
@@ -361,7 +370,7 @@ public interface InstantListApiService {
      * @return the list of tags changed since this date.
      */
     @GET("tags")
-    Call<List<Tag>> getTags(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<TagResponse>> getTags(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Tag by its id.
@@ -371,7 +380,7 @@ public interface InstantListApiService {
      * @return the associated Tag.
      */
     @GET("tags/{uuid}")
-    Call<Tag> getTag(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<TagResponse> getTag(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a Tag with the given id.
@@ -417,7 +426,7 @@ public interface InstantListApiService {
      * @return the list of listEntries changed since this date.
      */
     @GET("listEntries")
-    Call<List<ListEntry>> getListEntries(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<ListEntryResponse>> getListEntries(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a ListEntry by its id.
@@ -427,7 +436,7 @@ public interface InstantListApiService {
      * @return the associated ListEntry.
      */
     @GET("listEntries/{uuid}")
-    Call<ListEntry> getListEntry(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<ListEntryResponse> getListEntry(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a ListEntry with the given id.
@@ -473,7 +482,7 @@ public interface InstantListApiService {
      * @return the list of units changed since this date.
      */
     @GET("units")
-    Call<List<Unit>> getUnits(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<UnitResponse>> getUnits(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Unit by its id.
@@ -483,7 +492,7 @@ public interface InstantListApiService {
      * @return the associated Unit.
      */
     @GET("units/{uuid}")
-    Call<Unit> getUnit(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<UnitResponse> getUnit(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a Unit with the given id.
@@ -529,7 +538,7 @@ public interface InstantListApiService {
      * @return the list of ingredients changed since this date.
      */
     @GET("ingredients")
-    Call<List<Ingredient>> getIngredients(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
+    Call<List<IngredientResponse>> getIngredients(@Query("token") String _token, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Get a Ingredient by its id.
@@ -539,7 +548,7 @@ public interface InstantListApiService {
      * @return the associated Ingredient.
      */
     @GET("ingredients/{uuid}")
-    Call<Ingredient> getIngredient(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<IngredientResponse> getIngredient(@Path("uuid") String _uuid, @Query("token") String _token);
 
     /**
      * Create a Ingredient with the given id.
