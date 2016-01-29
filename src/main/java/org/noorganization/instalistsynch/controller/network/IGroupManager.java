@@ -25,4 +25,10 @@ public interface IGroupManager {
      */
     void leaveGroup(GroupAuth _groupAuth);
 
+    /**
+     * Gets an auth token for the given group/groupAuth
+     * @param _groupAuth the group auth object.
+     */
+    void getAuthToken(GroupAuth _groupAuth);
+
 }

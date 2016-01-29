@@ -7,9 +7,12 @@ import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController
 import org.noorganization.instalistsynch.controller.local.impl.LocalControllerFactory;
 import org.noorganization.instalistsynch.controller.network.IGroupManager;
 import org.noorganization.instalistsynch.events.ErrorMessage;
+import org.noorganization.instalistsynch.events.TokenMessage;
 import org.noorganization.instalistsynch.model.Group;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
+import org.noorganization.instalistsynch.utils.RFC2617Authorization;
+import org.noorganization.instalistsynch.utils.StringUtils;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -37,8 +40,8 @@ public class V1GroupManager implements IGroupManager {
         SecureRandom secureRandom = GlobalObjects.getInstance().getSecureRandom();
         String secret = new BigInteger(196, secureRandom).toString(32);
         Group group = new Group(_tmpGroupId, secret);
-        Call<String> auth = GlobalObjects.getInstance().getInstantListApiService().registerDevice(group);
-        auth.enqueue(new RegisterDeviceCallback(secret));
+        Call<String> deviceIdGen = GlobalObjects.getInstance().getInstantListApiService().registerDevice(group);
+        deviceIdGen.enqueue(new RegisterDeviceCallback(secret));
     }
 
     @Override
@@ -46,11 +49,19 @@ public class V1GroupManager implements IGroupManager {
         // TODO impl
     }
 
+    @Override
+    public void getAuthToken(GroupAuth _groupAuth) {
+        Call<String> authTokenReq = GlobalObjects.getInstance()
+                .getInstantListApiService()
+                .token(RFC2617Authorization
+                        .generate(_groupAuth.getDeviceId(), _groupAuth.getSecret()));
+        authTokenReq.enqueue(new GetAuthTokenCallback());
+    }
 
     /**
      * Callback to the registerGroup action.
      */
-    class RegisterGroupCallback implements Callback<String> {
+    private class RegisterGroupCallback implements Callback<String> {
         private final String LOG_TAG = RegisterGroupCallback.class.getSimpleName();
 
         @Override
@@ -70,8 +81,15 @@ public class V1GroupManager implements IGroupManager {
                 }
                 return;
             }
-            String tempCode = response.body();
-            joinGroup(tempCode);
+            Log.i(LOG_TAG, "Response: " + response.body());
+            String tmpGroupAccessId = StringUtils.getFirstValueFromJSON(response.body());
+            if(tmpGroupAccessId == null) {
+                Log.e(LOG_TAG, "onResponse: access group id can not be parsed from response.");
+                EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
+                        .getApplicationContext().getString(R.string.error_response_not_parseable)));
+                return;
+            }
+            joinGroup(tmpGroupAccessId);
         }
 
         @Override
@@ -85,7 +103,7 @@ public class V1GroupManager implements IGroupManager {
     /**
      * Callback to the registerDevice Callback.
      */
-    class RegisterDeviceCallback implements Callback<String> {
+    private class RegisterDeviceCallback implements Callback<String> {
         private final String LOG_TAG = RegisterDeviceCallback.class.getSimpleName();
 
         private String mSecret;
@@ -118,7 +136,16 @@ public class V1GroupManager implements IGroupManager {
             }
 
             Log.i(LOG_TAG, "Response: " + response.body());
-            GroupAuth groupAuth = new GroupAuth(response.body(), mSecret);
+            String deviceId = StringUtils.getFirstValueFromJSON(response.body());
+            if(deviceId == null) {
+                Log.e(LOG_TAG, "onResponse: access group id can not be parsed from response.");
+                EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
+                        .getApplicationContext().getString(R.string.error_response_not_parseable)));
+                return;
+            }
+
+            // insert groupAuth to db
+            GroupAuth groupAuth = new GroupAuth(deviceId, mSecret);
             // possible security breach!
             IGroupAuthDbController authDbController = LocalControllerFactory
                     .getDefaultAuthController(GlobalObjects.getInstance().getApplicationContext());
@@ -131,6 +158,43 @@ public class V1GroupManager implements IGroupManager {
             }
             authDbController.insertRegisteredGroup(groupAuth);
             // EventBus.getDefault().post(new NewGroupAuthMessage(groupAuth));
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
+                    .getApplicationContext().getString(R.string.error_join).concat(t.getMessage())));
+        }
+    }
+
+    private class GetAuthTokenCallback implements Callback<String> {
+        private final String LOG_TAG = GetAuthTokenCallback.class.getSimpleName();
+        @Override
+        public void onResponse(Response<String> response) {
+            if (!response.isSuccess()) {
+                //noinspection finally
+                try {
+                    String msg = String.valueOf(response.code()).concat(" ").concat(response.errorBody().string());
+                    EventBus.getDefault().post(new ErrorMessage(msg));
+                    Log.i(LOG_TAG, "onResponse: server responded with ".concat(msg));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    EventBus.getDefault().post(new ErrorMessage(String.valueOf(response.code())
+                            .concat(" ").concat(GlobalObjects.getInstance().getApplicationContext()
+                                    .getString(R.string.network_response_error))));
+                    Log.e(LOG_TAG, "onResponse: Cannot load body of error message.", e.getCause());
+                }
+                return;
+            }
+
+            String token = StringUtils.getFirstValueFromJSON(response.body());
+            if(token != null) {
+                EventBus.getDefault().post(new TokenMessage(token));
+            } else {
+                Log.e(LOG_TAG, "onResponse: Token can not be parsed from response.");
+                EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
+                        .getApplicationContext().getString(R.string.error_response_not_parseable)));
+            }
         }
 
         @Override
