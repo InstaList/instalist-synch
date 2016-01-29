@@ -18,9 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.noorganization.instalistsynch.R;
-import org.noorganization.instalistsynch.controller.IServerAuthenticate;
-import org.noorganization.instalistsynch.controller.impl.ServerAuthenticationFactory;
-import org.noorganization.instalistsynch.controller.impl.ServerAuthtentication;
+import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.network.impl.ServerAuthenticationFactory;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 
 /**

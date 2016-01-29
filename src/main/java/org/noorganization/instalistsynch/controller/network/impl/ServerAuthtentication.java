@@ -1,10 +1,10 @@
-package org.noorganization.instalistsynch.controller.impl;
+package org.noorganization.instalistsynch.controller.network.impl;
 
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.noorganization.instalistsynch.controller.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

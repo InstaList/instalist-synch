@@ -2,7 +2,6 @@ package org.noorganization.instalistsynch.auth;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
-import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.accounts.NetworkErrorException;
@@ -12,11 +11,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.noorganization.instalistsynch.activity.LoginActivity;
-import org.noorganization.instalistsynch.activity.SynchOverview;
-import org.noorganization.instalistsynch.controller.IServerAuthenticate;
-import org.noorganization.instalistsynch.controller.impl.ServerAuthenticationFactory;
-import org.noorganization.instalistsynch.controller.impl.ServerAuthtentication;
-import org.noorganization.instalistsynch.service.AuthenticatorService;
+import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.network.impl.ServerAuthenticationFactory;
 
 /**
  * Created by tinos_000 on 05.01.2016.

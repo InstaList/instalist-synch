@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller;
+package org.noorganization.instalistsynch.controller.network;
 
 /**
  * Interface to provide authentication methods to the server.

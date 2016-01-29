@@ -1,6 +1,6 @@
-package org.noorganization.instalistsynch.controller.impl;
+package org.noorganization.instalistsynch.controller.network.impl;
 
-import org.noorganization.instalistsynch.controller.IServerAuthenticate;
+import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
 
 /**
  * Factory to manage the possible network objects.
