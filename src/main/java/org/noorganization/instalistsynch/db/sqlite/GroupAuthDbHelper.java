@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
+import org.noorganization.instalistsynch.model.GroupAuthAccess;
 
 /**
  * Helper to access group auth.
@@ -13,7 +14,7 @@ import org.noorganization.instalistsynch.model.GroupAuth;
 public class GroupAuthDbHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "GroupAuth.db";
+    public static final String DATABASE_NAME = "ISSynch.db";
 
     public GroupAuthDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,6 +22,7 @@ public class GroupAuthDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL(GroupAuthAccess.DB_CREATE);
         db.execSQL(GroupAuth.DB_CREATE);
     }
 

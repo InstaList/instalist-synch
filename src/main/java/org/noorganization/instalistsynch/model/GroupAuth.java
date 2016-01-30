@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.model;
 
+import java.util.Date;
+
 /**
  * Object model to get access token to a group.
  * Created by tinos_000 on 29.01.2016.
