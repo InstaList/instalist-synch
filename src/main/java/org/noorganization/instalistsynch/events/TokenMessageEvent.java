@@ -6,11 +6,11 @@ import de.greenrobot.event.EventBus;
  * Messages that include the token.
  * Created by tinos_000 on 27.01.2016.
  */
-public class TokenMessage {
+public class TokenMessageEvent {
 
     private String mToken;
 
-    public TokenMessage(String _token){
+    public TokenMessageEvent(String _token){
         mToken = _token;
     }
 

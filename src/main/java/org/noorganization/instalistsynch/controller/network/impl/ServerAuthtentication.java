@@ -12,6 +12,7 @@ import java.net.URL;
 
 /**
  * Basic implementation to handle auth with the server. Do this only in background
+ * @deprecated
  * Created by tinos_000 on 27.01.2016.
  */
 public class ServerAuthtentication implements IServerAuthenticate {

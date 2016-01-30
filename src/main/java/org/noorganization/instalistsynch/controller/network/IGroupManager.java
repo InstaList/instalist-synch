@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.controller.network;
 
+import org.noorganization.instalistsynch.events.ErrorMessageEvent;
+import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuth;
 
 /**
@@ -10,7 +12,7 @@ public interface IGroupManager {
 
     /**
      * Creates a new group.
-     * Sends following messages {@link org.noorganization.instalistsynch.events.ErrorMessage} and {@link org.noorganization.instalistsynch.events.TokenMessage}.
+     * Sends following messages {@link ErrorMessageEvent} and {@link TokenMessageEvent}.
      */
     void createGroup();
 

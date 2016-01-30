@@ -47,7 +47,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
     @Override
     public int insert(GroupAuthAccess _groupAuthAccess) {
-        if(hasIdInDatabase(_groupAuthAccess)){
+        if (hasIdInDatabase(_groupAuthAccess)) {
             return INSERTION_CODE.ELEMENT_EXISTS;
         }
 
@@ -57,8 +57,11 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAuthAccess.getLastTokenRequest()));
+        cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, _groupAuthAccess.isSynchronize());
+        cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, _groupAuthAccess.wasInterrupted());
+
         long rowId = db.insert(GroupAuthAccess.TABLE_NAME, null, cv);
-        if(rowId == -1)
+        if (rowId == -1)
             return INSERTION_CODE.ERROR;
 
         return INSERTION_CODE.CORRECT;
@@ -72,7 +75,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         List<GroupAuthAccess> groupAuthAccessList = getList(authAccessCursor);
         authAccessCursor.close();
 
-        if(groupAuthAccessList.isEmpty())
+        if (groupAuthAccessList.isEmpty())
             return null;
 
         return groupAuthAccessList.get(0);
@@ -101,8 +104,22 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
     }
 
     @Override
+    public List<GroupAuthAccess> getGroupAuthAccesses(boolean _synchronize) {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME,
+                GroupAuthAccess.COLUMN.ALL_COLUMNS,
+                GroupAuthAccess.COLUMN.SYNCHRONIZE + "=?",
+                new String[]{String.valueOf(_synchronize ? 1 : 0)},
+                null, null, null);
+        List<GroupAuthAccess> groupAuthAccessList = getList(authAccessCursor);
+        authAccessCursor.close();
+        return groupAuthAccessList;
+    }
+
+
+    @Override
     public boolean update(GroupAuthAccess _groupAuthAccess) {
-        if(!hasIdInDatabase(_groupAuthAccess))
+        if (!hasIdInDatabase(_groupAuthAccess))
             return false;
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues(4);
@@ -110,9 +127,11 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAuthAccess.getLastTokenRequest()));
+        cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, _groupAuthAccess.isSynchronize());
+        cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, _groupAuthAccess.wasInterrupted());
 
         long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_groupAuthAccess.getDeviceId()});
-        if(updatedRows <= 0)
+        if (updatedRows <= 0)
             return false;
         return true;
     }
@@ -126,6 +145,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         return ret;
     }
 
+
     /**
      * Fetches all element from cursor and creates a List of GroupAuthAccess elements.
      * !important it dont close the given cursor, please close it after calling.
@@ -133,7 +153,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
      * @param _cursor the cursor to the {@link GroupAuthAccess} elements.
      * @return the objects in lists given by cursor.
      */
-    private List<GroupAuthAccess> getList(Cursor _cursor){
+    private List<GroupAuthAccess> getList(Cursor _cursor) {
         List<GroupAuthAccess> groupAuthAccesses = new ArrayList<>(_cursor.getCount());
         if (!_cursor.moveToFirst()) {
             return groupAuthAccesses;
@@ -144,10 +164,14 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
             String token = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.TOKEN));
             String lastUpdated = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATED));
             String lastTokenRequest = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST));
+            boolean interrupted = _cursor.getInt(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.INTERRUPTED)) == 1;
+            boolean synchronize = _cursor.getInt(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.SYNCHRONIZE)) == 1;
 
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(deviceId, token);
             groupAuthAccess.setLastTokenRequest(ISO8601Utils.parse(lastTokenRequest));
             groupAuthAccess.setLastUpdated(ISO8601Utils.parse(lastUpdated));
+            groupAuthAccess.setInterrupted(interrupted);
+            groupAuthAccess.setSynchronize(synchronize);
             groupAuthAccesses.add(groupAuthAccess);
         } while (_cursor.moveToNext());
 

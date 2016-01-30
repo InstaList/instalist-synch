@@ -4,7 +4,7 @@ package org.noorganization.instalistsynch.events;
  * Sent when an error occured.
  * Created by tinos_000 on 29.01.2016.
  */
-public class ErrorMessage {
+public class ErrorMessageEvent {
 
     /**
      * The message of the error.
@@ -15,7 +15,7 @@ public class ErrorMessage {
      * Default Constructor.
      * @param mErrorMessage the error message to be sent, consider to use a translated string.
      */
-    public ErrorMessage(String mErrorMessage) {
+    public ErrorMessageEvent(String mErrorMessage) {
         this.mErrorMessage = mErrorMessage;
     }
 

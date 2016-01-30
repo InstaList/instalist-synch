@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.controller.network.impl.V1GroupManager;
-import org.noorganization.instalistsynch.events.ErrorMessage;
-import org.noorganization.instalistsynch.events.TokenMessage;
+import org.noorganization.instalistsynch.events.ErrorMessageEvent;
+import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.utils.AccountUtils;
 
 import de.greenrobot.event.EventBus;
@@ -74,12 +74,12 @@ public class SynchOverview extends AppCompatActivity {
         });
     }
 
-    public void onEvent(ErrorMessage _msg){
+    public void onEvent(ErrorMessageEvent _msg){
         Toast.makeText(this,_msg.getErrorMessage(), Toast.LENGTH_LONG);
         Log.e(LOG_TAG, "onEvent: " + _msg.getErrorMessage());
     }
 
-    public void onEvent(TokenMessage _msg){
+    public void onEvent(TokenMessageEvent _msg){
         Toast.makeText(this,"Token: " + _msg.getmToken(), Toast.LENGTH_LONG);
         Log.i(LOG_TAG, "onEvent: " + _msg.getmToken());
     }

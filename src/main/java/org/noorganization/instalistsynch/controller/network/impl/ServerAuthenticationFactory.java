@@ -4,6 +4,7 @@ import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
 
 /**
  * Factory to manage the possible network objects.
+ * @deprecated
  * Created by tinos_000 on 27.01.2016.
  */
 public class ServerAuthenticationFactory {

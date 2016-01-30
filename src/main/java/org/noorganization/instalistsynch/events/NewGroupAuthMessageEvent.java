@@ -6,7 +6,7 @@ import org.noorganization.instalistsynch.model.GroupAuth;
  * Message when a new group access was established.
  * Created by tinos_000 on 29.01.2016.
  */
-public class NewGroupAuthMessage {
+public class NewGroupAuthMessageEvent {
 
     /**
      * The group auth object.
@@ -18,7 +18,7 @@ public class NewGroupAuthMessage {
      *
      * @param mGroupAuth the group auth object.
      */
-    public NewGroupAuthMessage(GroupAuth mGroupAuth) {
+    public NewGroupAuthMessageEvent(GroupAuth mGroupAuth) {
         this.mGroupAuth = mGroupAuth;
     }
 

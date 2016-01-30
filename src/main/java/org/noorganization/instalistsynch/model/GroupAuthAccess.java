@@ -28,19 +28,29 @@ public class GroupAuthAccess {
         public static final String TOKEN = "token";
 
         /**
-         * The column name of token.
+         * The column name of last updated.
          */
         public static final String LAST_UPDATED = "last_updated";
 
         /**
-         * The column name of token.
+         * The column name of last token request.
          */
         public static final String LAST_TOKEN_REQUEST = "last_token_request";
 
         /**
+         * The column name of token.
+         */
+        public static final String SYNCHRONIZE = "synchronize";
+
+        /**
+         * The column name of interrupted.
+         */
+        public static final String INTERRUPTED = "interrupted";
+
+        /**
          * All column names.
          */
-        public static final String ALL_COLUMNS[] = {DEVICE_ID, TOKEN, LAST_UPDATED, LAST_TOKEN_REQUEST};
+        public static final String ALL_COLUMNS[] = {DEVICE_ID, TOKEN, LAST_UPDATED, LAST_TOKEN_REQUEST, SYNCHRONIZE, INTERRUPTED};
     }
 
     public static final String DB_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
@@ -48,6 +58,8 @@ public class GroupAuthAccess {
             COLUMN.TOKEN + " TEXT NOT NULL, " +
             COLUMN.LAST_UPDATED + " TEXT NOT NULL, " +
             COLUMN.LAST_TOKEN_REQUEST + " TEXT NOT NULL," +
+            COLUMN.SYNCHRONIZE + " BOOLEAN NOT NULL," +
+            COLUMN.INTERRUPTED + " BOOLEAN NOT NULL," +
             "FOREIGN KEY (" + COLUMN.DEVICE_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
             GroupAuth.COLUMN.DEVICE_ID + ") ON UPDATE CASCADE ON DELETE CASCADE " +
             ")";
@@ -79,6 +91,15 @@ public class GroupAuthAccess {
      */
     private Date mLastTokenRequest;
 
+    /**
+     * Indicates if the group should be synchronized.
+     */
+    private boolean mSynchronize;
+
+    /**
+     * Indicates if the last run was interrupted.
+     */
+    private boolean mInterrupted;
 
     public String getDeviceId() {
         return mDeviceId;
@@ -106,5 +127,21 @@ public class GroupAuthAccess {
 
     public void setLastTokenRequest(Date lastTokenRequest) {
         mLastTokenRequest = lastTokenRequest;
+    }
+
+    public boolean isSynchronize() {
+        return mSynchronize;
+    }
+
+    public void setSynchronize(boolean synchronize) {
+        mSynchronize = synchronize;
+    }
+
+    public boolean wasInterrupted() {
+        return mInterrupted;
+    }
+
+    public void setInterrupted(boolean interrupted) {
+        mInterrupted = interrupted;
     }
 }

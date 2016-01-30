@@ -54,6 +54,14 @@ public interface IGroupAuthAccessDbController {
     List<GroupAuthAccess> getGroupAuthAccesses();
 
     /**
+     * Get all {@link GroupAuthAccess} objects.
+     *
+     * @param _synchronize indicates if only groups if synchronize enabled be returned. true if only those to synch else those to not synch
+     * @return all saved access data.
+     */
+    List<GroupAuthAccess> getGroupAuthAccesses(boolean _synchronize);
+
+    /**
      * Get {@link GroupAuthAccess} objects since a given time.
      *
      * @param _sinceTime all objects since this time in ISO8601 format.
