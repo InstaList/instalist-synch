@@ -10,6 +10,7 @@ public interface IGroupManager {
 
     /**
      * Creates a new group.
+     * Sends following messages {@link org.noorganization.instalistsynch.events.ErrorMessage} and {@link org.noorganization.instalistsynch.events.TokenMessage}.
      */
     void createGroup();
 
@@ -29,6 +30,6 @@ public interface IGroupManager {
      * Gets an auth token for the given group/groupAuth object.
      * @param _groupAuth the group auth object.
      */
-    void getAuthToken(GroupAuth _groupAuth);
+    void requestAuthToken(GroupAuth _groupAuth);
 
 }

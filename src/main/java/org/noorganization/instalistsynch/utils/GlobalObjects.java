@@ -6,6 +6,7 @@ import org.noorganization.instalistsynch.network.api.IInstantListApiService;
 
 import java.security.SecureRandom;
 
+import retrofit2.JacksonConverterFactory;
 import retrofit2.Retrofit;
 
 /**
@@ -17,7 +18,7 @@ public class GlobalObjects {
     /**
      * The Base URL of the API.
      */
-    public final static String API_ENDPOINT_URL = "https://instantlist.noorganization.org/v1";
+    public final static String API_ENDPOINT_URL = "http://instantlist.noorganization.org/v1/";
 
     /**
      * Instance of this class.
@@ -62,6 +63,7 @@ public class GlobalObjects {
     private GlobalObjects() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(API_ENDPOINT_URL)
+                .addConverterFactory(JacksonConverterFactory.create())
                 .build();
         mInstantListApiService = retrofit.create(IInstantListApiService.class);
 

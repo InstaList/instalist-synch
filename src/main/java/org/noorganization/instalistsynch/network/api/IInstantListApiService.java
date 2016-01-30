@@ -15,6 +15,10 @@ import org.noorganization.instalistsynch.model.network.response.IngredientRespon
 import org.noorganization.instalistsynch.model.network.response.ListEntryResponse;
 import org.noorganization.instalistsynch.model.network.response.ProductResponse;
 import org.noorganization.instalistsynch.model.network.response.RecipeResponse;
+import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
+import org.noorganization.instalistsynch.model.network.response.RetrofitGroupAccessToken;
+import org.noorganization.instalistsynch.model.network.response.RetrofitRegisterDevice;
+import org.noorganization.instalistsynch.model.network.response.RetrofitUUIDResponse;
 import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
 import org.noorganization.instalistsynch.model.network.response.TagResponse;
 import org.noorganization.instalistsynch.model.network.response.TaggedProductResponse;
@@ -47,7 +51,7 @@ public interface IInstantListApiService {
      * @return an temporary group-access-id.
      */
     @POST("user/register_group")
-    Call<String> registerGroup();
+    Call<RetrofitGroupAccessToken> registerGroup();
 
     /**
      * Register this device to a specific group.
@@ -56,7 +60,7 @@ public interface IInstantListApiService {
      * @return the registered device id in this group.
      */
     @POST("user/register_device")
-    Call<String> registerDevice(@Body Group _group);
+    Call<RetrofitRegisterDevice> registerDevice(@Body Group _group);
 
     /**
      * Get the token for the group.
@@ -65,7 +69,7 @@ public interface IInstantListApiService {
      * @return a token for this specific group.
      */
     @GET("user/token")
-    Call<String> token(@Header("Authorization") String _authorization);
+    Call<RetrofitAuthToken> token(@Header("Authorization") String _authorization);
 
     //endregion
 
@@ -100,7 +104,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created category.
      */
     @POST("categories/{uuid}")
-    Call<String> createCategory(@Path("uuid") String _uuid, @Query("token") String _token, @Body Category _category);
+    Call<RetrofitUUIDResponse> createCategory(@Path("uuid") String _uuid, @Query("token") String _token, @Body Category _category);
 
     /**
      * Update the category by the given category.
@@ -111,7 +115,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated category.
      */
     @PUT("categories/{uuid}")
-    Call<String> updateCategory(@Path("uuid") String _uuid, @Query("token") String _token, @Body Category _category);
+    Call<RetrofitUUIDResponse> updateCategory(@Path("uuid") String _uuid, @Query("token") String _token, @Body Category _category);
 
     /**
      * Delete the category from the remote server with the given id.
@@ -121,7 +125,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("categories/{uuid}")
-    Call<String> deleteCategory(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteCategory(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -157,7 +161,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created Product.
      */
     @POST("products/{uuid}")
-    Call<String> createProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body Product _Product);
+    Call<RetrofitUUIDResponse> createProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body Product _Product);
 
     /**
      * Update the Product by the given Product.
@@ -168,7 +172,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated Product.
      */
     @PUT("products/{uuid}")
-    Call<String> updateProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body Product _Product);
+    Call<RetrofitUUIDResponse> updateProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body Product _Product);
 
     /**
      * Delete the Product from the remote server with the given id.
@@ -178,7 +182,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("products/{uuid}")
-    Call<String> deleteProduct(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteProduct(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -213,7 +217,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created ShoppingList.
      */
     @POST("lists/{uuid}")
-    Call<String> createShoppingList(@Path("uuid") String _uuid, @Query("token") String _token, @Body ShoppingList _ShoppingList);
+    Call<RetrofitUUIDResponse> createShoppingList(@Path("uuid") String _uuid, @Query("token") String _token, @Body ShoppingList _ShoppingList);
 
     /**
      * Update the ShoppingList by the given ShoppingList.
@@ -224,7 +228,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated ShoppingList.
      */
     @PUT("lists/{uuid}")
-    Call<String> updateShoppingList(@Path("uuid") String _uuid, @Query("token") String _token, @Body ShoppingList _ShoppingList);
+    Call<RetrofitUUIDResponse> updateShoppingList(@Path("uuid") String _uuid, @Query("token") String _token, @Body ShoppingList _ShoppingList);
 
     /**
      * Delete the ShoppingList from the remote server with the given id.
@@ -234,7 +238,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("lists/{uuid}")
-    Call<String> deleteShoppingList(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteShoppingList(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -279,7 +283,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created Recipe.
      */
     @POST("recipes/{uuid}")
-    Call<String> createRecipe(@Path("uuid") String _uuid, @Query("token") String _token, @Body Recipe _Recipe);
+    Call<RetrofitUUIDResponse> createRecipe(@Path("uuid") String _uuid, @Query("token") String _token, @Body Recipe _Recipe);
 
     /**
      * Update the Recipe by the given Recipe.
@@ -290,7 +294,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated Recipe.
      */
     @PUT("recipes/{uuid}")
-    Call<String> updateRecipe(@Path("uuid") String _uuid, @Query("token") String _token, @Body Recipe _Recipe);
+    Call<RetrofitUUIDResponse> updateRecipe(@Path("uuid") String _uuid, @Query("token") String _token, @Body Recipe _Recipe);
 
     /**
      * Delete the Recipe from the remote server with the given id.
@@ -300,7 +304,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("recipes/{uuid}")
-    Call<String> deleteRecipe(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteRecipe(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -335,7 +339,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created TaggedProduct.
      */
     @POST("taggedProducts/{uuid}")
-    Call<String> createTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body TaggedProduct _TaggedProduct);
+    Call<RetrofitUUIDResponse> createTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body TaggedProduct _TaggedProduct);
 
     /**
      * Update the TaggedProduct by the given TaggedProduct.
@@ -346,7 +350,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated TaggedProduct.
      */
     @PUT("taggedProducts/{uuid}")
-    Call<String> updateTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body TaggedProduct _TaggedProduct);
+    Call<RetrofitUUIDResponse> updateTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token, @Body TaggedProduct _TaggedProduct);
 
     /**
      * Delete the TaggedProduct from the remote server with the given id.
@@ -356,7 +360,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("taggedProducts/{uuid}")
-    Call<String> deleteTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteTaggedProduct(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -391,7 +395,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created Tag.
      */
     @POST("tags/{uuid}")
-    Call<String> createTag(@Path("uuid") String _uuid, @Query("token") String _token, @Body Tag _Tag);
+    Call<RetrofitUUIDResponse> createTag(@Path("uuid") String _uuid, @Query("token") String _token, @Body Tag _Tag);
 
     /**
      * Update the Tag by the given Tag.
@@ -402,7 +406,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated Tag.
      */
     @PUT("tags/{uuid}")
-    Call<String> updateTag(@Path("uuid") String _uuid, @Query("token") String _token, @Body Tag _Tag);
+    Call<RetrofitUUIDResponse> updateTag(@Path("uuid") String _uuid, @Query("token") String _token, @Body Tag _Tag);
 
     /**
      * Delete the Tag from the remote server with the given id.
@@ -412,7 +416,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("tags/{uuid}")
-    Call<String> deleteTag(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteTag(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -447,7 +451,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created ListEntry.
      */
     @POST("listEntries/{uuid}")
-    Call<String> createListEntry(@Path("uuid") String _uuid, @Query("token") String _token, @Body ListEntry _ListEntry);
+    Call<RetrofitUUIDResponse> createListEntry(@Path("uuid") String _uuid, @Query("token") String _token, @Body ListEntry _ListEntry);
 
     /**
      * Update the ListEntry by the given ListEntry.
@@ -458,7 +462,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated ListEntry.
      */
     @PUT("listEntries/{uuid}")
-    Call<String> updateListEntry(@Path("uuid") String _uuid, @Query("token") String _token, @Body ListEntry _ListEntry);
+    Call<RetrofitUUIDResponse> updateListEntry(@Path("uuid") String _uuid, @Query("token") String _token, @Body ListEntry _ListEntry);
 
     /**
      * Delete the ListEntry from the remote server with the given id.
@@ -468,7 +472,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("listEntries/{uuid}")
-    Call<String> deleteListEntry(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteListEntry(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -503,7 +507,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created Unit.
      */
     @POST("units/{uuid}")
-    Call<String> createUnit(@Path("uuid") String _uuid, @Query("token") String _token, @Body Unit _Unit);
+    Call<RetrofitUUIDResponse> createUnit(@Path("uuid") String _uuid, @Query("token") String _token, @Body Unit _Unit);
 
     /**
      * Update the Unit by the given Unit.
@@ -514,7 +518,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated Unit.
      */
     @PUT("units/{uuid}")
-    Call<String> updateUnit(@Path("uuid") String _uuid, @Query("token") String _token, @Body Unit _Unit);
+    Call<RetrofitUUIDResponse> updateUnit(@Path("uuid") String _uuid, @Query("token") String _token, @Body Unit _Unit);
 
     /**
      * Delete the Unit from the remote server with the given id.
@@ -524,7 +528,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("units/{uuid}")
-    Call<String> deleteUnit(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteUnit(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 
@@ -559,7 +563,7 @@ public interface IInstantListApiService {
      * @return the uuid of the created Ingredient.
      */
     @POST("ingredients/{uuid}")
-    Call<String> createIngredient(@Path("uuid") String _uuid, @Query("token") String _token, @Body Ingredient _Ingredient);
+    Call<RetrofitUUIDResponse> createIngredient(@Path("uuid") String _uuid, @Query("token") String _token, @Body Ingredient _Ingredient);
 
     /**
      * Update the Ingredient by the given Ingredient.
@@ -570,7 +574,7 @@ public interface IInstantListApiService {
      * @return the uuid of the updated Ingredient.
      */
     @PUT("ingredients/{uuid}")
-    Call<String> updateIngredient(@Path("uuid") String _uuid, @Query("token") String _token, @Body Ingredient _Ingredient);
+    Call<RetrofitUUIDResponse> updateIngredient(@Path("uuid") String _uuid, @Query("token") String _token, @Body Ingredient _Ingredient);
 
     /**
      * Delete the Ingredient from the remote server with the given id.
@@ -580,7 +584,7 @@ public interface IInstantListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("ingredients/{uuid}")
-    Call<String> deleteIngredient(@Path("uuid") String _uuid, @Query("token") String _token);
+    Call<RetrofitUUIDResponse> deleteIngredient(@Path("uuid") String _uuid, @Query("token") String _token);
 
     //endregion
 

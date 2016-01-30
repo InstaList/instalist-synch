@@ -10,6 +10,9 @@ import org.noorganization.instalistsynch.events.ErrorMessage;
 import org.noorganization.instalistsynch.events.TokenMessage;
 import org.noorganization.instalistsynch.model.Group;
 import org.noorganization.instalistsynch.model.GroupAuth;
+import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
+import org.noorganization.instalistsynch.model.network.response.RetrofitGroupAccessToken;
+import org.noorganization.instalistsynch.model.network.response.RetrofitRegisterDevice;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 import org.noorganization.instalistsynch.utils.RFC2617Authorization;
 import org.noorganization.instalistsynch.utils.StringUtils;
@@ -28,19 +31,45 @@ import retrofit2.Response;
  * Created by tinos_000 on 29.01.2016.
  */
 public class V1GroupManager implements IGroupManager {
+    private static final String LOG_TAG = V1GroupManager.class.getSimpleName();
+
+    /**
+     * The instance of this class.
+     */
+    private static V1GroupManager sInstance;
+
+    /**
+     * Get instance of this singleton.
+     *
+     * @return the only instance.
+     */
+    public static V1GroupManager getInstance() {
+        if (sInstance == null) {
+            sInstance = new V1GroupManager();
+        }
+        return sInstance;
+    }
+
+    /**
+     * Default private constructor.
+     */
+    private V1GroupManager() {
+    }
 
     @Override
     public void createGroup() {
-        Call<String> groupCall = GlobalObjects.getInstance().getInstantListApiService().registerGroup();
+        Call<RetrofitGroupAccessToken> groupCall = GlobalObjects.getInstance().getInstantListApiService().registerGroup();
         groupCall.enqueue(new RegisterGroupCallback());
+        Log.i(LOG_TAG, "createGroup: enquedCallback");
     }
 
     @Override
     public void joinGroup(String _tmpGroupId) {
+        Log.i(LOG_TAG, "joinGroup: " + _tmpGroupId);
         SecureRandom secureRandom = GlobalObjects.getInstance().getSecureRandom();
         String secret = new BigInteger(196, secureRandom).toString(32);
         Group group = new Group(_tmpGroupId, secret);
-        Call<String> deviceIdGen = GlobalObjects.getInstance().getInstantListApiService().registerDevice(group);
+        Call<RetrofitRegisterDevice> deviceIdGen = GlobalObjects.getInstance().getInstantListApiService().registerDevice(group);
         deviceIdGen.enqueue(new RegisterDeviceCallback(secret));
     }
 
@@ -50,8 +79,9 @@ public class V1GroupManager implements IGroupManager {
     }
 
     @Override
-    public void getAuthToken(GroupAuth _groupAuth) {
-        Call<String> authTokenReq = GlobalObjects.getInstance()
+    public void requestAuthToken(GroupAuth _groupAuth) {
+        Log.i(LOG_TAG, "requestAuthToken: for " + _groupAuth.getDeviceId());
+        Call<RetrofitAuthToken> authTokenReq = GlobalObjects.getInstance()
                 .getInstantListApiService()
                 .token(RFC2617Authorization
                         .generate(_groupAuth.getDeviceId(), _groupAuth.getSecret()));
@@ -61,17 +91,17 @@ public class V1GroupManager implements IGroupManager {
     /**
      * Callback to the registerGroup action.
      */
-    private class RegisterGroupCallback implements Callback<String> {
+    private class RegisterGroupCallback implements Callback<RetrofitGroupAccessToken> {
         private final String LOG_TAG = RegisterGroupCallback.class.getSimpleName();
 
         @Override
-        public void onResponse(Response<String> response) {
+        public void onResponse(Response<RetrofitGroupAccessToken> response) {
             if (!response.isSuccess()) {
                 //noinspection finally
                 try {
                     String msg = String.valueOf(response.code()).concat(" ").concat(response.errorBody().string());
                     EventBus.getDefault().post(new ErrorMessage(msg));
-                    Log.i(LOG_TAG, "onResponse: server responded with ".concat(msg));
+                    Log.e(LOG_TAG, "onResponse: server responded with ".concat(msg));
                 } catch (IOException e) {
                     e.printStackTrace();
                     EventBus.getDefault().post(new ErrorMessage(String.valueOf(response.code()).concat(" ")
@@ -82,14 +112,8 @@ public class V1GroupManager implements IGroupManager {
                 return;
             }
             Log.i(LOG_TAG, "Response: " + response.body());
-            String tmpGroupAccessId = StringUtils.getFirstValueFromJSON(response.body());
-            if(tmpGroupAccessId == null) {
-                Log.e(LOG_TAG, "onResponse: access group id can not be parsed from response.");
-                EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
-                        .getApplicationContext().getString(R.string.error_response_not_parseable)));
-                return;
-            }
-            joinGroup(tmpGroupAccessId);
+
+            joinGroup(response.body().groupid);
         }
 
         @Override
@@ -97,13 +121,14 @@ public class V1GroupManager implements IGroupManager {
             EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
                     .getApplicationContext().getString(R.string.error_register)
                     .concat(t.getMessage())));
+            Log.e(LOG_TAG, "onFailure: ", t.getCause());
         }
     }
 
     /**
      * Callback to the registerDevice Callback.
      */
-    private class RegisterDeviceCallback implements Callback<String> {
+    private class RegisterDeviceCallback implements Callback<RetrofitRegisterDevice> {
         private final String LOG_TAG = RegisterDeviceCallback.class.getSimpleName();
 
         private String mSecret;
@@ -118,13 +143,13 @@ public class V1GroupManager implements IGroupManager {
         }
 
         @Override
-        public void onResponse(Response<String> response) {
+        public void onResponse(Response<RetrofitRegisterDevice> response) {
             if (!response.isSuccess()) {
                 //noinspection finally
                 try {
                     String msg = String.valueOf(response.code()).concat(" ").concat(response.errorBody().string());
                     EventBus.getDefault().post(new ErrorMessage(msg));
-                    Log.i(LOG_TAG, "onResponse: server responded with ".concat(msg));
+                    Log.e(LOG_TAG, "onResponse: server responded with ".concat(msg));
                 } catch (IOException e) {
                     e.printStackTrace();
                     EventBus.getDefault().post(new ErrorMessage(String.valueOf(response.code())
@@ -136,13 +161,7 @@ public class V1GroupManager implements IGroupManager {
             }
 
             Log.i(LOG_TAG, "Response: " + response.body());
-            String deviceId = StringUtils.getFirstValueFromJSON(response.body());
-            if(deviceId == null) {
-                Log.e(LOG_TAG, "onResponse: access group id can not be parsed from response.");
-                EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
-                        .getApplicationContext().getString(R.string.error_response_not_parseable)));
-                return;
-            }
+            String deviceId = response.body().deviceid;
 
             // insert groupAuth to db
             GroupAuth groupAuth = new GroupAuth(deviceId, mSecret);
@@ -164,19 +183,21 @@ public class V1GroupManager implements IGroupManager {
         public void onFailure(Throwable t) {
             EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
                     .getApplicationContext().getString(R.string.error_join).concat(t.getMessage())));
+            Log.e(LOG_TAG, "onFailure: ", t.getCause());
         }
     }
 
-    private class GetAuthTokenCallback implements Callback<String> {
+    private class GetAuthTokenCallback implements Callback<RetrofitAuthToken> {
         private final String LOG_TAG = GetAuthTokenCallback.class.getSimpleName();
+
         @Override
-        public void onResponse(Response<String> response) {
+        public void onResponse(Response<RetrofitAuthToken> response) {
             if (!response.isSuccess()) {
                 //noinspection finally
                 try {
                     String msg = String.valueOf(response.code()).concat(" ").concat(response.errorBody().string());
                     EventBus.getDefault().post(new ErrorMessage(msg));
-                    Log.i(LOG_TAG, "onResponse: server responded with ".concat(msg));
+                    Log.e(LOG_TAG, "onResponse: server responded with ".concat(msg));
                 } catch (IOException e) {
                     e.printStackTrace();
                     EventBus.getDefault().post(new ErrorMessage(String.valueOf(response.code())
@@ -187,8 +208,8 @@ public class V1GroupManager implements IGroupManager {
                 return;
             }
 
-            String token = StringUtils.getFirstValueFromJSON(response.body());
-            if(token != null) {
+            String token = response.body().token;
+            if (token != null) {
                 EventBus.getDefault().post(new TokenMessage(token));
             } else {
                 Log.e(LOG_TAG, "onResponse: Token can not be parsed from response.");
@@ -201,6 +222,7 @@ public class V1GroupManager implements IGroupManager {
         public void onFailure(Throwable t) {
             EventBus.getDefault().post(new ErrorMessage(GlobalObjects.getInstance()
                     .getApplicationContext().getString(R.string.error_join).concat(t.getMessage())));
+            Log.e(LOG_TAG, "onFailure: ", t.getCause());
         }
     }
 }
