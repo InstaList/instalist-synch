@@ -1,7 +1,5 @@
 package org.noorganization.instalistsynch.model;
 
-import java.util.Date;
-
 /**
  * Object model to get access token to a group.
  * Created by tinos_000 on 29.01.2016.
@@ -16,8 +14,9 @@ public class GroupAuth {
 
     /**
      * Constructor for instant creation.
+     *
      * @param _deviceId the id of the device.
-     * @param _secret the client secret.
+     * @param _secret   the client secret.
      */
     public GroupAuth(String _deviceId, String _secret) {
         this.mDeviceId = _deviceId;
@@ -25,6 +24,7 @@ public class GroupAuth {
     }
 
     public final static String TABLE_NAME = "groupauth";
+
     /**
      * Holder of Column names.
      */
