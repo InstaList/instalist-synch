@@ -1,12 +1,14 @@
 package org.noorganization.instalistsynch.controller.local;
 
+import org.noorganization.instalistsynch.model.network.ModelMapping;
+
 import java.util.List;
 
 /**
- * Interface for dbn access of Model synch.
+ * Interface for db access of Model mapping.
  * Created by tinos_000 on 30.01.2016.
  */
-public interface IModelSynchDbController<T> {
+public interface IModelMappingDbController {
 
     /**
      * Insert the model element into the database.
@@ -14,7 +16,7 @@ public interface IModelSynchDbController<T> {
      * @param _element the element to insert.
      * @return true if insertion was successful, false if not.
      */
-    boolean insert(T _element);
+    boolean insert(ModelMapping _element);
 
     /**
      * Updates the element at the id given by the element.
@@ -22,7 +24,7 @@ public interface IModelSynchDbController<T> {
      * @param _element the element to be updated.
      * @return true if at least one element was updated, false if zero elements were updated.
      */
-    boolean update(T _element);
+    boolean update(ModelMapping _element);
 
     /**
      * Deletes the given element from the database.
@@ -30,7 +32,7 @@ public interface IModelSynchDbController<T> {
      * @param _element the element to delete.
      * @return true if deleted, false if not.
      */
-    boolean delete(T _element);
+    boolean delete(ModelMapping _element);
 
     /**
      * Get a list of objects by the given where clause.
@@ -39,5 +41,5 @@ public interface IModelSynchDbController<T> {
      * @param _whereParams the params in this query. Just like with sqlite.
      * @return a list of objects matching the criteria, null is nerver be returned only empty Lists if no element was found.
      */
-    List<T> get(String _whereClause, String[] _whereParams);
+    List<ModelMapping> get(String _whereClause, String[] _whereParams);
 }

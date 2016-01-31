@@ -1,6 +1,5 @@
 package org.noorganization.instalistsynch.controller.network.model.impl;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.codehaus.jackson.map.util.ISO8601Utils;
@@ -25,15 +24,15 @@ import retrofit2.Response;
  * Synchcontroller for {@link org.noorganization.instalist.model.ShoppingList}
  * Created by tinos_000 on 30.01.2016.
  */
-public class ShoppingListSynchController implements IModelSynchController{
+public class ShoppingListSynchController implements IModelSynchController {
     private static final String LOG_TAG = ShoppingListSynchController.class.getSimpleName();
 
     private static ShoppingListSynchController sInstance;
     private IInstantListApiService mInstantListApiService;
     private EventBus mEventBus;
 
-    public static ShoppingListSynchController getInstance(){
-        if(sInstance == null)
+    public static ShoppingListSynchController getInstance() {
+        if (sInstance == null)
             sInstance = new ShoppingListSynchController();
         return sInstance;
     }
@@ -68,13 +67,14 @@ public class ShoppingListSynchController implements IModelSynchController{
 
             List<ShoppingListResponse> responseBody = _response.body();
             for (ShoppingListResponse shoppingListResponse : responseBody) {
+
                 // check if mapping already exists
-                    // ja --> Änderungen seit letztem synch auf client (dazu letzten serversynch zeitpunkt nehmen und gucken ob client seitdem geändert?
-                        // geändert?
-                        // ja --> gucke ob der client neuer als server ist !
-                            // ja zurückweisen oder nutzer fragen
-                            // nein dann client updaten und werte setzen.
-                    // else es ist new, check if id is unique
+                // ja --> Änderungen seit letztem synch auf client (dazu letzten serversynch zeitpunkt nehmen und gucken ob client seitdem geändert?
+                // geändert?
+                // ja --> gucke ob der client neuer als server ist !
+                // ja zurückweisen oder nutzer fragen
+                // nein dann client updaten und werte setzen.
+                // else es ist new, check if id is unique
 
             }
         }

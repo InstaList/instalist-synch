@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.db.sqlite.GroupAuthDbHelper;
+import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuth;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.List;
 public class GroupAuthDbController implements IGroupAuthDbController {
 
     private static GroupAuthDbController sInstance;
-    private GroupAuthDbHelper mDbHelper;
+    private SynchDbHelper mDbHelper;
 
     /**
      * Get an instance of {@link GroupAuthDbController}.
@@ -35,7 +35,7 @@ public class GroupAuthDbController implements IGroupAuthDbController {
     }
 
     private GroupAuthDbController(Context _context) {
-        mDbHelper = new GroupAuthDbHelper(_context);
+        mDbHelper = new SynchDbHelper(_context);
     }
 
     @Override

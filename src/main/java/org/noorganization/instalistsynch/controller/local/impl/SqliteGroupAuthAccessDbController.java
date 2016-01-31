@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.db.sqlite.GroupAuthDbHelper;
+import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 
@@ -21,7 +21,7 @@ import java.util.List;
 public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbController {
 
     private static SqliteGroupAuthAccessDbController sInstance;
-    private GroupAuthDbHelper mDbHelper;
+    private SynchDbHelper mDbHelper;
 
     /**
      * Get an instance of {@link GroupAuthDbController}.
@@ -42,7 +42,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
      * @param _context the context of the app.
      */
     private SqliteGroupAuthAccessDbController(Context _context) {
-        mDbHelper = new GroupAuthDbHelper(_context);
+        mDbHelper = new SynchDbHelper(_context);
     }
 
     @Override
