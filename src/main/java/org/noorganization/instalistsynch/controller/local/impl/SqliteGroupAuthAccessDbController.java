@@ -139,7 +139,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
     @Override
     public boolean hasIdInDatabase(GroupAuthAccess _groupAuthAccess) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_groupAuthAccess.getDeviceId()}, null, null, null);
+        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_groupAuthAccess.getDeviceId()}, null, null, null);
         boolean ret = authAccessCursor.getCount() == 0;
         authAccessCursor.close();
         return ret;

@@ -17,10 +17,14 @@ public class GroupAuth {
      *
      * @param _deviceId the id of the device.
      * @param _secret   the client secret.
+     * @param _name  the name of the specified device.
+     * @param _isLocal true if it is locally created or false if group is from host.
      */
-    public GroupAuth(String _deviceId, String _secret) {
+    public GroupAuth(String _deviceId, String _secret, String _name, boolean _isLocal) {
         this.mDeviceId = _deviceId;
         this.mSecret = _secret;
+        this.mDeviceName = _name;
+        this.mIsLocal = _isLocal;
     }
 
     public final static String TABLE_NAME = "groupauth";
@@ -37,15 +41,30 @@ public class GroupAuth {
          * The column name of secret.
          */
         public static final String SECRET = "secret";
+
+        /**
+         * The name of the specific deivce.
+         */
+        public static final String DEVICE_NAME = "device_name";
+
+        /**
+         * The name of the is local field.
+         */
+        public static final String IS_LOCAL = "is_local";
         /**
          * All column names.
          */
-        public static final String ALL_COLUMNS[] = {DEVICE_ID, SECRET};
+        public static final String ALL_COLUMNS[] = {DEVICE_ID, SECRET, DEVICE_NAME, IS_LOCAL};
     }
 
+    /**
+     * String to create table of group auth.
+     */
     public static final String DB_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
             COLUMN.DEVICE_ID + " TEXT PRIMARY KEY NOT NULL, " +
-            COLUMN.SECRET + " TEXT NOT NULL" +
+            COLUMN.SECRET + " TEXT NOT NULL," +
+            COLUMN.DEVICE_NAME + " TEXT NOT NULL," +
+            COLUMN.IS_LOCAL + " REAL NOT NULL" +
             ")";
 
     /**
@@ -57,6 +76,16 @@ public class GroupAuth {
      * The client secret.
      */
     private String mSecret;
+
+    /**
+     * The device name.
+     */
+    private String mDeviceName;
+
+    /**
+     * Indicates if this device_id is the owner of the group. Prevent duplication insertion.
+     */
+    private boolean mIsLocal;
 
     public String getDeviceId() {
         return mDeviceId;
@@ -72,5 +101,21 @@ public class GroupAuth {
 
     public void setSecret(String _secret) {
         this.mSecret = _secret;
+    }
+
+    public String getDeviceName() {
+        return mDeviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        mDeviceName = deviceName;
+    }
+
+    public boolean isLocal() {
+        return mIsLocal;
+    }
+
+    public void setIsOwner(boolean isOwner) {
+        mIsLocal = isOwner;
     }
 }

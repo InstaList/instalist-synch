@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
+import org.noorganization.instalistsynch.model.Group;
 import org.noorganization.instalistsynch.model.GroupAuth;
 
 import java.util.ArrayList;
@@ -50,8 +51,10 @@ public class GroupAuthDbController implements IGroupAuthDbController {
         do {
             String deviceId = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
             String secret = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
+            String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
+            boolean isLocal = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
             // TODO some decryption
-            groupAuths.add(new GroupAuth(deviceId, secret));
+            groupAuths.add(new GroupAuth(deviceId, secret, deviceName, isLocal));
         } while (authCursor.moveToNext());
         authCursor.close();
         return groupAuths;
@@ -59,7 +62,7 @@ public class GroupAuthDbController implements IGroupAuthDbController {
 
     @Override
     public boolean insertRegisteredGroup(GroupAuth _groupAuth) {
-        if(!hasUniqueId(_groupAuth))
+        if (!hasUniqueId(_groupAuth))
             return false;
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -67,6 +70,8 @@ public class GroupAuthDbController implements IGroupAuthDbController {
         cv.put(GroupAuth.COLUMN.DEVICE_ID, _groupAuth.getDeviceId());
         // TODO add some encryption
         cv.put(GroupAuth.COLUMN.SECRET, _groupAuth.getSecret());
+        cv.put(GroupAuth.COLUMN.DEVICE_NAME, _groupAuth.getDeviceName());
+        cv.put(GroupAuth.COLUMN.IS_LOCAL, _groupAuth.isLocal());
         return db.insert(GroupAuth.TABLE_NAME, null, cv) != -1;
     }
 

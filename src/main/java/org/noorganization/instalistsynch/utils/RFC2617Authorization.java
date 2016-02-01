@@ -22,7 +22,7 @@ public class RFC2617Authorization {
     public static final String generate(String _user, String _password) {
         try {
             // TODO probably change base64 flag
-            return "Basic ".concat(Base64.encodeToString(_user.concat(":").concat(_password).getBytes("UTF-8"), Base64.URL_SAFE));
+            return "Basic ".concat(Base64.encodeToString(_user.concat(":").concat(_password).getBytes("UTF-8"), Base64.NO_WRAP));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             Log.e(LOG_TAG, "generate: unsupported encoding", e.getCause());
