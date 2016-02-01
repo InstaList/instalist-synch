@@ -5,16 +5,17 @@ package org.noorganization.instalistsynch.model;
  * Created by tinos_000 on 28.01.2016.
  */
 public class Group {
-    public String mTempId;
-    public String mSecret;
-
+    public String groupid;
+    public String secret;
+    public String name;
     /**
      * The group that holds the temporary group id.
-     * @param mTempId the temporary group id.
-     * @param mSecret the generated secret.
+     * @param _groupId the temporary group id.
+     * @param _secret the generated secret.
      */
-    public Group(String mTempId, String mSecret) {
-        this.mTempId = mTempId;
-        this.mSecret = mSecret;
+    public Group(String _groupId, String _secret) {
+        this.groupid = _groupId;
+        this.secret = _secret;
+        this.name = "Some Placeholder";
     }
 }

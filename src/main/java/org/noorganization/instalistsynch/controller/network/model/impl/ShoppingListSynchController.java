@@ -62,7 +62,7 @@ public class ShoppingListSynchController implements IModelSynchController {
 
         @Override
         public void onResponse(Response<List<ShoppingListResponse>> _response) {
-            if (NetworkUtils.isSuccessful(_response))
+            if (NetworkUtils.isSuccessful(_response, "/lists"))
                 return;
 
             List<ShoppingListResponse> responseBody = _response.body();

@@ -98,7 +98,7 @@ public class V1GroupManager implements IGroupManager {
 
         @Override
         public void onResponse(Response<RetrofitGroupAccessToken> response) {
-            if (NetworkUtils.isSuccessful(response))
+            if (NetworkUtils.isSuccessful(response, "/register_group"))
                 return;
             Log.i(LOG_TAG, "Response: " + response.body());
 
@@ -133,7 +133,7 @@ public class V1GroupManager implements IGroupManager {
 
         @Override
         public void onResponse(Response<RetrofitRegisterDevice> response) {
-            if (NetworkUtils.isSuccessful(response))
+            if (NetworkUtils.isSuccessful(response, "/register_device"))
                 return;
 
             Log.i(LOG_TAG, "Response: " + response.body());
@@ -153,6 +153,7 @@ public class V1GroupManager implements IGroupManager {
             }
             authDbController.insertRegisteredGroup(groupAuth);
             // EventBus.getDefault().post(new NewGroupAuthMessage(groupAuth));
+            requestAuthToken(groupAuth);
         }
 
         @Override
@@ -176,7 +177,7 @@ public class V1GroupManager implements IGroupManager {
 
         @Override
         public void onResponse(Response<RetrofitAuthToken> response) {
-            if (NetworkUtils.isSuccessful(response))
+            if (NetworkUtils.isSuccessful(response, "/token"))
                 return;
 
             String token = response.body().token;

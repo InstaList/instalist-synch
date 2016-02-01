@@ -36,22 +36,22 @@ public class NetworkUtils {
     /**
      * Checks if the response was succesfull. Sends also the Error with an {@link ErrorMessageEvent} with the {@link EventBus}.
      *
-     * @param response the response delivered by retrofit.
+     * @param _response the response delivered by retrofit.
      * @return true if it was successful, else false.
      */
-    public static boolean isSuccessful(Response<?> response) {
-        if (!response.isSuccess()) {
+    public static boolean isSuccessful(Response<?> _response, String _method) {
+        if (!_response.isSuccess()) {
             //noinspection finally
             try {
-                String msg = String.valueOf(response.code()).concat(" ").concat(response.errorBody().string());
+                String msg = String.valueOf(_response.code()).concat(" ").concat(_method).concat(" ").concat(_response.errorBody().string());
                 EventBus.getDefault().post(new ErrorMessageEvent(msg));
-                Log.e(LOG_TAG, "onResponse: server responded with ".concat(msg));
+                Log.e(LOG_TAG, "onResponse: api method: " + _method + " on server responded with ".concat(msg));
             } catch (IOException e) {
                 e.printStackTrace();
-                EventBus.getDefault().post(new ErrorMessageEvent(String.valueOf(response.code())
+                EventBus.getDefault().post(new ErrorMessageEvent(String.valueOf(_response.code()).concat(" ").concat(_method).concat(" ")
                         .concat(" ").concat(GlobalObjects.getInstance().getApplicationContext()
                                 .getString(R.string.network_response_error))));
-                Log.e(LOG_TAG, "onResponse: Cannot load body of error message.", e.getCause());
+                Log.e(LOG_TAG, "onResponse: api method: " + _method + ". Cannot load body of error message.", e.getCause());
             }
             return true;
         }

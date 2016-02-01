@@ -76,11 +76,13 @@ public class SynchOverview extends AppCompatActivity {
 
     public void onEvent(ErrorMessageEvent _msg){
         Toast.makeText(this,_msg.getErrorMessage(), Toast.LENGTH_LONG);
+        mDebugView.setText(mDebugView.getText().toString().concat("\n  ").concat(_msg.getErrorMessage()));
         Log.e(LOG_TAG, "onEvent: " + _msg.getErrorMessage());
     }
 
     public void onEvent(TokenMessageEvent _msg){
         Toast.makeText(this,"Token: " + _msg.getmToken(), Toast.LENGTH_LONG);
+        mDebugView.setText(mDebugView.getText().toString().concat("\n  ").concat(_msg.getmToken()));
         Log.i(LOG_TAG, "onEvent: " + _msg.getmToken());
     }
 

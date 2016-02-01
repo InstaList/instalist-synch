@@ -18,7 +18,7 @@ public class GlobalObjects {
     /**
      * The Base URL of the API.
      */
-    public final static String API_ENDPOINT_URL = "http://instantlist.noorganization.org/v1/";
+    public final static String API_ENDPOINT_URL = "http://instalist.noorganization.org/v1/";
 
     /**
      * Instance of this class.
