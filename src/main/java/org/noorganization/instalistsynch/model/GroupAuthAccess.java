@@ -58,8 +58,8 @@ public class GroupAuthAccess {
             COLUMN.TOKEN + " TEXT NOT NULL, " +
             COLUMN.LAST_UPDATED + " TEXT NOT NULL, " +
             COLUMN.LAST_TOKEN_REQUEST + " TEXT NOT NULL," +
-            COLUMN.SYNCHRONIZE + " BOOLEAN NOT NULL," +
-            COLUMN.INTERRUPTED + " BOOLEAN NOT NULL," +
+            COLUMN.SYNCHRONIZE + " INTEGER NOT NULL," +
+            COLUMN.INTERRUPTED + " INTEGER NOT NULL," +
             "FOREIGN KEY (" + COLUMN.DEVICE_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
             GroupAuth.COLUMN.DEVICE_ID + ") ON UPDATE CASCADE ON DELETE CASCADE " +
             ")";

@@ -64,7 +64,7 @@ public class GroupAuth {
             COLUMN.DEVICE_ID + " TEXT PRIMARY KEY NOT NULL, " +
             COLUMN.SECRET + " TEXT NOT NULL," +
             COLUMN.DEVICE_NAME + " TEXT NOT NULL," +
-            COLUMN.IS_LOCAL + " REAL NOT NULL" +
+            COLUMN.IS_LOCAL + " INTEGER NOT NULL" +
             ")";
 
     /**
