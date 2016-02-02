@@ -77,6 +77,15 @@ public interface IGroupAuthAccessDbController {
     boolean update(GroupAuthAccess _groupAuthAccess);
 
     /**
+     * Updates the token in the database.
+     *
+     * @param _deviceId the deviceid to update
+     * @param _newToken the value of the new token.
+     * @return true if success else false.
+     */
+    boolean updateToken(String _deviceId, String _newToken);
+
+    /**
      * Operation that updates the last access date field to the current date.
      *
      * @param _groupAuthAccess the object to update in db.
@@ -85,10 +94,10 @@ public interface IGroupAuthAccessDbController {
      */
 
     /**
-     * Checks if the given elements id is already in the database.
-     * @param _groupAuthAccess the object to check for.
+     * Checks if the given elements device id is already in the database.
+     * @param _deviceId the object to check for.
      *
      * @return true if it is a new id, false the id already exists.
      */
-    boolean hasIdInDatabase(GroupAuthAccess _groupAuthAccess);
+    boolean hasIdInDatabase(String _deviceId);
 }

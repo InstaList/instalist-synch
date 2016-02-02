@@ -35,9 +35,9 @@ public class GroupMember {
     public static final String TABLE_NAME = "group_member";
 
     public static String DB_CREATE = "CREATE TABLE " + TABLE_NAME + "(" +
-            COLUMN.ID + " TEXT PRIMARY NOT NULL, " +
-            COLUMN.OWN_DEVICE_ID + " TEXT PRIMARY NOT NULL, " +
-            COLUMN.DEVICE_ID + " TEXT PRIMARY NOT NULL, " +
+            COLUMN.ID + " TEXT PRIMARY KEY NOT NULL, " +
+            COLUMN.OWN_DEVICE_ID + " TEXT NOT NULL, " +
+            COLUMN.DEVICE_ID + " TEXT NOT NULL, " +
             COLUMN.AUTHORIZED + " INTEGER NOT NULL, " +
             COLUMN.NAME + " TEXT NOT NULL, " +
             "FOREIGN KEY (" + COLUMN.OWN_DEVICE_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " ( " +

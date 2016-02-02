@@ -84,4 +84,10 @@
     <string name="network_response_error">Network response can not be read.</string>
     <string name="server_sent_not_unique_id_retry">Server has sent none unique id. Please try again!</string>
     <string name="error_response_not_parseable">The response can not be parsed.</string>
+    <string name="abc_local_group_exists">You can only have one local group.</string>
+    <string name="error_temporary_group_access">Temporary group access token cannot be fetched. Please retry!</string>
+    <string name="abc_temporary_access_token">Temporary access token:</string>
+    <string name="internal_db_error">There was an internal database error.</string>
+    <string name="error_devices_group">Cannot get devices of group.</string>
+    <string name="authorize">Authorize</string>
 </resources>

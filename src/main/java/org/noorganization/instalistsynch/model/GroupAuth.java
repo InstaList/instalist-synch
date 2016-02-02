@@ -118,4 +118,37 @@ public class GroupAuth {
     public void setIsOwner(boolean isOwner) {
         mIsLocal = isOwner;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GroupAuth)) return false;
+
+        GroupAuth groupAuth = (GroupAuth) o;
+
+        if (isLocal() != groupAuth.isLocal()) return false;
+        if (!getDeviceId().equals(groupAuth.getDeviceId())) return false;
+        if (!getSecret().equals(groupAuth.getSecret())) return false;
+        return getDeviceName().equals(groupAuth.getDeviceName());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getDeviceId().hashCode();
+        result = 31 * result + getSecret().hashCode();
+        result = 31 * result + getDeviceName().hashCode();
+        result = 31 * result + (isLocal() ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "GroupAuth{" +
+                "mDeviceId='" + mDeviceId + '\'' +
+                ", mSecret='" + mSecret + '\'' +
+                ", mDeviceName='" + mDeviceName + '\'' +
+                ", mIsLocal=" + mIsLocal +
+                '}';
+    }
 }

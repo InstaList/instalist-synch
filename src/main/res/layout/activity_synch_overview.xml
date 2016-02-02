@@ -49,8 +49,13 @@
 
     <Button
         android:id="@+id/request_button"
-        android:layout_width="wrap_content"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:text="Send request"
         />
+
+    <ExpandableListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/testListView"/>
 </LinearLayout>

@@ -31,6 +31,12 @@ public interface IGroupAuthDbController {
     int removeRegisteredGroup(GroupAuth _groupAuth);
 
     /**
+     * Checks if the user already has an group created on this device.
+     * @return true if there exists one, else false.
+     */
+    boolean hasOwnLocalGroup();
+
+    /**
      * Checks if the given id is unique.
      * @param _groupAuth the groupAuth object to counter check.
      * @return true if unique else false.

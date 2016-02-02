@@ -89,4 +89,13 @@ public class GroupAuthDbController implements IGroupAuthDbController {
         authCursor.close();
         return ret;
     }
+
+    @Override
+    public boolean hasOwnLocalGroup() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.IS_LOCAL + " = ?", new String[]{"1"}, null, null, null);
+        boolean ret = authCursor.getCount() >= 1;
+        authCursor.close();
+        return ret;
+    }
 }

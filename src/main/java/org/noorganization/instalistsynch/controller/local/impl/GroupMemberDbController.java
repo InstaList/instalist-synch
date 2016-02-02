@@ -132,7 +132,7 @@ public class GroupMemberDbController implements IGroupMemberDbController {
      */
     private boolean isMemberInGroup(GroupMember _groupMember) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.OWN_DEVICE_ID + "LIKE ? AND " + GroupMember.COLUMN.DEVICE_ID + "LIKE ?",
+        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.OWN_DEVICE_ID + " LIKE ? AND " + GroupMember.COLUMN.DEVICE_ID + " LIKE ?",
                 new String[]{_groupMember.getOwnDeviceId(), _groupMember.getDeviceId()}, null, null, null);
         boolean ret = cursor.getCount() == 0;
         cursor.close();

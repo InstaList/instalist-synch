@@ -8,10 +8,10 @@ import android.database.sqlite.SQLiteDatabase;
 import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
-import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,7 +47,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
     @Override
     public int insert(GroupAuthAccess _groupAuthAccess) {
-        if (hasIdInDatabase(_groupAuthAccess)) {
+        if (hasIdInDatabase(_groupAuthAccess.getDeviceId())) {
             return INSERTION_CODE.ELEMENT_EXISTS;
         }
 
@@ -119,7 +119,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
     @Override
     public boolean update(GroupAuthAccess _groupAuthAccess) {
-        if (!hasIdInDatabase(_groupAuthAccess))
+        if (!hasIdInDatabase(_groupAuthAccess.getDeviceId()))
             return false;
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues(4);
@@ -136,11 +136,36 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         return true;
     }
 
+
     @Override
-    public boolean hasIdInDatabase(GroupAuthAccess _groupAuthAccess) {
+    public boolean updateToken(String _deviceId, String _newToken) {
+        if (!hasIdInDatabase(_deviceId))
+            return false;
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        GroupAuthAccess groupAuthAccess = getGroupAuthAccess(_deviceId);
+        groupAuthAccess.setLastTokenRequest(new Date());
+        groupAuthAccess.setToken(_newToken);
+
+        ContentValues cv = new ContentValues(6);
+        cv.put(GroupAuthAccess.COLUMN.DEVICE_ID, groupAuthAccess.getDeviceId());
+        cv.put(GroupAuthAccess.COLUMN.TOKEN, groupAuthAccess.getToken());
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+        cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
+        cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, groupAuthAccess.isSynchronize());
+        cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, groupAuthAccess.wasInterrupted());
+
+        long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{groupAuthAccess.getDeviceId()});
+        if (updatedRows <= 0)
+            return false;
+        return true;
+    }
+
+    @Override
+    public boolean hasIdInDatabase(String _deviceId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_groupAuthAccess.getDeviceId()}, null, null, null);
-        boolean ret = authAccessCursor.getCount() == 0;
+        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_deviceId}, null, null, null);
+        boolean ret = authAccessCursor.getCount() == 1;
         authAccessCursor.close();
         return ret;
     }

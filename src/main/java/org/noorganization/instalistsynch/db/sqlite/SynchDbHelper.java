@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupMember;
 
 /**
  * Helper to access synch database.
@@ -24,6 +25,7 @@ public class SynchDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(GroupAuthAccess.DB_CREATE);
         db.execSQL(GroupAuth.DB_CREATE);
+        db.execSQL(GroupMember.DB_CREATE);
     }
 
     @Override

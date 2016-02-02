@@ -10,7 +10,9 @@ import org.noorganization.instalist.model.Tag;
 import org.noorganization.instalist.model.TaggedProduct;
 import org.noorganization.instalist.model.Unit;
 import org.noorganization.instalistsynch.model.Group;
+import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.network.response.CategoryResponse;
+import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
 import org.noorganization.instalistsynch.model.network.response.IngredientResponse;
 import org.noorganization.instalistsynch.model.network.response.ListEntryResponse;
 import org.noorganization.instalistsynch.model.network.response.ProductResponse;
@@ -70,6 +72,45 @@ public interface IInstantListApiService {
      */
     @GET("user/token")
     Call<RetrofitAuthToken> token(@Header("Authorization") String _authorization);
+
+    //endregion
+
+    //region Group
+
+    /**
+     * Get all devices in the current group where the token is currently assigned.
+     * @param _token the auth token.
+     * @return a List of associated GroupMembers.
+     */
+    @GET("user/group/devices")
+    Call<List<GroupMemberRetrofit>> getDevicesOfGroup(@Query("token") String _token);
+
+    /**
+     * Updates the given groupmember.
+     * @param _token the auth token.
+     * @param _groupMember  the groupmember to be updated.
+     * @return nothing.
+     */
+    @PUT("user/group/devices")
+    Call<Void> updateDeviceOfGroup(@Query("token") String _token, @Body GroupMember _groupMember);
+
+
+    /**
+     * Deletes the given groupmembers by their ids.
+     * @param _token the auth token.
+     * @param _groupMemberIds  the ids of the groupmembers.
+     * @return nothing.
+     */
+    @DELETE("user/group/devices")
+    Call<Void> updateDeviceOfGroup(@Query("token") String _token, @Body List<String> _groupMemberIds);
+
+    /**
+     * Get the temporary access key to a group.
+     * @param _token the auth token.
+     * @return the access token to the group.
+     */
+    @GET("user/group/access_key")
+    Call<RetrofitGroupAccessToken> getGroupAccessKey(@Query("token") String _token);
 
     //endregion
 

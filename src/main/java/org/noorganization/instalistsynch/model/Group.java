@@ -12,10 +12,11 @@ public class Group {
      * The group that holds the temporary group id.
      * @param _groupId the temporary group id.
      * @param _secret the generated secret.
+     * @param _name the name of the device.
      */
-    public Group(String _groupId, String _secret) {
+    public Group(String _groupId, String _secret, String _name) {
         this.groupid = _groupId;
         this.secret = _secret;
-        this.name = "Some Placeholder";
+        this.name = _name;
     }
 }

@@ -53,9 +53,9 @@ public class NetworkUtils {
                                 .getString(R.string.network_response_error))));
                 Log.e(LOG_TAG, "onResponse: api method: " + _method + ". Cannot load body of error message.", e.getCause());
             }
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
 }
