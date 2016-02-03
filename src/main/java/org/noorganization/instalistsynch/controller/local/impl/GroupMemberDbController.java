@@ -80,21 +80,21 @@ public class GroupMemberDbController implements IGroupMemberDbController {
         cv.put(GroupMember.COLUMN.NAME, _groupMember.getName());
         cv.put(GroupMember.COLUMN.AUTHORIZED, _groupMember.isAuthorized());
 
-        int affectedRows = db.update(GroupMember.TABLE_NAME, cv, GroupMember.COLUMN.ID + " LIKE ?", new String[]{_groupMember.getUUID()});
+        int affectedRows = db.update(GroupMember.TABLE_NAME, cv, GroupMember.COLUMN.ID + " LIKE ? ", new String[]{_groupMember.getUUID()});
         return affectedRows > 0;
     }
 
     @Override
     public boolean delete(String _uuid) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        int rowsDeleted = db.delete(GroupMember.TABLE_NAME, GroupMember.COLUMN.ID + " LIKE ?", new String[]{_uuid});
+        int rowsDeleted = db.delete(GroupMember.TABLE_NAME, GroupMember.COLUMN.ID + " LIKE ? ", new String[]{_uuid});
         return rowsDeleted > 0;
     }
 
     @Override
     public GroupMember getById(String _uuid) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.ID + "LIKE ?",
+        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.ID + "LIKE ? ",
                 new String[]{_uuid}, null, null, null);
 
         if (cursor.getCount() == 0)

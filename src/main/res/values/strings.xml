@@ -90,4 +90,12 @@
     <string name="internal_db_error">There was an internal database error.</string>
     <string name="error_devices_group">Cannot get devices of group.</string>
     <string name="authorize">Authorize</string>
+    <string name="abc_request_group_access_token">Access Token</string>
+    <string name="hint_tmp_group_id">Group to join (ID)</string>
+    <string name="abc_join_group">Join Group</string>
+    <string name="abc_create_group">Create Group</string>
+    <string name="hint_device_name">Name of device in group</string>
+    <string name="error_auth_token">AuthToken error</string>
+    <string name="error_update_device_in_group">Update of device in group failed!</string>
+    <string name="abc_remove">Remove</string>
 </resources>

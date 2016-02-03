@@ -11,7 +11,10 @@ import org.noorganization.instalistsynch.controller.local.impl.LocalControllerFa
 import org.noorganization.instalistsynch.controller.network.IGroupManager;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
+import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
+import org.noorganization.instalistsynch.events.GroupMemberDeleted;
 import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
+import org.noorganization.instalistsynch.events.GroupUpdatedMessageEvent;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.model.Group;
 import org.noorganization.instalistsynch.model.GroupAuth;
@@ -124,13 +127,65 @@ public class V1GroupManager implements IGroupManager {
     }
 
     @Override
-    public void deleteGroupMember(GroupMember _groupMember) {
+    public void deleteGroupMember(GroupMember _groupMember, String _token) {
+        List<Integer> listElements = new ArrayList(1);
+        listElements.add(Integer.valueOf(_groupMember.getDeviceId()));
 
+        Call<Void> groupDeleteMember = GlobalObjects.getInstance().getInstantListApiService().deleteDevicesOfGroup(_token, listElements);
+        groupDeleteMember.enqueue(new DeleteGroupMemberCallback());
+    }
+
+    private class DeleteGroupMemberCallback implements Callback<Void> {
+        @Override
+        public void onResponse(Response<Void> response) {
+            if (!NetworkUtils.isSuccessful(response, "/user/group/devices"))
+                return;
+            //LocalControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
+            EventBus.getDefault().post(new GroupMemberDeleted());
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            EventBus.getDefault().post(new ErrorMessageEvent(t.getMessage()));
+            Log.e(LOG_TAG, "onFailure: ", t.getCause());
+        }
     }
 
     @Override
-    public void approveGroupMember(GroupMember _groupMember) {
+    public void authorizeGroupMember(GroupMember _groupMember, String _token) {
+        GroupMemberRetrofit member = new GroupMemberRetrofit();
+        member.authorized = true;
+        member.id = Integer.valueOf(_groupMember.getDeviceId());
+        member.name = _groupMember.getName();
+        List<GroupMemberRetrofit> listElements = new ArrayList(1);
+        listElements.add(member);
+        Call<Void> groupMemberRetrofitCall = GlobalObjects.getInstance().getInstantListApiService().updateDeviceOfGroup(_token, listElements);
+        groupMemberRetrofitCall.enqueue(new UpdateDeviceOfGroup(_groupMember));
+    }
 
+    private class UpdateDeviceOfGroup implements Callback<Void> {
+
+        private GroupMember mGroupMember;
+
+        public UpdateDeviceOfGroup(GroupMember groupMember) {
+            mGroupMember = groupMember;
+        }
+
+        @Override
+        public void onResponse(Response<Void> response) {
+            if (!NetworkUtils.isSuccessful(response, "/user/group/devices"))
+                return;
+            //LocalControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
+            EventBus.getDefault().post(new GroupUpdatedMessageEvent(mGroupMember));
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            EventBus.getDefault().post(new ErrorMessageEvent(GlobalObjects.getInstance()
+                    .getApplicationContext().getString(R.string.error_update_device_in_group)
+                    .concat(t.getMessage())));
+            Log.e(LOG_TAG, "onFailure: ", t.getCause());
+        }
     }
 
     /**
@@ -206,7 +261,7 @@ public class V1GroupManager implements IGroupManager {
             }
             authDbController.insertRegisteredGroup(groupAuth);
             groupMemberDbController.insert(new GroupMember(null, groupAuth.getDeviceId(), groupAuth.getDeviceId(), groupAuth.getDeviceName(), mIsLocal));
-            // EventBus.getDefault().post(new NewGroupAuthMessage(groupAuth));
+            EventBus.getDefault().post(new GroupJoinedMessageEvent(true));
             requestAuthToken(groupAuth);
         }
 
@@ -277,7 +332,7 @@ public class V1GroupManager implements IGroupManager {
         @Override
         public void onFailure(Throwable t) {
             EventBus.getDefault().post(new ErrorMessageEvent(GlobalObjects.getInstance()
-                    .getApplicationContext().getString(R.string.error_join).concat(t.getMessage())));
+                    .getApplicationContext().getString(R.string.error_auth_token).concat(t.getMessage())));
             Log.e(LOG_TAG, "onFailure: ", t.getCause());
         }
     }
@@ -313,7 +368,7 @@ public class V1GroupManager implements IGroupManager {
 
             List<GroupMember> groupMemberList = new ArrayList<>(response.body().size());
             for (GroupMemberRetrofit groupMemberRetrofit : response.body()) {
-                groupMemberList.add(new GroupMember(null, groupMemberRetrofit.id, null, groupMemberRetrofit.name, groupMemberRetrofit.authorized));
+                groupMemberList.add(new GroupMember(null, String.valueOf(groupMemberRetrofit.id), null, groupMemberRetrofit.name, groupMemberRetrofit.authorized));
             }
 
             GroupMemberListMessageEvent msg = new GroupMemberListMessageEvent(groupMemberList, groupMemberList.get(0).getDeviceId());

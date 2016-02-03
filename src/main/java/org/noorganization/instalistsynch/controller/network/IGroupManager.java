@@ -22,6 +22,8 @@ public interface IGroupManager {
     /**
      * Join a given group.
      * @param _tmpGroupId the temporary generated group access id.
+     * @param _deviceName the device name.
+     * @param _isLocal indicates if this is a local group or an remote one.
      */
     void joinGroup(String _tmpGroupId,  String _deviceName, boolean _isLocal);
 
@@ -60,12 +62,14 @@ public interface IGroupManager {
     /**
      * deletes the given groupmember from the server.
      * @param _groupMember the member to be deleted.
+     * @param _token
      */
-    void deleteGroupMember(GroupMember _groupMember);
+    void deleteGroupMember(GroupMember _groupMember, String _token);
 
     /**
      * approve the given groupmember.
      * @param _groupMember the groupmember to approve to the list.
+     * @param _token
      */
-    void approveGroupMember(GroupMember _groupMember);
+    void authorizeGroupMember(GroupMember _groupMember, String _token);
 }

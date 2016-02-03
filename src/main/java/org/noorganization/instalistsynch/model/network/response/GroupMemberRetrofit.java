@@ -6,7 +6,7 @@ package org.noorganization.instalistsynch.model.network.response;
  */
 public class GroupMemberRetrofit {
     // todo probably int?
-    public String id;
+    public int id;
     public String name;
     public boolean authorized;
 }

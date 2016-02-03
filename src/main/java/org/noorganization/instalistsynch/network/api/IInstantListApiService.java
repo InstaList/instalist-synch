@@ -32,6 +32,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -88,11 +89,11 @@ public interface IInstantListApiService {
     /**
      * Updates the given groupmember.
      * @param _token the auth token.
-     * @param _groupMember  the groupmember to be updated.
+     * @param _groupMembers  the groupmember list to be updated.
      * @return nothing.
      */
     @PUT("user/group/devices")
-    Call<Void> updateDeviceOfGroup(@Query("token") String _token, @Body GroupMember _groupMember);
+    Call<Void> updateDeviceOfGroup(@Query("token") String _token, @Body List<GroupMemberRetrofit> _groupMembers);
 
 
     /**
@@ -101,8 +102,8 @@ public interface IInstantListApiService {
      * @param _groupMemberIds  the ids of the groupmembers.
      * @return nothing.
      */
-    @DELETE("user/group/devices")
-    Call<Void> updateDeviceOfGroup(@Query("token") String _token, @Body List<String> _groupMemberIds);
+    @HTTP(method = "DELETE", path = "user/group/devices/", hasBody = true)
+    Call<Void> deleteDevicesOfGroup(@Query("token") String _token, @Body List<Integer> _groupMemberIds);
 
     /**
      * Get the temporary access key to a group.

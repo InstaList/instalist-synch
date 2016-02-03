@@ -31,6 +31,7 @@ public class GroupExpandableListAdapter extends BaseExpandableListAdapter {
         mLayoutInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
+
     @Override
     public int getGroupCount() {
         return mGroupExpandableListSparseArray.size();
@@ -70,7 +71,7 @@ public class GroupExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         GroupAuthAccess groupAuthAccess = (GroupAuthAccess) getGroup(groupPosition);
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, null);
+            convertView = mLayoutInflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
         }
         TextView text = (TextView) convertView.findViewById(android.R.id.text1);
         text.setText(groupAuthAccess.getDeviceId());
@@ -90,6 +91,6 @@ public class GroupExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-        return false;
+        return true;
     }
 }
