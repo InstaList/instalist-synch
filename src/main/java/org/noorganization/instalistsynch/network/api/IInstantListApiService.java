@@ -102,8 +102,8 @@ public interface IInstantListApiService {
      * @param _groupMemberIds  the ids of the groupmembers.
      * @return nothing.
      */
-    @HTTP(method = "DELETE", path = "user/group/devices/", hasBody = true)
-    Call<Void> deleteDevicesOfGroup(@Query("token") String _token, @Body List<Integer> _groupMemberIds);
+    @DELETE("user/group/devices/")
+    Call<Void> deleteDevicesOfGroup(@Query("token") String _token, @Query("deviceid") int _deviceId);
 
     /**
      * Get the temporary access key to a group.

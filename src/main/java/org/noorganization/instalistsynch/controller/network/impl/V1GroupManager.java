@@ -131,7 +131,7 @@ public class V1GroupManager implements IGroupManager {
         List<Integer> listElements = new ArrayList(1);
         listElements.add(Integer.valueOf(_groupMember.getDeviceId()));
 
-        Call<Void> groupDeleteMember = GlobalObjects.getInstance().getInstantListApiService().deleteDevicesOfGroup(_token, listElements);
+        Call<Void> groupDeleteMember = GlobalObjects.getInstance().getInstantListApiService().deleteDevicesOfGroup(_token, Integer.valueOf(_groupMember.getDeviceId()));
         groupDeleteMember.enqueue(new DeleteGroupMemberCallback());
     }
 
