@@ -99,10 +99,10 @@ public interface IInstantListApiService {
     /**
      * Deletes the given groupmembers by their ids.
      * @param _token the auth token.
-     * @param _groupMemberIds  the ids of the groupmembers.
+     * @param _deviceId  the ids of the groupmembers.
      * @return nothing.
      */
-    @DELETE("user/group/devices/")
+    @DELETE("user/group/devices")
     Call<Void> deleteDevicesOfGroup(@Query("token") String _token, @Query("deviceid") int _deviceId);
 
     /**
