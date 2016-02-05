@@ -7,7 +7,7 @@ import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalControllerFactory;
+import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.IGroupManager;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
@@ -74,7 +74,7 @@ public class V1GroupManager implements IGroupManager {
 
     @Override
     public void createGroup(String _deviceName) {
-        if (LocalControllerFactory.getDefaultAuthController(mContext).hasOwnLocalGroup()) {
+        if (LocalSqliteDbControllerFactory.getAuthDbController(mContext).hasOwnLocalGroup()) {
             EventBus.getDefault().post(new ErrorMessageEvent(mContext.getString(R.string.abc_local_group_exists)));
             return;
         }
@@ -140,7 +140,7 @@ public class V1GroupManager implements IGroupManager {
         public void onResponse(Response<Void> response) {
             if (!NetworkUtils.isSuccessful(response, "/user/group/devices"))
                 return;
-            //LocalControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
+            //LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
             EventBus.getDefault().post(new GroupMemberDeleted());
         }
 
@@ -175,7 +175,7 @@ public class V1GroupManager implements IGroupManager {
         public void onResponse(Response<Void> response) {
             if (!NetworkUtils.isSuccessful(response, "/user/group/devices"))
                 return;
-            //LocalControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
+            //LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext).update(mGroupMember);
             EventBus.getDefault().post(new GroupUpdatedMessageEvent(mGroupMember));
         }
 
@@ -248,9 +248,9 @@ public class V1GroupManager implements IGroupManager {
             // insert groupAuth to db
             GroupAuth groupAuth = new GroupAuth(deviceId, mSecret, mDeviceName, mIsLocal);
             // possible security breach!
-            IGroupAuthDbController authDbController = LocalControllerFactory
-                    .getDefaultAuthController(mContext);
-            IGroupMemberDbController groupMemberDbController = LocalControllerFactory.getGroupMemberDbController(mContext);
+            IGroupAuthDbController authDbController = LocalSqliteDbControllerFactory
+                    .getAuthDbController(mContext);
+            IGroupMemberDbController groupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
 
             if (!authDbController.hasUniqueId(groupAuth)) {
                 // retry at this place
@@ -296,8 +296,8 @@ public class V1GroupManager implements IGroupManager {
                         .getApplicationContext().getString(R.string.error_response_not_parseable)));
                 return;
             }
-            IGroupAuthAccessDbController authAccessDbController = LocalControllerFactory
-                    .getSqliteAuthAccessController(mContext);
+            IGroupAuthAccessDbController authAccessDbController = LocalSqliteDbControllerFactory
+                    .getAuthAccessDbController(mContext);
 
             boolean insertionSuccess = false;
             if (authAccessDbController.hasIdInDatabase(mGroupAuth.getDeviceId())) {

@@ -10,7 +10,7 @@ import org.noorganization.instalistsynch.controller.local.IGroupMemberDbControll
  * Get all controllers related to the synching process.
  * Created by tinos_000 on 29.01.2016.
  */
-public class LocalControllerFactory {
+public class LocalSqliteDbControllerFactory {
 
     /**
      * Get the instance of the default {@link IGroupAuthDbController} implementation {@link GroupAuthDbController}.
@@ -18,7 +18,7 @@ public class LocalControllerFactory {
      * @param _context the context of the app.
      * @return the default GroupAuthController.
      */
-    public static IGroupAuthDbController getDefaultAuthController(Context _context) {
+    public static IGroupAuthDbController getAuthDbController(Context _context) {
         return GroupAuthDbController.getInstance(_context);
     }
 
@@ -28,7 +28,7 @@ public class LocalControllerFactory {
      * @param _context the context of the app.
      * @return the sqlite DbAuthAccessDbController.
      */
-    public static IGroupAuthAccessDbController getSqliteAuthAccessController(Context _context) {
+    public static IGroupAuthAccessDbController getAuthAccessDbController(Context _context) {
         return SqliteGroupAuthAccessDbController.getInstance(_context);
     }
 

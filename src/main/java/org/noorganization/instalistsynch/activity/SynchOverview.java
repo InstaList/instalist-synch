@@ -21,7 +21,7 @@ import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.adapter.GroupExpandableListAdapter;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalControllerFactory;
+import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.IGroupManager;
 import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
 import org.noorganization.instalistsynch.controller.network.impl.V1GroupManager;
@@ -186,7 +186,7 @@ public class SynchOverview extends AppCompatActivity {
 
         //populateListAdapter();
 
-        IGroupAuthDbController groupAuthDbController = LocalControllerFactory.getDefaultAuthController(mContext);
+        IGroupAuthDbController groupAuthDbController = LocalSqliteDbControllerFactory.getAuthDbController(mContext);
         IGroupManager groupManager = NetworkControllerFactory.getGroupManager();
 
         List<GroupAuth> groupAuthList = groupAuthDbController.getRegisteredGroups();
@@ -198,7 +198,7 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void populateExpandableListView() {
-        IGroupAuthAccessDbController authAccessDbController = LocalControllerFactory.getSqliteAuthAccessController(mContext);
+        IGroupAuthAccessDbController authAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
         mGroupExpandableLists = new ArrayList<>();
         List<GroupAuthAccess> groupAuthAccessList = authAccessDbController.getGroupAuthAccesses();
         for (GroupAuthAccess groupAuthAccess : groupAuthAccessList) {
@@ -208,7 +208,7 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void populateListAdapter() {
-        List<GroupAuth> groupAuthList = LocalControllerFactory.getDefaultAuthController(this).getRegisteredGroups();
+        List<GroupAuth> groupAuthList = LocalSqliteDbControllerFactory.getAuthDbController(this).getRegisteredGroups();
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, groupAuthList);
         //  mListView.setAdapter(mAdapter);
     }
@@ -242,7 +242,7 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void onEvent(GroupUpdatedMessageEvent _msg) {
-        IGroupAuthAccessDbController accessDbController = LocalControllerFactory.getSqliteAuthAccessController(mContext);
+        IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
         for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
             NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());
@@ -260,7 +260,7 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void onEvent(GroupMemberDeleted _msg) {
-        IGroupAuthAccessDbController accessDbController = LocalControllerFactory.getSqliteAuthAccessController(mContext);
+        IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
         for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
             NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());
@@ -278,7 +278,7 @@ public class SynchOverview extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case 0:
-                IGroupAuthAccessDbController accessDbController = LocalControllerFactory.getSqliteAuthAccessController(mContext);
+                IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
                 for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
                     NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());

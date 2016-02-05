@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalControllerFactory;
+import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.ISynchController;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
@@ -38,8 +38,8 @@ public class DefaultSynchController implements ISynchController {
 
     private DefaultSynchController() {
         mContext = GlobalObjects.getInstance().getApplicationContext();
-        mGroupAuthAccessDbController = LocalControllerFactory
-                .getSqliteAuthAccessController(mContext);
+        mGroupAuthAccessDbController = LocalSqliteDbControllerFactory
+                .getAuthAccessDbController(mContext);
     }
 
     @Override
