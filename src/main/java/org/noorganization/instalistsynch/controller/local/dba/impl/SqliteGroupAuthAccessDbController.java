@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba.impl;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.codehaus.jackson.map.util.ISO8601Utils;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 
@@ -47,13 +47,13 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
     @Override
     public int insert(GroupAuthAccess _groupAuthAccess) {
-        if (hasIdInDatabase(_groupAuthAccess.getDeviceId())) {
+        if (hasIdInDatabase(_groupAuthAccess.getGroupId())) {
             return INSERTION_CODE.ELEMENT_EXISTS;
         }
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues(4);
-        cv.put(GroupAuthAccess.COLUMN.DEVICE_ID, _groupAuthAccess.getDeviceId());
+        cv.put(GroupAuthAccess.COLUMN.GROUP_ID, _groupAuthAccess.getGroupId());
         cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAuthAccess.getLastTokenRequest()));
@@ -68,9 +68,9 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
     }
 
     @Override
-    public GroupAuthAccess getGroupAuthAccess(String _deviceId) {
+    public GroupAuthAccess getGroupAuthAccess(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_deviceId}, null, null, null);
+        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)}, null, null, null);
         // check if there is an element.
         List<GroupAuthAccess> groupAuthAccessList = getList(authAccessCursor);
         authAccessCursor.close();
@@ -108,7 +108,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME,
                 GroupAuthAccess.COLUMN.ALL_COLUMNS,
-                GroupAuthAccess.COLUMN.SYNCHRONIZE + "=?",
+                GroupAuthAccess.COLUMN.SYNCHRONIZE + "= ? ",
                 new String[]{String.valueOf(_synchronize ? 1 : 0)},
                 null, null, null);
         List<GroupAuthAccess> groupAuthAccessList = getList(authAccessCursor);
@@ -119,18 +119,18 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
     @Override
     public boolean update(GroupAuthAccess _groupAuthAccess) {
-        if (!hasIdInDatabase(_groupAuthAccess.getDeviceId()))
+        if (!hasIdInDatabase(_groupAuthAccess.getGroupId()))
             return false;
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues(4);
-        cv.put(GroupAuthAccess.COLUMN.DEVICE_ID, _groupAuthAccess.getDeviceId());
+        cv.put(GroupAuthAccess.COLUMN.GROUP_ID, _groupAuthAccess.getGroupId());
         cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAuthAccess.getLastTokenRequest()));
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, _groupAuthAccess.isSynchronize());
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, _groupAuthAccess.wasInterrupted());
 
-        long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_groupAuthAccess.getDeviceId()});
+        long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupAuthAccess.getGroupId())});
         if (updatedRows <= 0)
             return false;
         return true;
@@ -138,33 +138,31 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
 
 
     @Override
-    public boolean updateToken(String _deviceId, String _newToken) {
-        if (!hasIdInDatabase(_deviceId))
+    public boolean updateToken(int _groupId, String _newToken) {
+        if (!hasIdInDatabase(_groupId))
             return false;
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        GroupAuthAccess groupAuthAccess = getGroupAuthAccess(_deviceId);
+        GroupAuthAccess groupAuthAccess = getGroupAuthAccess(_groupId);
         groupAuthAccess.setLastTokenRequest(new Date());
         groupAuthAccess.setToken(_newToken);
 
         ContentValues cv = new ContentValues(6);
-        cv.put(GroupAuthAccess.COLUMN.DEVICE_ID, groupAuthAccess.getDeviceId());
+        cv.put(GroupAuthAccess.COLUMN.GROUP_ID, groupAuthAccess.getGroupId());
         cv.put(GroupAuthAccess.COLUMN.TOKEN, groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, groupAuthAccess.isSynchronize());
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, groupAuthAccess.wasInterrupted());
 
-        long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{groupAuthAccess.getDeviceId()});
-        if (updatedRows <= 0)
-            return false;
-        return true;
+        long updatedRows = db.update(GroupAuthAccess.TABLE_NAME, cv, GroupAuthAccess.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)});
+        return updatedRows > 0;
     }
 
     @Override
-    public boolean hasIdInDatabase(String _deviceId) {
+    public boolean hasIdInDatabase(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_deviceId}, null, null, null);
+        Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, GroupAuthAccess.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)}, null, null, null);
         boolean ret = authAccessCursor.getCount() == 1;
         authAccessCursor.close();
         return ret;
@@ -185,14 +183,14 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         }
 
         do {
-            String deviceId = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.DEVICE_ID));
+            int groupId = _cursor.getInt(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.GROUP_ID));
             String token = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.TOKEN));
             String lastUpdated = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATED));
             String lastTokenRequest = _cursor.getString(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST));
             boolean interrupted = _cursor.getInt(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.INTERRUPTED)) == 1;
             boolean synchronize = _cursor.getInt(_cursor.getColumnIndex(GroupAuthAccess.COLUMN.SYNCHRONIZE)) == 1;
 
-            GroupAuthAccess groupAuthAccess = new GroupAuthAccess(deviceId, token);
+            GroupAuthAccess groupAuthAccess = new GroupAuthAccess(groupId, token);
             groupAuthAccess.setLastTokenRequest(ISO8601Utils.parse(lastTokenRequest));
             groupAuthAccess.setLastUpdated(ISO8601Utils.parse(lastUpdated));
             groupAuthAccess.setInterrupted(interrupted);

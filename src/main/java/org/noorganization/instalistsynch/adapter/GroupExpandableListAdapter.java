@@ -74,7 +74,7 @@ public class GroupExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = mLayoutInflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
         }
         TextView text = (TextView) convertView.findViewById(android.R.id.text1);
-        text.setText(groupAuthAccess.getDeviceId());
+        text.setText(groupAuthAccess.getGroupId());
         return convertView;
     }
 
@@ -85,7 +85,7 @@ public class GroupExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, null);
         }
         TextView text = (TextView) convertView.findViewById(android.R.id.text1);
-        text.setText(groupMember.getName().concat(" ").concat(groupMember.isAuthorized() ? " authorized" : " not authorized"));
+        text.setText(groupMember.getName().concat(" ").concat(groupMember.getAccessRights() ? " authorized" : " not authorized"));
         return convertView;
     }
 

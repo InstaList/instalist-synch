@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
@@ -41,10 +41,10 @@ public interface IGroupAuthAccessDbController {
     /**
      * Get the {@link GroupAuthAccess} object with the given id.
      *
-     * @param _deviceId the device id.
+     * @param _groupId the device id.
      * @return the {@link GroupAuthAccess} object associated with the id, or null if there is none with this id.
      */
-    GroupAuthAccess getGroupAuthAccess(String _deviceId);
+    GroupAuthAccess getGroupAuthAccess(int _groupId);
 
     /**
      * Get all {@link GroupAuthAccess} objects.
@@ -62,7 +62,7 @@ public interface IGroupAuthAccessDbController {
     List<GroupAuthAccess> getGroupAuthAccesses(boolean _synchronize);
 
     /**
-     * Get {@link GroupAuthAccess} objects since a given time.
+     * Get {@link GroupAuthAccess} objects since a given time they were updated.
      *
      * @param _sinceTime all objects since this time in ISO8601 format.
      * @return all saved access data.
@@ -79,11 +79,11 @@ public interface IGroupAuthAccessDbController {
     /**
      * Updates the token in the database.
      *
-     * @param _deviceId the deviceid to update
+     * @param _groupId the deviceid to update
      * @param _newToken the value of the new token.
      * @return true if success else false.
      */
-    boolean updateToken(String _deviceId, String _newToken);
+    boolean updateToken(int _groupId, String _newToken);
 
     /**
      * Operation that updates the last access date field to the current date.
@@ -99,5 +99,5 @@ public interface IGroupAuthAccessDbController {
      *
      * @return true if it is a new id, false the id already exists.
      */
-    boolean hasIdInDatabase(String _deviceId);
+    boolean hasIdInDatabase(int _deviceId);
 }

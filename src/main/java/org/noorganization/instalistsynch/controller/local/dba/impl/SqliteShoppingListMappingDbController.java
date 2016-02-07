@@ -1,11 +1,11 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba.impl;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.codehaus.jackson.map.util.ISO8601Utils;
-import org.noorganization.instalistsynch.controller.local.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
@@ -71,7 +71,7 @@ public class SqliteShoppingListMappingDbController implements IModelMappingDbCon
         cv.put(ModelMapping.COLUMN.LAST_CLIENT_CHANGE, ISO8601Utils.format(_element.getLastClientChange()));
         cv.put(ModelMapping.COLUMN.LAST_SERVER_CHANGE, ISO8601Utils.format(_element.getLastServerChanged()));
 
-        long updatedRows = db.update(mTableName, cv, GroupAuthAccess.COLUMN.DEVICE_ID + " LIKE ?", new String[]{_element.getUUID()});
+        long updatedRows = db.update(mTableName, cv, GroupAuthAccess.COLUMN.GROUP_ID + " LIKE ?", new String[]{_element.getUUID()});
         if (updatedRows <= 0)
             return false;
         return true;

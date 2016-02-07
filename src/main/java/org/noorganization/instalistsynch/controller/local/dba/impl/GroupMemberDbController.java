@@ -1,13 +1,13 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba.impl;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.noorganization.instalist.utils.SQLiteUtils;
-import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
+import org.noorganization.instalistsynch.model.AccessRight;
 import org.noorganization.instalistsynch.model.GroupMember;
 
 import java.util.ArrayList;
@@ -47,20 +47,20 @@ public class GroupMemberDbController implements IGroupMemberDbController {
 
     @Override
     public GroupMember insert(GroupMember _groupMember) {
+        if(_groupMember.hasNullFields())
+            return null;
         if (isMemberInGroup(_groupMember))
             return null;
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        String uuid = SQLiteUtils.generateId(db, GroupMember.TABLE_NAME).toString();
+
+        AccessRight accessRights = _groupMember.getAccessRights();
 
         ContentValues cv = new ContentValues();
-        cv.put(GroupMember.COLUMN.ID, uuid);
+        cv.put(GroupMember.COLUMN.GROUP_ID, _groupMember.getGroupId());
         cv.put(GroupMember.COLUMN.DEVICE_ID, _groupMember.getDeviceId());
-        cv.put(GroupMember.COLUMN.OWN_DEVICE_ID, _groupMember.getOwnDeviceId());
         cv.put(GroupMember.COLUMN.NAME, _groupMember.getName());
-        cv.put(GroupMember.COLUMN.AUTHORIZED, _groupMember.isAuthorized());
-
-        _groupMember.setUUID(uuid);
+        cv.put(GroupMember.COLUMN.AUTHORIZED, accessRights.hasReadRight() && accessRights.hasWriteRight() ? 1 : 0);
         long insertedRow = db.insert(GroupMember.TABLE_NAME, null, cv);
         return insertedRow >= 0L ? _groupMember : null;
     }
@@ -68,34 +68,39 @@ public class GroupMemberDbController implements IGroupMemberDbController {
 
     @Override
     public boolean update(GroupMember _groupMember) {
-        if (getById(_groupMember.getUUID()) == null)
+        if(_groupMember.hasNullFields())
+            return false;
+        if (getById(_groupMember.getGroupId(), _groupMember.getDeviceId()) == null)
             return false;
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        AccessRight accessRights = _groupMember.getAccessRights();
 
         ContentValues cv = new ContentValues();
-        cv.put(GroupMember.COLUMN.ID, _groupMember.getUUID());
+        cv.put(GroupMember.COLUMN.GROUP_ID, _groupMember.getGroupId());
         cv.put(GroupMember.COLUMN.DEVICE_ID, _groupMember.getDeviceId());
-        cv.put(GroupMember.COLUMN.OWN_DEVICE_ID, _groupMember.getOwnDeviceId());
         cv.put(GroupMember.COLUMN.NAME, _groupMember.getName());
-        cv.put(GroupMember.COLUMN.AUTHORIZED, _groupMember.isAuthorized());
+        cv.put(GroupMember.COLUMN.AUTHORIZED, accessRights.hasReadRight() && accessRights.hasWriteRight() ? 1 : 0);
 
-        int affectedRows = db.update(GroupMember.TABLE_NAME, cv, GroupMember.COLUMN.ID + " LIKE ? ", new String[]{_groupMember.getUUID()});
+        int affectedRows = db.update(GroupMember.TABLE_NAME, cv,
+                GroupMember.COLUMN.GROUP_ID + " = ? AND " + GroupMember.COLUMN.DEVICE_ID + " = ? ",
+                new String[]{String.valueOf(_groupMember.getGroupId()), String.valueOf(_groupMember.getDeviceId())});
         return affectedRows > 0;
     }
 
     @Override
-    public boolean delete(String _uuid) {
+    public boolean delete(int _groupId, int _deviceId) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        int rowsDeleted = db.delete(GroupMember.TABLE_NAME, GroupMember.COLUMN.ID + " LIKE ? ", new String[]{_uuid});
+        int rowsDeleted = db.delete(GroupMember.TABLE_NAME, GroupMember.COLUMN.GROUP_ID + " = ? AND " + GroupMember.COLUMN.DEVICE_ID + " = ? ",
+                new String[]{String.valueOf(_groupId), String.valueOf(_deviceId)});
         return rowsDeleted > 0;
     }
 
     @Override
-    public GroupMember getById(String _uuid) {
+    public GroupMember getById(int _groupId, int _deviceId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.ID + "LIKE ? ",
-                new String[]{_uuid}, null, null, null);
+        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.GROUP_ID + " = ? AND " + GroupMember.COLUMN.DEVICE_ID + " = ? ",
+                new String[]{String.valueOf(_groupId), String.valueOf(_deviceId)}, null, null, null);
 
         if (cursor.getCount() == 0)
             return null;
@@ -107,10 +112,10 @@ public class GroupMemberDbController implements IGroupMemberDbController {
     }
 
     @Override
-    public List<GroupMember> getByOwnerId(String _ownId) {
+    public List<GroupMember> getByGroup(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.OWN_DEVICE_ID + "LIKE ?",
-                new String[]{_ownId}, null, null, null);
+        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.GROUP_ID + "= ?",
+                new String[]{String.valueOf(_groupId)}, null, null, null);
         List<GroupMember> groupMemberList = new ArrayList<>();
         if (cursor.getCount() == 0)
             return null;
@@ -132,8 +137,8 @@ public class GroupMemberDbController implements IGroupMemberDbController {
      */
     private boolean isMemberInGroup(GroupMember _groupMember) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.OWN_DEVICE_ID + " LIKE ? AND " + GroupMember.COLUMN.DEVICE_ID + " LIKE ?",
-                new String[]{_groupMember.getOwnDeviceId(), _groupMember.getDeviceId()}, null, null, null);
+        Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.GROUP_ID + " = ? AND " + GroupMember.COLUMN.DEVICE_ID + " = ? ",
+                new String[]{String.valueOf(_groupMember.getGroupId()), String.valueOf(_groupMember.getDeviceId())}, null, null, null);
         boolean ret = cursor.getCount() == 0;
         cursor.close();
         return ret;
@@ -148,11 +153,14 @@ public class GroupMemberDbController implements IGroupMemberDbController {
     private GroupMember getGroupMemberModel(Cursor _cursor) {
         GroupMember groupMember = new GroupMember();
 
-        groupMember.setUUID(_cursor.getString(_cursor.getColumnIndex(GroupMember.COLUMN.ID)));
-        groupMember.setAuthorized(_cursor.getInt(_cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED)) == 1);
-        groupMember.setDeviceId(_cursor.getString(_cursor.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
+        boolean access = _cursor.getInt(_cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED)) == 1;
+        // just a placeholder for later usage. true for both rights, member is authorized. false for both if not.
+        AccessRight accessRights = access ? new AccessRight(true, true) : new AccessRight(false, false);
+
+        groupMember.setGroupId(_cursor.getInt(_cursor.getColumnIndex(GroupMember.COLUMN.GROUP_ID)));
+        groupMember.setAccessRights(accessRights);
+        groupMember.setDeviceId(_cursor.getInt(_cursor.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
         groupMember.setName(_cursor.getString(_cursor.getColumnIndex(GroupMember.COLUMN.NAME)));
-        groupMember.setOwnDeviceId(_cursor.getString(_cursor.getColumnIndex(GroupMember.COLUMN.OWN_DEVICE_ID)));
 
         return groupMember;
     }

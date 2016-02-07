@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
 
@@ -25,10 +25,10 @@ public interface IGroupAuthDbController {
 
     /**
      * Removes the given groupAuth object from db.
-     * @param _groupAuth the object to remove.
+     * @param _groupId the object to remove.
      * @return the number of deleted rows.
      */
-    int removeRegisteredGroup(GroupAuth _groupAuth);
+    int removeRegisteredGroup(int _groupId);
 
     /**
      * Checks if the user already has an group created on this device.
@@ -38,9 +38,9 @@ public interface IGroupAuthDbController {
 
     /**
      * Checks if the given id is unique.
-     * @param _groupAuth the groupAuth object to counter check.
+     * @param _groupId the groupAuth object to counter check.
      * @return true if unique else false.
      */
-    boolean hasUniqueId(GroupAuth _groupAuth);
+    boolean hasUniqueId(int _groupId);
 
 }

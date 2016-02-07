@@ -1,10 +1,13 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.content.Context;
 
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.GroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.GroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.SqliteGroupAuthAccessDbController;
 
 /**
  * Get all controllers related to the synching process.

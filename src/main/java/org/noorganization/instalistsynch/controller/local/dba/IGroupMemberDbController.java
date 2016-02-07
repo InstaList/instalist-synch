@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import org.noorganization.instalistsynch.model.GroupMember;
 
@@ -26,23 +26,25 @@ public interface IGroupMemberDbController {
 
     /**
      * Delete the groupmember by its id.
-     * @param _uuid the uuid of this groupmember.
+     * @param _groupId the uuid of this groupmember.
+     * @param _deviceId
      * @return true if deleted successful else false.
      */
-    boolean delete(String _uuid);
+    boolean delete(int _groupId, int _deviceId);
 
     /**
      * Get a GroupMember by its id.
-     * @param _uuid the uuid of the group member.
+     * @param _groupId the uuid of the group member.
+     * @param _deviceId
      * @return the groupmember.
      */
-    GroupMember getById(String _uuid);
+    GroupMember getById(int _groupId, int _deviceId);
 
     /**
      * Requests a list that contains all members that are registered in the same group as this device.
-     * @param _ownerId the associated local device id for this group.
+     * @param _groupId the associated local device id for this group.
      * @return a list of the found members or an empty list.
      */
-    List<GroupMember> getByOwnerId(String _ownerId);
+    List<GroupMember> getByGroup(int _groupId);
 
 }

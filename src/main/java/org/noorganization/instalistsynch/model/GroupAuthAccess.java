@@ -1,7 +1,5 @@
 package org.noorganization.instalistsynch.model;
 
-import org.noorganization.instalist.model.Product;
-
 import java.util.Date;
 
 /**
@@ -20,7 +18,7 @@ public class GroupAuthAccess {
         /**
          * The column name of DeviceId.
          */
-        public static final String DEVICE_ID = "device_id";
+        public static final String GROUP_ID = "group_id";
 
         /**
          * The column name of token.
@@ -50,31 +48,33 @@ public class GroupAuthAccess {
         /**
          * All column names.
          */
-        public static final String ALL_COLUMNS[] = {DEVICE_ID, TOKEN, LAST_UPDATED, LAST_TOKEN_REQUEST, SYNCHRONIZE, INTERRUPTED};
+        public static final String ALL_COLUMNS[] = {GROUP_ID, TOKEN, LAST_UPDATED, LAST_TOKEN_REQUEST, SYNCHRONIZE, INTERRUPTED};
     }
 
     public static final String DB_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
-            COLUMN.DEVICE_ID + " TEXT PRIMARY KEY NOT NULL, " +
+            COLUMN.GROUP_ID + " INTEGER PRIMARY KEY NOT NULL, " +
             COLUMN.TOKEN + " TEXT NOT NULL, " +
             COLUMN.LAST_UPDATED + " TEXT NOT NULL, " +
             COLUMN.LAST_TOKEN_REQUEST + " TEXT NOT NULL," +
             COLUMN.SYNCHRONIZE + " INTEGER NOT NULL," +
             COLUMN.INTERRUPTED + " INTEGER NOT NULL," +
-            "FOREIGN KEY (" + COLUMN.DEVICE_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
-            GroupAuth.COLUMN.DEVICE_ID + ") ON UPDATE CASCADE ON DELETE CASCADE " +
+            "FOREIGN KEY (" + COLUMN.GROUP_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
+            GroupAuth.COLUMN.GROUP_ID + ") ON UPDATE CASCADE ON DELETE CASCADE " +
             ")";
 
-    public GroupAuthAccess(String deviceId, String token) {
-        mDeviceId = deviceId;
+    public GroupAuthAccess(int groupId, String token) {
+        mGroupId = groupId;
         mToken = token;
         mLastTokenRequest = new Date(System.currentTimeMillis() - 100000000L);
         mLastUpdated = new Date(System.currentTimeMillis() - 100000000L);
     }
 
+
+
     /**
      * The generated deviceId.
      */
-    private String mDeviceId;
+    private int mGroupId;
 
     /**
      * The auth token.
@@ -101,8 +101,8 @@ public class GroupAuthAccess {
      */
     private boolean mInterrupted;
 
-    public String getDeviceId() {
-        return mDeviceId;
+    public int getGroupId() {
+        return mGroupId;
     }
 
     public String getToken() {

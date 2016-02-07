@@ -1,6 +1,6 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba.impl;
 
-import org.noorganization.instalistsynch.controller.local.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 
 /**
  * Mapping Factory for mapping models.

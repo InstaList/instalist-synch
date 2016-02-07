@@ -5,7 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 
-import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.GroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupMember;
 
@@ -38,7 +40,7 @@ public class GroupMemberDbControllerTest extends AndroidTestCase {
     }
 
     public void testInsertSingleGroupMember() throws Exception {
-        GroupMember groupMember = new GroupMember(null, "123532", "123452", "TEST_DEVICE", true);
+        GroupMember groupMember = new GroupMember(null, "123532", "TEST_DEVICE", true);
         GroupMember insertedGroupMember = mIGroupMemberDbController.insert(groupMember);
 
         assertNotNull(insertedGroupMember);
@@ -47,11 +49,11 @@ public class GroupMemberDbControllerTest extends AndroidTestCase {
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String[] selectionArgs = {insertedGroupMember.getUUID()};
-        Cursor cursor = db.query(false, GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.ID + " LIKE ?", selectionArgs, null, null, null, null);
+        Cursor cursor = db.query(false, GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.GROUP_ID + " LIKE ?", selectionArgs, null, null, null, null);
 
         assertEquals(1, cursor.getCount());
         cursor.moveToFirst();
-        assertEquals(insertedGroupMember.getUUID(), cursor.getString(cursor.getColumnIndex(GroupMember.COLUMN.ID)));
+        assertEquals(insertedGroupMember.getUUID(), cursor.getString(cursor.getColumnIndex(GroupMember.COLUMN.GROUP_ID)));
         assertEquals("TEST_DEVICE", cursor.getString(cursor.getColumnIndex(GroupMember.COLUMN.NAME)));
         assertEquals("123532", cursor.getString(cursor.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
         assertEquals("123452", cursor.getString(cursor.getColumnIndex(GroupMember.COLUMN.OWN_DEVICE_ID)));

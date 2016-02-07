@@ -19,9 +19,9 @@ import android.widget.Toast;
 
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.adapter.GroupExpandableListAdapter;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
 import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
 import org.noorganization.instalistsynch.controller.network.impl.V1GroupManagerNetwork;
@@ -78,7 +78,7 @@ public class SynchOverview extends AppCompatActivity {
         IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
 
         // check auth
-        // if(groupMember.isAuthorized())
+        // if(groupMember.getAccessRights())
         //   return super.onContextItemSelected(_item);
 
         switch (_item.getItemId()) {
@@ -251,7 +251,7 @@ public class SynchOverview extends AppCompatActivity {
 
     public void onEvent(GroupMemberListMessageEvent _msg) {
         for (GroupExpandableList groupExpandableList : mGroupExpandableLists) {
-            if (groupExpandableList.getGroupAuthAccess().getDeviceId().equals(_msg.getDeviceId())) {
+            if (groupExpandableList.getGroupAuthAccess().getGroupId().equals(_msg.getDeviceId())) {
                 groupExpandableList.setGroupMemberList(_msg.getGroupMembers());
             }
         }

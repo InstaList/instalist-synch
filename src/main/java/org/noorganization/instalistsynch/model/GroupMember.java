@@ -7,91 +7,126 @@ package org.noorganization.instalistsynch.model;
 public class GroupMember {
 
     /**
-     * The uuid of this group member.
+     * The id of the group.
      */
-    private String mUUID;
+    private int mGroupId;
 
     /**
      * The device id of each device.
      */
-    private String mDeviceId;
+    private int mDeviceId;
+
     /**
-     * Used to indicate group association.
+     * The name of the group member.
      */
-    private String mOwnDeviceId;
     private String mName;
-    private boolean mAuthorized;
+
+    /**
+     * Indicates which rights the user has.
+     */
+    private AccessRight mAccessRights;
 
 
     public final static class COLUMN {
-        public static final String ID = "uuid";
-        public static final String OWN_DEVICE_ID = "own_device_id";
+        public static final String GROUP_ID = "group_id";
         public static final String DEVICE_ID = "device_id";
         public static final String NAME = "name";
         public static final String AUTHORIZED = "authorized";
-        public static final String ALL_COLUMNS[] = {ID, OWN_DEVICE_ID, DEVICE_ID, NAME, AUTHORIZED};
+        public static final String ALL_COLUMNS[] = {GROUP_ID, DEVICE_ID, NAME, AUTHORIZED};
     }
 
     public static final String TABLE_NAME = "group_member";
 
     public static String DB_CREATE = "CREATE TABLE " + TABLE_NAME + "(" +
-            COLUMN.ID + " TEXT PRIMARY KEY NOT NULL, " +
-            COLUMN.OWN_DEVICE_ID + " TEXT NOT NULL, " +
-            COLUMN.DEVICE_ID + " TEXT NOT NULL, " +
+            COLUMN.GROUP_ID + " INTEGER NOT NULL, " +
+            COLUMN.DEVICE_ID + " INTEGER NOT NULL, " +
             COLUMN.AUTHORIZED + " INTEGER NOT NULL, " +
             COLUMN.NAME + " TEXT NOT NULL, " +
-            "FOREIGN KEY (" + COLUMN.OWN_DEVICE_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " ( " +
-            GroupAuth.COLUMN.DEVICE_ID + ") ON UPDATE CASCADE ON DELETE CASCADE" +
+            "FOREIGN KEY (" + COLUMN.GROUP_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " ( " +
+            GroupAuth.COLUMN.GROUP_ID + ") ON UPDATE CASCADE ON DELETE CASCADE, " +
+            "PRIMARY KEY (" + COLUMN.GROUP_ID + "," + COLUMN.DEVICE_ID + ")" +
             ")";
 
     public GroupMember() {
     }
 
-    public GroupMember(String UUID, String deviceId, String ownDeviceId, String name, boolean authorized) {
-        mUUID = UUID;
-        mDeviceId = deviceId;
-        mOwnDeviceId = ownDeviceId;
-        mName = name;
-        mAuthorized = authorized;
+    /**
+     * Constructor of GroupMember object.
+     *
+     * @param _groupId    the groupId.
+     * @param _deviceId   the id of the device.
+     * @param _name       the name of the device in the group.
+     * @param _authorized true if the group was already authorized.
+     */
+    public GroupMember(int _groupId, int _deviceId, String _name, AccessRight _authorized) {
+        mGroupId = _groupId;
+        mDeviceId = _deviceId;
+        mName = _name;
+        mAccessRights = _authorized;
     }
 
-    public String getUUID() {
-        return mUUID;
-    }
-
-    public void setUUID(String UUID) {
-        mUUID = UUID;
-    }
-
-    public String getOwnDeviceId() {
-        return mOwnDeviceId;
-    }
-
-    public void setOwnDeviceId(String ownDeviceId) {
-        mOwnDeviceId = ownDeviceId;
-    }
-
-    public String getDeviceId() {
-        return mDeviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        mDeviceId = deviceId;
-    }
 
     public String getName() {
         return mName;
     }
 
-    public void setName(String name) {
-        mName = name;
+    public void setName(String _name) {
+        mName = _name;
     }
 
-    public boolean isAuthorized() {
-        return mAuthorized;
+    public AccessRight getAccessRights() {
+        return mAccessRights;
     }
 
-    public void setAuthorized(boolean authorized) {
-        mAuthorized = authorized;
+    public void setAccessRights(AccessRight _accessRights) {
+        mAccessRights = _accessRights;
+    }
+
+    public int getGroupId() {
+        return mGroupId;
+    }
+
+    public void setGroupId(int groupId) {
+        mGroupId = groupId;
+    }
+
+    public int getDeviceId() {
+        return mDeviceId;
+    }
+
+    public void setDeviceId(int deviceId) {
+        mDeviceId = deviceId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GroupMember)) return false;
+
+        GroupMember that = (GroupMember) o;
+
+        if (getGroupId() != that.getGroupId()) return false;
+        if (getDeviceId() != that.getDeviceId()) return false;
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
+            return false;
+        return !(getAccessRights() != null ? !getAccessRights().equals(that.getAccessRights()) : that.getAccessRights() != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getGroupId();
+        result = 31 * result + getDeviceId();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAccessRights() != null ? getAccessRights().hashCode() : 0);
+        return result;
+    }
+
+    /**
+     * Checks if the object has some null fields.
+     * @return true if it has, else false.
+     */
+    public boolean hasNullFields(){
+        return this.mAccessRights == null || this.mName == null;
     }
 }

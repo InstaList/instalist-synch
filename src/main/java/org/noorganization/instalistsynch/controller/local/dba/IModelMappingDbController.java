@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import org.noorganization.instalistsynch.model.network.ModelMapping;
 

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.ISynchController;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;

@@ -4,10 +4,10 @@ import android.content.Context;
 import android.util.Log;
 
 import org.noorganization.instalistsynch.R;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
-import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
@@ -44,6 +44,7 @@ import retrofit2.Response;
 /**
  * Group manager for api version 1.
  * Created by tinos_000 on 29.01.2016.
+ * @deprecated Needs rewrite!
  */
 public class V1GroupManagerNetwork implements IGroupManagerNetwork {
     private static final String LOG_TAG = V1GroupManagerNetwork.class.getSimpleName();
@@ -250,7 +251,7 @@ public class V1GroupManagerNetwork implements IGroupManagerNetwork {
             String deviceId = response.body().deviceid;
 
             // insert groupAuth to db
-            GroupAuth groupAuth = new GroupAuth(deviceId, mSecret, mDeviceName, mIsLocal);
+            GroupAuth groupAuth = new GroupAuth(, deviceId, mSecret, mDeviceName, mIsLocal);
             // possible security breach!
             IGroupAuthDbController authDbController = LocalSqliteDbControllerFactory
                     .getGroupAuthDbController(mContext);
@@ -264,7 +265,7 @@ public class V1GroupManagerNetwork implements IGroupManagerNetwork {
                 return;
             }
             authDbController.insertRegisteredGroup(groupAuth);
-            groupMemberDbController.insert(new GroupMember(null, groupAuth.getDeviceId(), groupAuth.getDeviceId(), groupAuth.getDeviceName(), mIsLocal));
+            groupMemberDbController.insert(new GroupMember(null, groupAuth.getDeviceId(), groupAuth.getDeviceName(), mIsLocal));
             EventBus.getDefault().post(new GroupJoinedMessageEvent(true));
             requestAuthToken(groupAuth);
         }
@@ -372,7 +373,7 @@ public class V1GroupManagerNetwork implements IGroupManagerNetwork {
 
             List<GroupMember> groupMemberList = new ArrayList<>(response.body().size());
             for (GroupMemberRetrofit groupMemberRetrofit : response.body()) {
-                groupMemberList.add(new GroupMember(null, String.valueOf(groupMemberRetrofit.id), null, groupMemberRetrofit.name, groupMemberRetrofit.authorized));
+                groupMemberList.add(new GroupMember(null, String.valueOf(groupMemberRetrofit.id), groupMemberRetrofit.name, groupMemberRetrofit.authorized));
             }
 
             GroupMemberListMessageEvent msg = new GroupMemberListMessageEvent(groupMemberList, groupMemberList.get(0).getDeviceId());

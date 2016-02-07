@@ -3,9 +3,13 @@ package org.noorganization.instalistsynch.controller.local.impl;
 import android.content.Context;
 import android.test.AndroidTestCase;
 
-import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.GroupAuthDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.GroupMemberDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.impl.SqliteGroupAuthAccessDbController;
 
 /**
  * Created by Desnoo on 05.02.2016.
