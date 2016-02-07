@@ -18,7 +18,7 @@ public class LocalSqliteDbControllerFactory {
      * @param _context the context of the app.
      * @return the default GroupAuthController.
      */
-    public static IGroupAuthDbController getAuthDbController(Context _context) {
+    public static IGroupAuthDbController getGroupAuthDbController(Context _context) {
         return GroupAuthDbController.getInstance(_context);
     }
 

@@ -8,11 +8,11 @@ import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbCont
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.IGroupMemberDbController;
 import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
-import org.noorganization.instalistsynch.controller.network.IGroupManager;
+import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
 import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
-import org.noorganization.instalistsynch.events.GroupMemberDeleted;
+import org.noorganization.instalistsynch.model.observable.GroupMemberDeleted;
 import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
 import org.noorganization.instalistsynch.events.GroupUpdatedMessageEvent;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
@@ -22,8 +22,10 @@ import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
 import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
-import org.noorganization.instalistsynch.model.network.response.RetrofitGroupAccessToken;
-import org.noorganization.instalistsynch.model.network.response.RetrofitRegisterDevice;
+import org.noorganization.instalistsynch.model.network.response.GroupResponse;
+import org.noorganization.instalistsynch.model.network.response.RegisterDeviceResponse;
+import org.noorganization.instalistsynch.network.api.authorized.IGroupApiService;
+import org.noorganization.instalistsynch.utils.ApiUtils;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 import org.noorganization.instalistsynch.utils.RFC2617Authorization;
@@ -43,14 +45,17 @@ import retrofit2.Response;
  * Group manager for api version 1.
  * Created by tinos_000 on 29.01.2016.
  */
-public class V1GroupManager implements IGroupManager {
-    private static final String LOG_TAG = V1GroupManager.class.getSimpleName();
+public class V1GroupManagerNetwork implements IGroupManagerNetwork {
+    private static final String LOG_TAG = V1GroupManagerNetwork.class.getSimpleName();
 
     /**
      * The instance of this class.
      */
-    private static V1GroupManager sInstance;
+    private static V1GroupManagerNetwork sInstance;
 
+    /**
+     * Context of the app.
+     */
     private Context mContext;
 
     /**
@@ -58,9 +63,9 @@ public class V1GroupManager implements IGroupManager {
      *
      * @return the only instance.
      */
-    public static V1GroupManager getInstance() {
+    public static V1GroupManagerNetwork getInstance() {
         if (sInstance == null) {
-            sInstance = new V1GroupManager();
+            sInstance = new V1GroupManagerNetwork();
         }
         return sInstance;
     }
@@ -68,17 +73,17 @@ public class V1GroupManager implements IGroupManager {
     /**
      * Default private constructor.
      */
-    private V1GroupManager() {
+    private V1GroupManagerNetwork() {
         mContext = GlobalObjects.getInstance().getApplicationContext();
     }
 
     @Override
     public void createGroup(String _deviceName) {
-        if (LocalSqliteDbControllerFactory.getAuthDbController(mContext).hasOwnLocalGroup()) {
+        if (LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext).hasOwnLocalGroup()) {
             EventBus.getDefault().post(new ErrorMessageEvent(mContext.getString(R.string.abc_local_group_exists)));
             return;
         }
-        Call<RetrofitGroupAccessToken> groupCall = GlobalObjects.getInstance().getInstantListApiService().registerGroup();
+        Call<GroupResponse> groupCall = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerGroup();
         groupCall.enqueue(new RegisterGroupCallback(_deviceName));
         Log.i(LOG_TAG, "createGroup: enquedCallback");
     }
@@ -89,7 +94,7 @@ public class V1GroupManager implements IGroupManager {
         SecureRandom secureRandom = GlobalObjects.getInstance().getSecureRandom();
         String secret = new BigInteger(196, secureRandom).toString(32);
         Group group = new Group(_tmpGroupId, secret, _deviceName);
-        Call<RetrofitRegisterDevice> deviceIdGen = GlobalObjects.getInstance().getInstantListApiService().registerDevice(group);
+        Call<RegisterDeviceResponse> deviceIdGen = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerDevice(group);
         deviceIdGen.enqueue(new RegisterDeviceCallback(secret, _deviceName, _isLocal));
     }
 
@@ -101,8 +106,7 @@ public class V1GroupManager implements IGroupManager {
     @Override
     public void requestAuthToken(GroupAuth _groupAuth) {
         Log.i(LOG_TAG, "requestAuthToken: for " + _groupAuth.getDeviceId());
-        Call<RetrofitAuthToken> authTokenReq = GlobalObjects.getInstance()
-                .getInstantListApiService()
+        Call<RetrofitAuthToken> authTokenReq = ApiUtils.getInstance().getUnauthorizedInstantListApiService()
                 .token(RFC2617Authorization
                         .generate(_groupAuth.getDeviceId(), _groupAuth.getSecret()));
         authTokenReq.enqueue(new GetAuthTokenCallback(_groupAuth));
@@ -111,13 +115,13 @@ public class V1GroupManager implements IGroupManager {
     @Override
     public void requestGroupAccessToken(String _authToken) {
         Log.i(LOG_TAG, "requestGroupAccessToken: for " + _authToken);
-        Call<RetrofitGroupAccessToken> accessTokenRequest = GlobalObjects.getInstance().getInstantListApiService().getGroupAccessKey(_authToken);
+        Call<GroupResponse> accessTokenRequest = ApiUtils.getInstance().getAuthorizedApiService(IGroupApiService.class, _authToken).getGroupAccessKey();
         accessTokenRequest.enqueue(new GetTemporaryGroupAccessKey());
     }
 
     @Override
     public void getGroupMembers(String _authToken) {
-        Call<List<GroupMemberRetrofit>> groupMemberRetrofitCall = GlobalObjects.getInstance().getInstantListApiService().getDevicesOfGroup(_authToken);
+        Call<List<GroupMemberRetrofit>> groupMemberRetrofitCall = ApiUtils.getInstance().getAuthorizedApiService(IGroupApiService.class, _authToken).getDevicesOfGroup();
         groupMemberRetrofitCall.enqueue(new GetDevicesOfGroup());
     }
 
@@ -131,7 +135,7 @@ public class V1GroupManager implements IGroupManager {
         List<Integer> listElements = new ArrayList(1);
         listElements.add(Integer.valueOf(_groupMember.getDeviceId()));
 
-        Call<Void> groupDeleteMember = GlobalObjects.getInstance().getInstantListApiService().deleteDevicesOfGroup(_token, Integer.valueOf(_groupMember.getDeviceId()));
+        Call<Void> groupDeleteMember = ApiUtils.getInstance().getAuthorizedApiService(IGroupApiService.class, _token).deleteDevicesOfGroup(, Integer.valueOf(_groupMember.getDeviceId()));
         groupDeleteMember.enqueue(new DeleteGroupMemberCallback());
     }
 
@@ -159,7 +163,7 @@ public class V1GroupManager implements IGroupManager {
         member.name = _groupMember.getName();
         List<GroupMemberRetrofit> listElements = new ArrayList(1);
         listElements.add(member);
-        Call<Void> groupMemberRetrofitCall = GlobalObjects.getInstance().getInstantListApiService().updateDeviceOfGroup(_token, listElements);
+        Call<Void> groupMemberRetrofitCall = ApiUtils.getInstance().getAuthorizedApiService(IGroupApiService.class, _token).updateDeviceOfGroup(, listElements);
         groupMemberRetrofitCall.enqueue(new UpdateDeviceOfGroup(_groupMember));
     }
 
@@ -191,7 +195,7 @@ public class V1GroupManager implements IGroupManager {
     /**
      * Callback to the registerGroup action.
      */
-    private class RegisterGroupCallback implements Callback<RetrofitGroupAccessToken> {
+    private class RegisterGroupCallback implements Callback<GroupResponse> {
         private final String LOG_TAG = RegisterGroupCallback.class.getSimpleName();
         private String mDeviceName;
 
@@ -200,11 +204,11 @@ public class V1GroupManager implements IGroupManager {
         }
 
         @Override
-        public void onResponse(Response<RetrofitGroupAccessToken> response) {
+        public void onResponse(Response<GroupResponse> response) {
             if (!NetworkUtils.isSuccessful(response, "/register_group"))
                 return;
             Log.i(LOG_TAG, "Response: " + response.body());
-            joinGroup(response.body().groupid, mDeviceName, true);
+            joinGroup(response.body().accesskey, mDeviceName, true);
         }
 
         @Override
@@ -219,7 +223,7 @@ public class V1GroupManager implements IGroupManager {
     /**
      * Callback to the registerDevice Callback.
      */
-    private class RegisterDeviceCallback implements Callback<RetrofitRegisterDevice> {
+    private class RegisterDeviceCallback implements Callback<RegisterDeviceResponse> {
         private final String LOG_TAG = RegisterDeviceCallback.class.getSimpleName();
 
         private String mSecret;
@@ -238,7 +242,7 @@ public class V1GroupManager implements IGroupManager {
         }
 
         @Override
-        public void onResponse(Response<RetrofitRegisterDevice> response) {
+        public void onResponse(Response<RegisterDeviceResponse> response) {
             if (!NetworkUtils.isSuccessful(response, "/register_device"))
                 return;
 
@@ -249,7 +253,7 @@ public class V1GroupManager implements IGroupManager {
             GroupAuth groupAuth = new GroupAuth(deviceId, mSecret, mDeviceName, mIsLocal);
             // possible security breach!
             IGroupAuthDbController authDbController = LocalSqliteDbControllerFactory
-                    .getAuthDbController(mContext);
+                    .getGroupAuthDbController(mContext);
             IGroupMemberDbController groupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
 
             if (!authDbController.hasUniqueId(groupAuth)) {
@@ -338,14 +342,14 @@ public class V1GroupManager implements IGroupManager {
     }
 
 
-    private class GetTemporaryGroupAccessKey implements Callback<RetrofitGroupAccessToken> {
+    private class GetTemporaryGroupAccessKey implements Callback<GroupResponse> {
 
         @Override
-        public void onResponse(Response<RetrofitGroupAccessToken> response) {
+        public void onResponse(Response<GroupResponse> response) {
             if (!NetworkUtils.isSuccessful(response, "user/group/access_key"))
                 return;
 
-            EventBus.getDefault().post(new GroupAccessTokenMessageEvent(response.body().groupid));
+            EventBus.getDefault().post(new GroupAccessTokenMessageEvent(response.body().accesskey));
         }
 
         @Override

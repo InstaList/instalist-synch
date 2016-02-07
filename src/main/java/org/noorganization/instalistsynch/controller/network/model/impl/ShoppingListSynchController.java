@@ -9,7 +9,7 @@ import org.noorganization.instalistsynch.controller.network.model.IModelSynchCon
 import org.noorganization.instalistsynch.events.SynchronizationMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
-import org.noorganization.instalistsynch.network.api.IInstantListApiService;
+import org.noorganization.instalistsynch.network.api.authorized.IAuthorizedService;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 
@@ -28,7 +28,7 @@ public class ShoppingListSynchController implements IModelSynchController {
     private static final String LOG_TAG = ShoppingListSynchController.class.getSimpleName();
 
     private static ShoppingListSynchController sInstance;
-    private IInstantListApiService mInstantListApiService;
+    private IAuthorizedService mInstantListApiService;
     private EventBus mEventBus;
 
     public static ShoppingListSynchController getInstance() {
@@ -38,7 +38,7 @@ public class ShoppingListSynchController implements IModelSynchController {
     }
 
     private ShoppingListSynchController() {
-        mInstantListApiService = GlobalObjects.getInstance().getInstantListApiService();
+        mInstantListApiService = GlobalObjects.getInstance().getUnauthorizedInstantListApiService();
         mEventBus = EventBus.getDefault();
     }
 

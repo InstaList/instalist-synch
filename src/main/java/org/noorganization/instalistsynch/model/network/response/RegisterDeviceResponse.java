@@ -1,8 +1,9 @@
 package org.noorganization.instalistsynch.model.network.response;
 
 /**
+ * The response with the deviceid.
  * Created by tinos_000 on 30.01.2016.
  */
-public class RetrofitGroupAccessToken {
-    public String groupid;
+public class RegisterDeviceResponse {
+    public String deviceid;
 }

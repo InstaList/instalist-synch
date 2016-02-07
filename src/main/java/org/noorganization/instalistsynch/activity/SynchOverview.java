@@ -22,14 +22,14 @@ import org.noorganization.instalistsynch.adapter.GroupExpandableListAdapter;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.impl.LocalSqliteDbControllerFactory;
-import org.noorganization.instalistsynch.controller.network.IGroupManager;
+import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
 import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
-import org.noorganization.instalistsynch.controller.network.impl.V1GroupManager;
+import org.noorganization.instalistsynch.controller.network.impl.V1GroupManagerNetwork;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
 import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
-import org.noorganization.instalistsynch.events.GroupMemberDeleted;
+import org.noorganization.instalistsynch.model.observable.GroupMemberDeleted;
 import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
 import org.noorganization.instalistsynch.events.GroupUpdatedMessageEvent;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
@@ -75,7 +75,7 @@ public class SynchOverview extends AppCompatActivity {
         int groupPos = ExpandableListView.getPackedPositionGroup(menuInfo.packedPosition);
         int childPos = ExpandableListView.getPackedPositionChild(menuInfo.packedPosition);
 
-        IGroupManager groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
 
         // check auth
         // if(groupMember.isAuthorized())
@@ -132,7 +132,7 @@ public class SynchOverview extends AppCompatActivity {
                     mDeviceNameInput.setError("Device name not set");
                     return;
                 }
-                V1GroupManager.getInstance().createGroup(deviceNameForGroup);
+                V1GroupManagerNetwork.getInstance().createGroup(deviceNameForGroup);
             }
         });
 
@@ -150,7 +150,7 @@ public class SynchOverview extends AppCompatActivity {
                 }
                 if (error)
                     return;
-                IGroupManager groupManager = NetworkControllerFactory.getGroupManager();
+                IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
                 groupManager.joinGroup(tmpGroupId, deviceName, false);
             }
         });
@@ -186,8 +186,8 @@ public class SynchOverview extends AppCompatActivity {
 
         //populateListAdapter();
 
-        IGroupAuthDbController groupAuthDbController = LocalSqliteDbControllerFactory.getAuthDbController(mContext);
-        IGroupManager groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupAuthDbController groupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
+        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
 
         List<GroupAuth> groupAuthList = groupAuthDbController.getRegisteredGroups();
         for (GroupAuth groupAuth : groupAuthList) {
@@ -208,7 +208,7 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void populateListAdapter() {
-        List<GroupAuth> groupAuthList = LocalSqliteDbControllerFactory.getAuthDbController(this).getRegisteredGroups();
+        List<GroupAuth> groupAuthList = LocalSqliteDbControllerFactory.getGroupAuthDbController(this).getRegisteredGroups();
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, groupAuthList);
         //  mListView.setAdapter(mAdapter);
     }
@@ -231,7 +231,7 @@ public class SynchOverview extends AppCompatActivity {
         Toast.makeText(this, "Token: " + _msg.getmToken(), Toast.LENGTH_LONG).show();
         mDebugView.setText(mDebugView.getText().toString().concat("\n  ").concat(_msg.getmToken()));
         Log.i(LOG_TAG, "onEvent: " + _msg.getmToken());
-        IGroupManager groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
         groupManager.getGroupMembers(_msg.getmToken());
         populateExpandableListView();
         // populateListAdapter();

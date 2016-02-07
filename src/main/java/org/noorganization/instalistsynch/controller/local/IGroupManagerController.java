@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.network;
+package org.noorganization.instalistsynch.controller.local;
 
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
@@ -6,16 +6,15 @@ import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupMember;
 
 /**
- * Manages group related operations.
- * Works asynch, because of that no return values. Instead eventmessages will be sent.
- * Created by tinos_000 on 29.01.2016.
+ * The manager for groups. Processes network and db interaction.
+ * Created by Desnoo on 07.02.2016.
  */
-public interface IGroupManager {
+public interface IGroupManagerController {
 
     /**
      * Creates a new group.
      * Sends following messages {@link ErrorMessageEvent} and {@link TokenMessageEvent}.
-     * @param _deviceName
+     * @param _deviceName the name of the device.
      */
     void createGroup(String _deviceName);
 
@@ -34,18 +33,11 @@ public interface IGroupManager {
     void leaveGroup(GroupAuth _groupAuth);
 
     /**
-     * Gets an auth token for the given group/groupAuth object.
-     * @param _groupAuth the group auth object.
-     */
-    void requestAuthToken(GroupAuth _groupAuth);
-
-    /**
      * Requests an temporary GroupAccessToken.
      * @param _authToken the auth token for the group to get the access token.
      * Sends an {@link org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent}.
      */
     void requestGroupAccessToken(String _authToken);
-
 
     /**
      * Get all group members with the given auth token
@@ -69,7 +61,7 @@ public interface IGroupManager {
     /**
      * approve the given groupmember.
      * @param _groupMember the groupmember to approve to the list.
-     * @param _token
+     * @param _token the token to authorize.
      */
     void authorizeGroupMember(GroupMember _groupMember, String _token);
 }

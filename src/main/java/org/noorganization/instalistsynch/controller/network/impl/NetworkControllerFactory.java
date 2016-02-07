@@ -1,6 +1,6 @@
 package org.noorganization.instalistsynch.controller.network.impl;
 
-import org.noorganization.instalistsynch.controller.network.IGroupManager;
+import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
 
 /**
  * Factory for controllers to access network.
@@ -12,7 +12,7 @@ public class NetworkControllerFactory {
      * Get an instance of the V1 Groupmanager implementation.
      * @return the instance of groupmanager.
      */
-    public static IGroupManager getGroupManager(){
-        return V1GroupManager.getInstance();
+    public static IGroupManagerNetwork getGroupManager(){
+        return V1GroupManagerNetwork.getInstance();
     }
 }
