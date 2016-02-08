@@ -44,11 +44,12 @@ public class GroupAuthDbController implements IGroupAuthDbController {
         Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
         List<GroupAuth> groupAuths = new ArrayList<>(authCursor.getCount());
         if (!authCursor.moveToFirst()) {
+            authCursor.close();
             return groupAuths;
         }
 
         do {
-            int groupId =  authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
+            int groupId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
             int deviceId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
             String secret = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
             String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
@@ -58,6 +59,28 @@ public class GroupAuthDbController implements IGroupAuthDbController {
         } while (authCursor.moveToNext());
         authCursor.close();
         return groupAuths;
+    }
+
+    @Override
+    public GroupAuth findById(int _groupId) {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.GROUP_ID + " = ? ", new String[]{String.valueOf(_groupId)}, null, null, null);
+
+        if (!authCursor.moveToFirst()) {
+            authCursor.close();
+            return null;
+        }
+
+        int groupId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
+        int deviceId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
+        String secret = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
+        String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
+        boolean isLocal = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
+        // TODO some decryption
+        GroupAuth groupAuth = new GroupAuth(groupId, deviceId, secret, deviceName, isLocal);
+
+        authCursor.close();
+        return groupAuth;
     }
 
     @Override

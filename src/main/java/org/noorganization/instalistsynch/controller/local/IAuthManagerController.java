@@ -10,15 +10,13 @@ public interface IAuthManagerController {
      * Requests the token for the given device id in the specified group.
      *
      * @param _groupId    the id of the group.
-     * @param _deviceUUID the uuid of the device.
      */
-    void requestToken(int _groupId, String _deviceUUID);
+    void requestToken(int _groupId);
 
     /**
      * Invalidate the token for the given group and device uuid.
      *
      * @param _groupId    the id of the group.
-     * @param _deviceUUID the uuid of the device.
      */
-    void invalidateToken(int _groupId, String _deviceUUID);
+    void invalidateToken(int _groupId);
 }

@@ -22,9 +22,9 @@ import org.noorganization.instalistsynch.adapter.GroupExpandableListAdapter;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
-import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
+import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
 import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
-import org.noorganization.instalistsynch.controller.network.impl.V1GroupManagerNetwork;
+import org.noorganization.instalistsynch.controller.network.impl.V1GroupManagerNetworkDeprecated;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
@@ -75,7 +75,7 @@ public class SynchOverview extends AppCompatActivity {
         int groupPos = ExpandableListView.getPackedPositionGroup(menuInfo.packedPosition);
         int childPos = ExpandableListView.getPackedPositionChild(menuInfo.packedPosition);
 
-        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupNetworkController groupManager = NetworkControllerFactory.getGroupController();
 
         // check auth
         // if(groupMember.getAccessRights())
@@ -132,7 +132,7 @@ public class SynchOverview extends AppCompatActivity {
                     mDeviceNameInput.setError("Device name not set");
                     return;
                 }
-                V1GroupManagerNetwork.getInstance().createGroup(deviceNameForGroup);
+                V1GroupManagerNetworkDeprecated.getInstance().createGroup();
             }
         });
 
@@ -150,8 +150,8 @@ public class SynchOverview extends AppCompatActivity {
                 }
                 if (error)
                     return;
-                IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
-                groupManager.joinGroup(tmpGroupId, deviceName, false);
+                IGroupNetworkController groupManager = NetworkControllerFactory.getGroupController();
+                groupManager.joinGroup(, deviceName, false, tmpGroupId, );
             }
         });
 
@@ -187,7 +187,7 @@ public class SynchOverview extends AppCompatActivity {
         //populateListAdapter();
 
         IGroupAuthDbController groupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
-        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupNetworkController groupManager = NetworkControllerFactory.getGroupController();
 
         List<GroupAuth> groupAuthList = groupAuthDbController.getRegisteredGroups();
         for (GroupAuth groupAuth : groupAuthList) {
@@ -231,7 +231,7 @@ public class SynchOverview extends AppCompatActivity {
         Toast.makeText(this, "Token: " + _msg.getmToken(), Toast.LENGTH_LONG).show();
         mDebugView.setText(mDebugView.getText().toString().concat("\n  ").concat(_msg.getmToken()));
         Log.i(LOG_TAG, "onEvent: " + _msg.getmToken());
-        IGroupManagerNetwork groupManager = NetworkControllerFactory.getGroupManager();
+        IGroupNetworkController groupManager = NetworkControllerFactory.getGroupController();
         groupManager.getGroupMembers(_msg.getmToken());
         populateExpandableListView();
         // populateListAdapter();
@@ -245,7 +245,7 @@ public class SynchOverview extends AppCompatActivity {
         IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
         for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
-            NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());
+            NetworkControllerFactory.getGroupController().getGroupMembers(groupAuthAccess.getToken());
         }
     }
 
@@ -263,7 +263,7 @@ public class SynchOverview extends AppCompatActivity {
         IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
         for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
-            NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());
+            NetworkControllerFactory.getGroupController().getGroupMembers(groupAuthAccess.getToken());
         }
     }
 
@@ -281,7 +281,7 @@ public class SynchOverview extends AppCompatActivity {
                 IGroupAuthAccessDbController accessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
 
                 for (GroupAuthAccess groupAuthAccess : accessDbController.getGroupAuthAccesses()) {
-                    NetworkControllerFactory.getGroupManager().getGroupMembers(groupAuthAccess.getToken());
+                    NetworkControllerFactory.getGroupController().getGroupMembers(groupAuthAccess.getToken());
                 }
                 break;
             case 1:

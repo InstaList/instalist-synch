@@ -1,6 +1,8 @@
 package org.noorganization.instalistsynch.controller.network.impl;
 
-import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork;
+import org.noorganization.instalistsynch.controller.network.IAuthNetworkController;
+import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
+import org.noorganization.instalistsynch.controller.network.ISessionController;
 
 /**
  * Factory for controllers to access network.
@@ -9,10 +11,29 @@ import org.noorganization.instalistsynch.controller.network.IGroupManagerNetwork
 public class NetworkControllerFactory {
 
     /**
-     * Get an instance of the V1 Groupmanager implementation.
-     * @return the instance of groupmanager.
+     * Get an instance of the V1GroupNetworkController implementation.
+     *
+     * @return the instance of V1GroupNetworkController.
      */
-    public static IGroupManagerNetwork getGroupManager(){
-        return V1GroupManagerNetwork.getInstance();
+    public static IGroupNetworkController getGroupController() {
+        return V1GroupNetworkController.getInstance();
+    }
+
+    /**
+     * Get the default session controller.
+     *
+     * @return the instance of InMemorySessionManager.
+     */
+    public static ISessionController getSessionController() {
+        return InMemorySessionController.getInstance();
+    }
+
+    /**
+     * Get the AuthNetworkController instance.
+     *
+     * @return the AuthNetworkController instance.
+     */
+    public static IAuthNetworkController getAuthNetworkController() {
+        return AuthNetworkController.getInstance();
     }
 }

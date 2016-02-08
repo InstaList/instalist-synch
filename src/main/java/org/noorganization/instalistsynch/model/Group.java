@@ -5,7 +5,7 @@ package org.noorganization.instalistsynch.model;
  * Created by tinos_000 on 28.01.2016.
  */
 public class Group {
-    public String groupid;
+    public int groupid;
     public String secret;
     public String name;
     /**
@@ -14,7 +14,7 @@ public class Group {
      * @param _secret the generated secret.
      * @param _name the name of the device.
      */
-    public Group(String _groupId, String _secret, String _name) {
+    public Group(int _groupId, String _secret, String _name) {
         this.groupid = _groupId;
         this.secret = _secret;
         this.name = _name;

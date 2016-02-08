@@ -7,7 +7,6 @@ import android.util.Log;
 
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
-import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 
 import java.io.IOException;
 
@@ -39,19 +38,19 @@ public class NetworkUtils {
      * @param _response the response delivered by retrofit.
      * @return true if it was successful, else false.
      */
-    public static boolean isSuccessful(Response<?> _response, String _method) {
+    public static boolean isSuccessful(Response<?> _response) {
         if (!_response.isSuccess()) {
             //noinspection finally
             try {
-                String msg = String.valueOf(_response.code()).concat(" ").concat(_method).concat(" ").concat(_response.errorBody().string());
+                String msg = String.valueOf(_response.code()).concat(" ").concat(" ").concat(_response.errorBody().string());
                 EventBus.getDefault().post(new ErrorMessageEvent(msg));
-                Log.e(LOG_TAG, "onResponse: api method: " + _method + " on server responded with ".concat(msg));
+                Log.e(LOG_TAG, "onResponse: server responded with ".concat(msg));
             } catch (IOException e) {
                 e.printStackTrace();
-                EventBus.getDefault().post(new ErrorMessageEvent(String.valueOf(_response.code()).concat(" ").concat(_method).concat(" ")
+                EventBus.getDefault().post(new ErrorMessageEvent(String.valueOf(_response.code()).concat(" ").concat(" ")
                         .concat(" ").concat(GlobalObjects.getInstance().getApplicationContext()
                                 .getString(R.string.network_response_error))));
-                Log.e(LOG_TAG, "onResponse: api method: " + _method + ". Cannot load body of error message.", e.getCause());
+                Log.e(LOG_TAG, "onResponse:  Cannot load body of error message.", e.getCause());
             }
             return false;
         }

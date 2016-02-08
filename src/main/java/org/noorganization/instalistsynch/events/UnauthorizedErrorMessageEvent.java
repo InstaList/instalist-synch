@@ -14,7 +14,7 @@ public class UnauthorizedErrorMessageEvent {
     /**
      * The id of the device.
      */
-    private String mDeviceId;
+    private int mDeviceId;
 
 
     /**
@@ -23,7 +23,7 @@ public class UnauthorizedErrorMessageEvent {
      * @param _groupId  the id of the group.
      * @param _deviceId the id of the device.
      */
-    public UnauthorizedErrorMessageEvent(int _groupId, String _deviceId) {
+    public UnauthorizedErrorMessageEvent(int _groupId, int _deviceId) {
         mGroupId = _groupId;
         mDeviceId = _deviceId;
     }
@@ -36,11 +36,11 @@ public class UnauthorizedErrorMessageEvent {
         mGroupId = groupId;
     }
 
-    public String getDeviceId() {
+    public int getDeviceId() {
         return mDeviceId;
     }
 
-    public void setDeviceId(String deviceId) {
+    public void setDeviceId(int deviceId) {
         mDeviceId = deviceId;
     }
 }

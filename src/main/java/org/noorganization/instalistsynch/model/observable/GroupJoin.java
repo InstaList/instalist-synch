@@ -11,78 +11,68 @@ public class GroupJoin {
     /**
      * The temporary group id.
      */
-    private String mTmpGroupId;
+    private int mGroupId;
 
     /**
      * The name of the device.
      */
-    private String _deviceName;
+    private String mDeviceName;
 
-    /**
-     * Indicates if this group is the group that was created locally.
-     */
-    private boolean _isLocal;
-    /**
-     * Indicates if the join group operation was a success or not.
-     */
-    private boolean mSuccess;
     /**
      * The id of the device.
      */
     private int mDeviceId;
 
 
-    public GroupJoin(String tmpGroupId, String _deviceName, boolean _isLocal, boolean success, int deviceId) {
-        mTmpGroupId = tmpGroupId;
-        this._deviceName = _deviceName;
-        this._isLocal = _isLocal;
-        mSuccess = success;
-        mDeviceId = deviceId;
+    public GroupJoin(int _groupId, String _deviceName, int _deviceId) {
+        mGroupId = _groupId;
+        mDeviceName = _deviceName;
+        mDeviceId = _deviceId;
     }
 
-    public final String getTmpGroupId() {
-        return mTmpGroupId;
+
+    public int getGroupId() {
+        return mGroupId;
     }
 
-    public final String get_deviceName() {
-        return _deviceName;
+    public void setGroupId(int groupId) {
+        mGroupId = groupId;
     }
 
-    public final boolean is_isLocal() {
-        return _isLocal;
+    public String getDeviceName() {
+        return mDeviceName;
     }
 
-    public final boolean isSuccess() {
-        return mSuccess;
+    public void setDeviceName(String deviceName) {
+        mDeviceName = deviceName;
     }
 
-    public final int getDeviceId() {
+    public int getDeviceId() {
         return mDeviceId;
+    }
+
+    public void setDeviceId(int deviceId) {
+        mDeviceId = deviceId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof GroupJoin)) return false;
 
         GroupJoin groupJoin = (GroupJoin) o;
 
-        if (_isLocal != groupJoin._isLocal) return false;
-        if (mSuccess != groupJoin.mSuccess) return false;
-        if (mDeviceId != groupJoin.mDeviceId) return false;
-        if (mTmpGroupId != null ? !mTmpGroupId.equals(groupJoin.mTmpGroupId) : groupJoin.mTmpGroupId != null)
-            return false;
-        return !(_deviceName != null ? !_deviceName.equals(groupJoin._deviceName) : groupJoin._deviceName != null);
+        if (getGroupId() != groupJoin.getGroupId()) return false;
+        if (getDeviceId() != groupJoin.getDeviceId()) return false;
+        return !(getDeviceName() != null ? !getDeviceName().equals(groupJoin.getDeviceName()) : groupJoin.getDeviceName() != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = mTmpGroupId != null ? mTmpGroupId.hashCode() : 0;
-        result = 31 * result + (_deviceName != null ? _deviceName.hashCode() : 0);
-        result = 31 * result + (_isLocal ? 1 : 0);
-        result = 31 * result + (mSuccess ? 1 : 0);
-        result = 31 * result + mDeviceId;
+        int result = getGroupId();
+        result = 31 * result + (getDeviceName() != null ? getDeviceName().hashCode() : 0);
+        result = 31 * result + getDeviceId();
         return result;
     }
 }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
+import org.noorganization.instalistsynch.model.TempGroupAccessToken;
 
 /**
  * Helper to access synch database.
@@ -26,11 +27,12 @@ public class SynchDbHelper extends SQLiteOpenHelper {
         db.execSQL(GroupAuthAccess.DB_CREATE);
         db.execSQL(GroupAuth.DB_CREATE);
         db.execSQL(GroupMember.DB_CREATE);
+        db.execSQL(TempGroupAccessToken.DB_CREATE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // nothing to update.
+        // nothing to update.
     }
 
     @Override

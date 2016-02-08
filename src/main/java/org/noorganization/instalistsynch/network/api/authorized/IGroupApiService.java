@@ -1,7 +1,7 @@
 package org.noorganization.instalistsynch.network.api.authorized;
 
+import org.noorganization.instalistsynch.model.network.response.GroupAccessKey;
 import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
-import org.noorganization.instalistsynch.model.network.response.GroupResponse;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public interface IGroupApiService {
      * @return nothing.
      */
     @PUT("groups/{id}/devices/{deviceid}")
-    Call<Void> updateDeviceOfGroup(@Path("id") int _id, @Path("deviceid") int _deviceId, @Body List<GroupMemberRetrofit> _groupMembers);
+    Call<Void> updateDeviceOfGroup(@Path("id") int _id, @Path("deviceid") int _deviceId, @Body GroupMemberRetrofit _groupMembers);
 
 
     /**
@@ -51,5 +51,5 @@ public interface IGroupApiService {
      * @return the access token to the group.
      */
     @GET("groups/{id}/access_key")
-    Call<GroupResponse> getGroupAccessKey(@Path("id") int _id);
+    Call<GroupAccessKey> getGroupAccessKey(@Path("id") int _id);
 }

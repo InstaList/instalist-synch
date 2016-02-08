@@ -8,6 +8,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.JacksonConverterFactory;
 import retrofit2.Retrofit;
+import retrofit2.RxJavaCallAdapterFactory;
 
 /**
  * The ServiceGenerator to get a apiservice to inject the auth header.
@@ -23,7 +24,8 @@ public class ApiServiceGenerator {
 
     private static Retrofit.Builder sBuilder = new Retrofit.Builder()
             .baseUrl(API_ENDPOINT_URL)
-            .addConverterFactory(JacksonConverterFactory.create());
+            .addConverterFactory(JacksonConverterFactory.create())
+            .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
 
     /**
      * Call this to generate a apiService with no injected authorization header.

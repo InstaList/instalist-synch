@@ -1,9 +1,9 @@
 package org.noorganization.instalistsynch.network.api.unauthorized;
 
 import org.noorganization.instalistsynch.model.Group;
-import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 import org.noorganization.instalistsynch.model.network.response.GroupResponse;
 import org.noorganization.instalistsynch.model.network.response.RegisterDeviceResponse;
+import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

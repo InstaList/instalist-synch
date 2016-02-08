@@ -15,14 +15,13 @@ public class RFC2617Authorization {
     /**
      * Generates a RFC2617 authorization header.
      *
-     * @param _user     the user id.
+     * @param _userId   the user id.
      * @param _password the password for that user.
      * @return the base64 encoded string with "Basic " in front.
      */
-    public static final String generate(String _user, String _password) {
+    public static final String generate(int _userId, String _password) {
         try {
-            // TODO probably change base64 flag
-            return "Basic ".concat(Base64.encodeToString(_user.concat(":").concat(_password).getBytes("UTF-8"), Base64.NO_WRAP));
+            return "Basic ".concat(Base64.encodeToString(String.valueOf(_userId).concat(":").concat(_password).getBytes("UTF-8"), Base64.NO_WRAP));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             Log.e(LOG_TAG, "generate: unsupported encoding", e.getCause());
