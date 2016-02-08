@@ -4,7 +4,7 @@ import android.util.Log;
 
 import org.noorganization.instalistsynch.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.network.IAuthNetworkController;
-import org.noorganization.instalistsynch.controller.network.UnauthorizedCallbackHandler;
+import org.noorganization.instalistsynch.controller.handler.UnauthorizedCallbackHandler;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 import org.noorganization.instalistsynch.utils.ApiUtils;
