@@ -26,9 +26,10 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
         mDbHelper = new SynchDbHelper(mContext);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        ContentValues cv = new ContentValues(2);
+        ContentValues cv = new ContentValues(3);
         cv.put(TempGroupAccessToken.COLUMN.GROUP_ID, 1000000);
         cv.put(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN, "A983Fw3");
+        cv.put(TempGroupAccessToken.COLUMN.IS_LOCAL, true);
 
         long insertionRow = db.insert(TempGroupAccessToken.TABLE_NAME, null, cv);
         assertTrue(insertionRow >= 0);
@@ -39,8 +40,15 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // delete all inserted just to prevent side effects
         assertEquals(1, db.delete(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.GROUP_ID + " = ? "
                 , new String[]{String.valueOf(1000000)}));
+        db.delete(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.GROUP_ID + " = ? "
+                , new String[]{String.valueOf(1000001)});
+        db.delete(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.GROUP_ID + " = ? "
+                , new String[]{String.valueOf(1000002)});
+
         mContext = null;
 
     }
@@ -59,6 +67,8 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
         ContentValues cv = new ContentValues(2);
         cv.put(TempGroupAccessToken.COLUMN.GROUP_ID, 1000001);
         cv.put(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN, "A983FB3");
+        cv.put(TempGroupAccessToken.COLUMN.IS_LOCAL, false);
+
         long insertionRow = db.insert(TempGroupAccessToken.TABLE_NAME, null, cv);
         assertTrue(insertionRow >= 0);
 
@@ -78,16 +88,23 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ITempGroupAccessTokenDbController tempGroupAccessTokenDbController = TempGroupAccessTokenDbController.getInstance(mContext);
-        assertTrue(tempGroupAccessTokenDbController.insertAccessToken(1000002, "Trolaol"));
+        assertTrue(tempGroupAccessTokenDbController.insertAccessToken(1000002, "Trolaol", false));
 
         Cursor query = db.query(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.ALL_COLUMNS,
                 TempGroupAccessToken.COLUMN.GROUP_ID + " = ? ",
                 new String[]{String.valueOf(1000002)}, null, null, null);
 
         int count = query.getCount();
+        String token = null;
+        if (count == 1) {
+            query.moveToFirst();
+            token = query.getString(query.getColumnIndex(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN));
+        }
+
         query.close();
 
         assertEquals(1, count);
+        assertEquals("Trolaol", token);
         // clean up
         assertEquals(1, db.delete(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.GROUP_ID + " = ? "
                 , new String[]{String.valueOf(1000002)}));
@@ -98,7 +115,7 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ITempGroupAccessTokenDbController tempGroupAccessTokenDbController = TempGroupAccessTokenDbController.getInstance(mContext);
-        assertFalse(tempGroupAccessTokenDbController.insertAccessToken(1000000, "Trolaol"));
+        assertFalse(tempGroupAccessTokenDbController.insertAccessToken(1000000, "Trolaol", false));
 
 
         Cursor query = db.query(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.ALL_COLUMNS,
@@ -114,7 +131,25 @@ public class TempGroupAccessTokenDbControllerTest extends AndroidTestCase {
         query.moveToFirst();
         String token = query.getString(query.getColumnIndex(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN));
         query.close();
-        assertEquals("Trolaol", token);
+        assertEquals("A983Fw3", token);
 
+    }
+
+    public void testInsertMultipleLocalTempGroups() {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        ITempGroupAccessTokenDbController tempGroupAccessTokenDbController = TempGroupAccessTokenDbController.getInstance(mContext);
+        assertFalse(tempGroupAccessTokenDbController.insertAccessToken(1000001, "WowInc", true));
+
+
+        Cursor query = db.query(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.ALL_COLUMNS,
+                TempGroupAccessToken.COLUMN.GROUP_ID + " = ? ",
+                new String[]{String.valueOf(1000001)}, null, null, null);
+
+        int count = query.getCount();
+        String token = null;
+        query.close();
+
+        assertEquals(0, count);
     }
 }

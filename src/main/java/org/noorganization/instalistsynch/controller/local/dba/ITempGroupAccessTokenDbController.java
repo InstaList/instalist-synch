@@ -17,6 +17,13 @@ public interface ITempGroupAccessTokenDbController {
     TempGroupAccessToken getAccessToken(int _groupId);
 
     /**
+     * Get the local access token.
+     *
+     * @return the accesstoken or null if there was no token generated.
+     */
+    TempGroupAccessToken getLocalAccessToken();
+
+    /**
      * Deletes the access token for the given group.
      *
      * @param _groupId the id of the group.
@@ -29,8 +36,9 @@ public interface ITempGroupAccessTokenDbController {
      *
      * @param _groupId   the id of the group.
      * @param _accessKey the accesskey for the group.
+     * @param _isLocal
      * @return true if insertion went good, else false.
      */
-    boolean insertAccessToken(int _groupId, String _accessKey);
+    boolean insertAccessToken(int _groupId, String _accessKey, boolean _isLocal);
 
 }

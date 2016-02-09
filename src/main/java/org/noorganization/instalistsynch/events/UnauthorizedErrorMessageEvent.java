@@ -21,7 +21,7 @@ public class UnauthorizedErrorMessageEvent {
      * Constructor.
      *
      * @param _groupId  the id of the group.
-     * @param _deviceId the id of the device.
+     * @param _deviceId the id of the device. set to -1 if no device is given.
      */
     public UnauthorizedErrorMessageEvent(int _groupId, int _deviceId) {
         mGroupId = _groupId;

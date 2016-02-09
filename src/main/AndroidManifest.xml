@@ -27,7 +27,7 @@
         android:name=".MainApplication"
         android:theme="@style/AppTheme"
         >
-        <activity android:name=".activity.SynchOverview">
+        <activity android:name=".view.activity.SynchOverview">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -59,10 +59,10 @@
         </service>
         <!-- End of Services -->
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".view.activity.LoginActivity"
             android:label="@string/title_activity_login" />
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name=".view.activity.SettingsActivity"
             android:label="@string/title_activity_settings"></activity>
     </application>
 

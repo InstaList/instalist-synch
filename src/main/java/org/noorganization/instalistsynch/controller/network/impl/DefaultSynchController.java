@@ -48,7 +48,6 @@ public class DefaultSynchController implements ISynchController {
                 .getGroupAuthAccesses(true);
 
         if (groupAuthAccessList.size() == 0) {
-            //todo some error
             Log.e(LOG_TAG, "synchronizeAllGroups: no group auths to synch");
             return;
         }

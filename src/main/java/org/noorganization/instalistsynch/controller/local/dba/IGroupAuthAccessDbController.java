@@ -79,7 +79,7 @@ public interface IGroupAuthAccessDbController {
     /**
      * Updates the token in the database.
      *
-     * @param _groupId the deviceid to update
+     * @param _groupId  the deviceid to update
      * @param _newToken the value of the new token.
      * @return true if success else false.
      */
@@ -95,9 +95,9 @@ public interface IGroupAuthAccessDbController {
 
     /**
      * Checks if the given elements device id is already in the database.
-     * @param _deviceId the object to check for.
      *
+     * @param _groupId the object to check for.
      * @return true if it is a new id, false the id already exists.
      */
-    boolean hasIdInDatabase(int _deviceId);
+    boolean hasIdInDatabase(int _groupId);
 }

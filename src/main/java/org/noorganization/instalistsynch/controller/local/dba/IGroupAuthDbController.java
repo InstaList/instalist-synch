@@ -42,7 +42,8 @@ public interface IGroupAuthDbController {
     int removeRegisteredGroup(int _groupId);
 
     /**
-     * Checks if the user already has an group created on this device.
+     * Checks if the user already has an group created on this device. All other groups are not local.
+     * That means that these groupAuth objects are declaring the remote access to the server.
      *
      * @return true if there exists one, else false.
      */

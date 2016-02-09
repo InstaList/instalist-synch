@@ -15,7 +15,7 @@ import org.noorganization.instalistsynch.model.TempGroupAccessToken;
  */
 public class SynchDbHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "ISSynch.db";
 
     public SynchDbHelper(Context context) {
@@ -33,6 +33,12 @@ public class SynchDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // nothing to update.
+        db.execSQL("DROP TABLE IF EXISTS " + GroupAuthAccess.TABLE_NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + GroupAuth.TABLE_NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");
+
+        onCreate(db);
     }
 
     @Override

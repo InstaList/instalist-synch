@@ -1,47 +1,17 @@
-package org.noorganization.instalistsynch.activity;
+package org.noorganization.instalistsynch.view.activity;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.noorganization.instalistsynch.R;
-import org.noorganization.instalistsynch.adapter.GroupExpandableListAdapter;
-import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
-import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
-import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
-import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
-import org.noorganization.instalistsynch.controller.network.impl.V1GroupManagerNetworkDeprecated;
-import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
-import org.noorganization.instalistsynch.events.ErrorMessageEvent;
-import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
-import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
-import org.noorganization.instalistsynch.model.observable.GroupMemberDeleted;
-import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
-import org.noorganization.instalistsynch.events.GroupUpdatedMessageEvent;
-import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupExpandableList;
-import org.noorganization.instalistsynch.model.GroupMember;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import de.greenrobot.event.EventBus;
 
 
 public class SynchOverview extends AppCompatActivity {
@@ -67,7 +37,7 @@ public class SynchOverview extends AppCompatActivity {
 
     private ExpandableListView mExpandableListView;
     private List<GroupExpandableList> mGroupExpandableLists;
-
+/*
     @Override
     public boolean onContextItemSelected(MenuItem _item) {
         ExpandableListView.ExpandableListContextMenuInfo menuInfo = (ExpandableListView.ExpandableListContextMenuInfo) _item.getMenuInfo();
@@ -155,13 +125,13 @@ public class SynchOverview extends AppCompatActivity {
             }
         });
 
-        /*mLoginButton.setOnClickListener(new View.OnClickListener() {
+        *//*mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
             }
         });
-*/
+*//*
         mExpandableListView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo _menuInfo) {
@@ -251,7 +221,7 @@ public class SynchOverview extends AppCompatActivity {
 
     public void onEvent(GroupMemberListMessageEvent _msg) {
         for (GroupExpandableList groupExpandableList : mGroupExpandableLists) {
-            if (groupExpandableList.getGroupAuthAccess().getGroupId().equals(_msg.getDeviceId())) {
+            if (groupExpandableList.getGroupAuthAccess().getGroupId().equals(_msg.getGroupId())) {
                 groupExpandableList.setGroupMemberList(_msg.getGroupMembers());
             }
         }
@@ -295,5 +265,5 @@ public class SynchOverview extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 }

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
@@ -46,8 +47,8 @@ public class GroupMemberDbController implements IGroupMemberDbController {
     }
 
     @Override
-    public GroupMember insert(GroupMember _groupMember) {
-        if(_groupMember.hasNullFields())
+    public GroupMember insert(@NonNull GroupMember _groupMember) {
+        if (_groupMember.hasNullFields())
             return null;
         if (isMemberInGroup(_groupMember))
             return null;
@@ -67,8 +68,8 @@ public class GroupMemberDbController implements IGroupMemberDbController {
 
 
     @Override
-    public boolean update(GroupMember _groupMember) {
-        if(_groupMember.hasNullFields())
+    public boolean update(@NonNull GroupMember _groupMember) {
+        if (_groupMember.hasNullFields())
             return false;
         if (getById(_groupMember.getGroupId(), _groupMember.getDeviceId()) == null)
             return false;
@@ -135,11 +136,11 @@ public class GroupMemberDbController implements IGroupMemberDbController {
      * @param _groupMember the group member to insert.
      * @return true if successful else false.
      */
-    private boolean isMemberInGroup(GroupMember _groupMember) {
+    private boolean isMemberInGroup(@NonNull GroupMember _groupMember) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, GroupMember.COLUMN.GROUP_ID + " = ? AND " + GroupMember.COLUMN.DEVICE_ID + " = ? ",
                 new String[]{String.valueOf(_groupMember.getGroupId()), String.valueOf(_groupMember.getDeviceId())}, null, null, null);
-        boolean ret = cursor.getCount() == 0;
+        boolean ret = cursor.getCount() == 1;
         cursor.close();
         return ret;
     }
@@ -150,7 +151,7 @@ public class GroupMemberDbController implements IGroupMemberDbController {
      * @param _cursor the cursor to get the data from.
      * @return the groupmember.
      */
-    private GroupMember getGroupMemberModel(Cursor _cursor) {
+    private GroupMember getGroupMemberModel(@NonNull Cursor _cursor) {
         GroupMember groupMember = new GroupMember();
 
         boolean access = _cursor.getInt(_cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED)) == 1;

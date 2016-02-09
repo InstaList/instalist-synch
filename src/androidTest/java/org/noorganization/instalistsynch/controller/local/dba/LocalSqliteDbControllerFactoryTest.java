@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.controller.local.impl;
+package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.content.Context;
 import android.test.AndroidTestCase;

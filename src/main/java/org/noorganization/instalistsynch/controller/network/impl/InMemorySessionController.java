@@ -11,7 +11,7 @@ import de.greenrobot.event.EventBus;
 
 /**
  * The InMemorySessionManager that holds the session info inside the cache.
- * Sessions are updatedt from the {@link org.noorganization.instalistsynch.controller.local.IAuthManagerController}.
+ * Sessions are updated from the {@link org.noorganization.instalistsynch.controller.local.IAuthManagerController}.
  * Created by tinos_000 on 08.02.2016.
  */
 public class InMemorySessionController implements ISessionController {

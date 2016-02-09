@@ -44,16 +44,37 @@ public class TempGroupAccessTokenDbController implements ITempGroupAccessTokenDb
     public TempGroupAccessToken getAccessToken(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor accessCursor = db.query(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.ALL_COLUMNS,
-                TempGroupAccessToken.COLUMN.GROUP_ID + " = ?",
+                TempGroupAccessToken.COLUMN.GROUP_ID + " = ? ",
                 new String[]{String.valueOf(_groupId)}, null, null, null);
 
         if (accessCursor.getCount() == 0) {
             return null;
         }
         accessCursor.moveToFirst();
+        int groupId = accessCursor.getInt(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.GROUP_ID));
         String accessToken = accessCursor.getString(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN));
+        boolean isLocal = accessCursor.getInt(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.IS_LOCAL)) == 1;
+
         accessCursor.close();
-        return new TempGroupAccessToken(_groupId, accessToken);
+        return new TempGroupAccessToken(groupId, accessToken, isLocal);
+    }
+
+    @Override
+    public TempGroupAccessToken getLocalAccessToken() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor accessCursor = db.query(TempGroupAccessToken.TABLE_NAME, TempGroupAccessToken.COLUMN.ALL_COLUMNS,
+                TempGroupAccessToken.COLUMN.IS_LOCAL + " = ? ",
+                new String[]{String.valueOf(1)}, null, null, null);
+
+        if (accessCursor.getCount() == 0) {
+            return null;
+        }
+        accessCursor.moveToFirst();
+        int groupId = accessCursor.getInt(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.GROUP_ID));
+        String accessToken = accessCursor.getString(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN));
+        boolean isLocal = accessCursor.getInt(accessCursor.getColumnIndex(TempGroupAccessToken.COLUMN.IS_LOCAL)) == 1;
+        accessCursor.close();
+        return new TempGroupAccessToken(groupId, accessToken, isLocal);
     }
 
     @Override
@@ -66,11 +87,18 @@ public class TempGroupAccessTokenDbController implements ITempGroupAccessTokenDb
     }
 
     @Override
-    public boolean insertAccessToken(int _groupId, String _accessKey) {
-        ContentValues cv = new ContentValues(2);
+    public boolean insertAccessToken(int _groupId, String _accessKey, boolean _isLocal) {
+        // constraint because there should be only one local group
+        if (_isLocal) {
+            TempGroupAccessToken token = getLocalAccessToken();
+            if (token != null)
+                return false;
+        }
+
+        ContentValues cv = new ContentValues(3);
         cv.put(TempGroupAccessToken.COLUMN.GROUP_ID, _groupId);
         cv.put(TempGroupAccessToken.COLUMN.TEMP_GROUP_ACCESS_TOKEN, _accessKey);
-
+        cv.put(TempGroupAccessToken.COLUMN.IS_LOCAL, _isLocal);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         long insertionRow = db.insert(TempGroupAccessToken.TABLE_NAME, null, cv);
 

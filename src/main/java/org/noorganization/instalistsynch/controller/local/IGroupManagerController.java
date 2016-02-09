@@ -1,7 +1,6 @@
 package org.noorganization.instalistsynch.controller.local;
 
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
-import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupMember;
 
 /**
@@ -30,39 +29,31 @@ public interface IGroupManagerController {
     /**
      * Leave the given group.
      *
-     * @param _groupAuth the group to delete.
+     * @param _groupId the group to delete.
+     * @param _deviceId
      */
-    void leaveGroup(GroupAuth _groupAuth);
+    void deleteMemberOfGroup(int _groupId, int _deviceId);
 
     /**
      * Requests an temporary GroupAccessToken.
      *
-     * @param _authToken the auth token for the group to get the access token.
+     * @param _groupId the auth token for the group to get the access token.
      *                   Sends an {@link org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent}.
      */
-    void requestGroupAccessToken(String _authToken);
+    void requestGroupAccessToken(int _groupId);
 
     /**
      * Get all group members with the given auth token
      *
-     * @param _authToken the auth token to the group.
+     * @param _groupId the auth token to the group.
      *                   Creates an GroupMemberListMessageEvent.
      */
-    void getGroupMembers(String _authToken);
-
-    /**
-     * deletes the given groupmember from the server.
-     *
-     * @param _groupMember the member to be deleted.
-     * @param _token
-     */
-    void deleteGroupMember(GroupMember _groupMember, String _token);
+    void getGroupMembers(int _groupId);
 
     /**
      * approve the given groupmember.
-     *
-     * @param _groupMember the groupmember to approve to the list.
-     * @param _token       the token to authorize.
+     *  @param _groupMember the groupmember to approve to the list.
+     * @param _groupId       the token to authorize.
      */
-    void authorizeGroupMember(GroupMember _groupMember, String _token);
+    void authorizeGroupMember(GroupMember _groupMember, int _groupId);
 }

@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.activity;
+package org.noorganization.instalistsynch.view.activity;
 
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;

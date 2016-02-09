@@ -100,6 +100,7 @@ public class GroupAuth {
      */
     private boolean mIsLocal;
 
+
     public int getDeviceId() {
         return mDeviceId;
     }
@@ -134,6 +135,10 @@ public class GroupAuth {
 
     public int getGroupId() {
         return mGroupId;
+    }
+
+    public void setGroupId(int groupId) {
+        mGroupId = groupId;
     }
 
     @Override

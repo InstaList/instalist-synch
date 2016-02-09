@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.noorganization.instalistsynch.activity.LoginActivity;
+import org.noorganization.instalistsynch.view.activity.LoginActivity;
 import org.noorganization.instalistsynch.controller.network.IServerAuthenticate;
 import org.noorganization.instalistsynch.controller.network.impl.ServerAuthenticationFactory;
 

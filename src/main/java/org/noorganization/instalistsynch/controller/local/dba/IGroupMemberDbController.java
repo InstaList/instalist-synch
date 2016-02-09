@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.controller.local.dba;
 
+import android.support.annotation.NonNull;
+
 import org.noorganization.instalistsynch.model.GroupMember;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public interface IGroupMemberDbController {
      * @param _groupMember the groupmember to insert
      * @return the inserted groupmember, with the created uuid. null if something failed
      */
-    GroupMember insert(GroupMember _groupMember);
+    GroupMember insert(@NonNull GroupMember _groupMember);
 
     /**
      * Update the exisiting groupmember entry by the given object.
@@ -24,7 +26,7 @@ public interface IGroupMemberDbController {
      * @param _groupMember the groupmember to be updated.
      * @return true if a element was affected, else false.
      */
-    boolean update(GroupMember _groupMember);
+    boolean update(@NonNull GroupMember _groupMember);
 
     /**
      * Delete the groupmember by its id.

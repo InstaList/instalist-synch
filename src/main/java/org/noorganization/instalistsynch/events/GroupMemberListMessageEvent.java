@@ -9,27 +9,11 @@ import java.util.List;
  * Created by tinos_000 on 02.02.2016.
  */
 public class GroupMemberListMessageEvent {
-    private List<GroupMember> mGroupMembers;
-    private String mDeviceId;
+    public List<GroupMember> mGroupMembers;
+    public int mGroupId;
 
-    public GroupMemberListMessageEvent(List<GroupMember> groupMembers, String deviceId) {
+    public GroupMemberListMessageEvent(List<GroupMember> groupMembers, int deviceId) {
         mGroupMembers = groupMembers;
-        mDeviceId = deviceId;
-    }
-
-    public List<GroupMember> getGroupMembers() {
-        return mGroupMembers;
-    }
-
-    public void setGroupMembers(List<GroupMember> groupMembers) {
-        mGroupMembers = groupMembers;
-    }
-
-    public String getDeviceId() {
-        return mDeviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        mDeviceId = deviceId;
+        mGroupId = deviceId;
     }
 }

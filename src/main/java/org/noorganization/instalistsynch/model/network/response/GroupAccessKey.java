@@ -8,5 +8,5 @@ public class GroupAccessKey {
     /**
      * Contains the access key.
      */
-    public int groupid;
+    public String groupid;
 }

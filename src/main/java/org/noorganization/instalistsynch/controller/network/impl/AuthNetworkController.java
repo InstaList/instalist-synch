@@ -3,8 +3,8 @@ package org.noorganization.instalistsynch.controller.network.impl;
 import android.util.Log;
 
 import org.noorganization.instalistsynch.callback.ICallbackCompleted;
-import org.noorganization.instalistsynch.controller.network.IAuthNetworkController;
 import org.noorganization.instalistsynch.controller.handler.UnauthorizedCallbackHandler;
+import org.noorganization.instalistsynch.controller.network.IAuthNetworkController;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 import org.noorganization.instalistsynch.utils.ApiUtils;
@@ -40,7 +40,7 @@ public class AuthNetworkController implements IAuthNetworkController {
     public void requestAuthToken(ICallbackCompleted<RetrofitAuthToken> _callback, GroupAuth _groupAuth) {
         Call<RetrofitAuthToken> call = ApiUtils.getInstance().getUnauthorizedInstantListApiService().token(_groupAuth.getGroupId(), RFC2617Authorization
                 .generate(_groupAuth.getDeviceId(), _groupAuth.getSecret()));
-        call.enqueue(new UnauthorizedCallbackHandler<>(_callback));
+        call.enqueue(new UnauthorizedCallbackHandler<>(_callback, call));
         Log.i(LOG_TAG, "requestAuthToken: ");
     }
 }
