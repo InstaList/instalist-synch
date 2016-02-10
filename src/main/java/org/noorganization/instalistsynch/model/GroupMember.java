@@ -28,7 +28,7 @@ public class GroupMember {
 
 
     public final static class COLUMN {
-        public static final String GROUP_ID = "group_id";
+        public static final String GROUP_ID = "_id";
         public static final String DEVICE_ID = "device_id";
         public static final String NAME = "name";
         public static final String AUTHORIZED = "authorized";
@@ -124,9 +124,10 @@ public class GroupMember {
 
     /**
      * Checks if the object has some null fields.
+     *
      * @return true if it has, else false.
      */
-    public boolean hasNullFields(){
+    public boolean hasNullFields() {
         return this.mAccessRights == null || this.mName == null;
     }
 }

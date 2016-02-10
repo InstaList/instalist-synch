@@ -1,7 +1,10 @@
 package org.noorganization.instalistsynch.controller.local.dba;
 
+import android.database.Cursor;
+
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.utils.eSORT_MODE;
 
 import java.util.List;
 
@@ -52,6 +55,14 @@ public interface IGroupAuthAccessDbController {
      * @return all saved access data.
      */
     List<GroupAuthAccess> getGroupAuthAccesses();
+
+    /**
+     * Get all {@link GroupAuthAccess} objects.
+     *
+     * @param _sortMode the mode sort the group items id.
+     * @return a cursor to the group authAcess objects.
+     */
+    Cursor getGroupAuthAccessesCursor(eSORT_MODE _sortMode);
 
     /**
      * Get all {@link GroupAuthAccess} objects.

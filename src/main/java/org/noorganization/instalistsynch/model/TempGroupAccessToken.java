@@ -24,7 +24,7 @@ public class TempGroupAccessToken {
     public static final String TABLE_NAME = "temp_group_access_token";
 
     public static final class COLUMN {
-        public final static String GROUP_ID = "group_id";
+        public final static String GROUP_ID = "_id";
         public final static String TEMP_GROUP_ACCESS_TOKEN = "temp_group_access_token";
         public final static String IS_LOCAL = "is_local";
 

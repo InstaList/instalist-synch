@@ -9,9 +9,15 @@ import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbContr
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
 import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
+import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuth;
+import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
+
+import java.util.List;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * The DefaultAuthManagerController implementation. It handles the Authentification of a user.
@@ -39,11 +45,13 @@ public class DefaultAuthManagerController implements IAuthManagerController {
      * Default private controller constructor.
      */
     private DefaultAuthManagerController() {
+        EventBus.getDefault().register(this);
         mSessionController = InMemorySessionController.getInstance();
         dbController = LocalSqliteDbControllerFactory
                 .getAuthAccessDbController(GlobalObjects.getInstance()
                         .getApplicationContext());
     }
+
 
     @Override
     public void requestToken(int _groupId) {
@@ -62,12 +70,25 @@ public class DefaultAuthManagerController implements IAuthManagerController {
     }
 
     @Override
+    public void loadAllSessions() {
+        List<GroupAuthAccess> groupAuthAccessList = dbController.getGroupAuthAccesses(true);
+        InMemorySessionController.getInstance().loadToken(groupAuthAccessList);
+    }
+
+    @Override
     public void invalidateToken(int _groupId) {
         if (_groupId < 0)
             return;
 
         // mSessionController.removeToken(_groupId);
         dbController.updateToken(_groupId, null);
+    }
+
+    public void onEvent(UnauthorizedErrorMessageEvent _msg) {
+        if (_msg == null)
+            return;
+
+        requestToken(_msg.getGroupId());
     }
 
     private class AuthTokenResponse implements ICallbackCompleted<RetrofitAuthToken> {

@@ -39,7 +39,7 @@ public class GroupAuth {
         /**
          * The id of the group.
          */
-        public static final String GROUP_ID = "group_id";
+        public static final String GROUP_ID = "_id";
         /**
          * The column name of DeviceId.
          */

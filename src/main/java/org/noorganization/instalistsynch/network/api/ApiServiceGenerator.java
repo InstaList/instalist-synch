@@ -1,14 +1,16 @@
 package org.noorganization.instalistsynch.network.api;
 
+import org.noorganization.instalistsynch.events.HttpResponseCodeErrorMessageEvent;
+
 import java.io.IOException;
 
+import de.greenrobot.event.EventBus;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.JacksonConverterFactory;
 import retrofit2.Retrofit;
-import retrofit2.RxJavaCallAdapterFactory;
 
 /**
  * The ServiceGenerator to get a apiservice to inject the auth header.
@@ -24,8 +26,7 @@ public class ApiServiceGenerator {
 
     private static Retrofit.Builder sBuilder = new Retrofit.Builder()
             .baseUrl(API_ENDPOINT_URL)
-            .addConverterFactory(JacksonConverterFactory.create())
-            .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
+            .addConverterFactory(JacksonConverterFactory.create());
 
     /**
      * Call this to generate a apiService with no injected authorization header.
@@ -61,7 +62,15 @@ public class ApiServiceGenerator {
                 }
             });
         }
-
+        sHttpClient.addInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Response response = chain.proceed(chain.request());
+                if (response.code() == 500)
+                    EventBus.getDefault().post(new HttpResponseCodeErrorMessageEvent(response.code()));
+                return response;
+            }
+        });
         OkHttpClient client = sHttpClient.build();
         Retrofit retrofit = sBuilder.client(client).build();
         return retrofit.create(_serviceClass);

@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.controller.local.dba;
 
+import android.database.Cursor;
+
 import org.noorganization.instalistsynch.model.GroupAuth;
 
 import java.util.List;
@@ -11,11 +13,19 @@ import java.util.List;
 public interface IGroupAuthDbController {
 
     /**
-     * Get all registered devices. Aka groups.
+     * Get all registered groups.
      *
      * @return a List of all GroupAuth objects or an empty list.
      */
     List<GroupAuth> getRegisteredGroups();
+
+    /**
+     * Get a cursor of the registered groups.
+     * Remember to close the cursor.
+     *
+     * @return a cursor of the registered groups.
+     */
+    Cursor getRegisteredGroupsCursor();
 
     /**
      * Get the GroupAuth object by its id.

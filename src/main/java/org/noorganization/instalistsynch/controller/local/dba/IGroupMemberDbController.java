@@ -1,8 +1,10 @@
 package org.noorganization.instalistsynch.controller.local.dba;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.noorganization.instalistsynch.model.GroupMember;
+import org.noorganization.instalistsynch.utils.eSORT_MODE;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import java.util.List;
  * Created by tinos_000 on 02.02.2016.
  */
 public interface IGroupMemberDbController {
+
 
     /**
      * Insert a GroupMember object into the database.
@@ -49,9 +52,27 @@ public interface IGroupMemberDbController {
     /**
      * Requests a list that contains all members that are registered in the same group as this device.
      *
-     * @param _groupId the associated local device id for this group.
+     * @param _groupId the associated local group id for this group.
      * @return a list of the found members or an empty list.
      */
     List<GroupMember> getByGroup(int _groupId);
+
+    /**
+     * Requests a cursor that contains all members that are registered in the given groupId.
+     * Remember to close the cursor when done
+     *
+     * @param _groupId the associated group id for this group.
+     * @return a list of the found members or an empty list.
+     */
+    Cursor getCursorByGroup(int _groupId);
+
+    /**
+     * Get the cursor to all groupmembers. They will be grouped by their groupid.
+     * Remember to close the cursor when done
+     *
+     * @param _sortMode the mode how to sort the entries.
+     * @return a cursor to all groupmembers
+     */
+    Cursor getAllGroupMembersByGroup(eSORT_MODE _sortMode);
 
 }

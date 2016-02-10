@@ -98,4 +98,5 @@
     <string name="error_auth_token">AuthToken error</string>
     <string name="error_update_device_in_group">Update of device in group failed!</string>
     <string name="abc_remove">Remove</string>
+    <string name="internal_server_error">Internal server error!</string>
 </resources>

@@ -62,6 +62,13 @@ public class GroupAuthDbController implements IGroupAuthDbController {
     }
 
     @Override
+    public Cursor getRegisteredGroupsCursor() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
+        return authCursor;
+    }
+
+    @Override
     public GroupAuth findById(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.GROUP_ID + " = ? ", new String[]{String.valueOf(_groupId)}, null, null, null);

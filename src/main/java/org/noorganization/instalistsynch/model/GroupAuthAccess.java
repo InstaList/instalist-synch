@@ -18,7 +18,7 @@ public class GroupAuthAccess {
         /**
          * The column name of DeviceId.
          */
-        public static final String GROUP_ID = "group_id";
+        public static final String GROUP_ID = "_id";
 
         /**
          * The column name of token.
@@ -68,7 +68,6 @@ public class GroupAuthAccess {
         mLastTokenRequest = new Date(System.currentTimeMillis() - 100000000L);
         mLastUpdated = new Date(System.currentTimeMillis() - 100000000L);
     }
-
 
 
     /**

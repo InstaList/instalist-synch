@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
-import retrofit2.HttpException;
 
 /**
  * The DefaultGroupManagerController the default implementation of {@link IGroupManagerController}
@@ -89,8 +88,10 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         TempGroupAccessToken accessToken = mTempGroupAccessTokenDbController.getLocalAccessToken();
         // if there is an access token available, we know that the device has not joined the group yet.
         if (accessToken != null) {
-            joinGroup(accessToken.getGroupAccessToken(), _deviceName, true, accessToken.getGroupId());
-            return;
+            int groupId = accessToken.getGroupId();
+           // requestGroupAccessToken(groupId);
+            //joinGroup(accessToken.getGroupAccessToken(), _deviceName, true, groupId);
+         //   return;
         }
 
         mGroupNetworkController.createGroup(new CreateGroupResponse(_deviceName));
@@ -154,10 +155,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onError(Throwable _e) {
-            if (_e instanceof HttpException) {
-                HttpException e = (HttpException) _e;
-                EventBus.getDefault().post(new CreateGroupErrorEvent(e.message()));
-            } else if (_e instanceof IOException) {
+            if (_e instanceof IOException) {
                 EventBus.getDefault().post(new CreateGroupNetworkExceptionMessageEvent(mDeviceName, 0));
             } else {
                 EventBus.getDefault().post(new CreateGroupErrorEvent(_e.getLocalizedMessage()));
@@ -192,6 +190,8 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onError(Throwable _e) {
+            String m = _e.getLocalizedMessage();
+            return;
             // some not transient error must happened!
         }
     }
