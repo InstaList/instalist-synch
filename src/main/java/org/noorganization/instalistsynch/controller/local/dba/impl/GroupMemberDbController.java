@@ -10,7 +10,7 @@ import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbCont
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.AccessRight;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSORT_MODE;
+import org.noorganization.instalistsynch.utils.eSortMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,7 +140,7 @@ public class GroupMemberDbController implements IGroupMemberDbController {
     }
 
     @Override
-    public Cursor getAllGroupMembersByGroup(eSORT_MODE _sortMode) {
+    public Cursor getAllGroupMembersByGroup(eSortMode _sortMode) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor cursor = db.query(GroupMember.TABLE_NAME, GroupMember.COLUMN.ALL_COLUMNS, null,
                 null, null, null, GroupMember.COLUMN.GROUP_ID + " " + _sortMode.toString());

@@ -3,5 +3,8 @@
     <item
         android:id="@+id/menu_item_action_authorize"
         android:title="@string/authorize"></item>
-    <item android:id="@+id/menu_item_action_remove" android:title="@string/abc_remove">
-    </item></menu>
+    <item
+        android:id="@+id/menu_item_action_remove"
+        android:title="@string/abc_remove">
+    </item>
+</menu>

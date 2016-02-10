@@ -23,8 +23,8 @@ import org.noorganization.instalistsynch.events.DeletedMemberMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
 import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
-import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
 import org.noorganization.instalistsynch.events.GroupMemberNotExistingMessageEvent;
+import org.noorganization.instalistsynch.events.GroupMemberUpdateMessageEvent;
 import org.noorganization.instalistsynch.events.LocalGroupExistsEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.AccessRight;
@@ -126,10 +126,18 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         mGroupNetworkController.requestGroupAccessToken(new GroupAccessKeyResponse(_groupId), _groupId, authToken);
     }
 
+
     @Override
     public void getGroupMembers(int _groupId) {
         String authToken = mSessionController.getToken(_groupId);
         mGroupNetworkController.getGroupMembers(new GetGroupMemberResponse(_groupId), _groupId, authToken);
+    }
+
+    @Override
+    public void refreshGroupMember() {
+        for (GroupAuth groupAuth : mGroupAuthDbController.getRegisteredGroups()) {
+            getGroupMembers(groupAuth.getGroupId());
+        }
     }
 
     @Override
@@ -185,27 +193,37 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onCompleted(DeviceInfo _next) {
+            mTempGroupAccessTokenDbController.deleteAccessToken(mGroup.getGroupId());
+
             GroupAuth groupAuth = new GroupAuth(mGroup.getGroupId(), _next.getId(), mGroup.getSecret(), mGroup.getDeviceName(), mIsLocal);
-            mGroupAuthDbController.insertRegisteredGroup(groupAuth);
+
+            if (!mGroupAuthDbController.insertRegisteredGroup(groupAuth)) {
+                onError(new Throwable("Insertion into authDb failed!"));
+                return;
+            }
+
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
             groupAuthAccess.setLastUpdated(new Date(0));
             groupAuthAccess.setLastTokenRequest(new Date(0));
             groupAuthAccess.setSynchronize(true);
             groupAuthAccess.setInterrupted(false);
-            mGroupAuthAccessDbController.insert(groupAuthAccess);
-
-            GroupMember groupMember = new GroupMember(mGroup.getGroupId(), _next.getId(), mGroup.getDeviceName(), new AccessRight(_next.getAuthorized(), _next.getAuthorized()));
-            mGroupMemberDbController.insert(groupMember);
-
-            mTempGroupAccessTokenDbController.deleteAccessToken(mGroup.getGroupId());
+            if (IGroupAuthAccessDbController.INSERTION_CODE.CORRECT != mGroupAuthAccessDbController.insert(groupAuthAccess)) {
+                // rollback needed
+                mGroupAuthDbController.removeRegisteredGroup(mGroup.getGroupId());
+                onError(new Throwable("Cannot insert into groupAuthAccess " + groupAuthAccess.toString()));
+                return;
+            }
 
             EventBus.getDefault().post(new GroupJoinedMessageEvent());
             // send this event to trigger authToken fetch!
             EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(groupAuth.getGroupId(), groupAuth.getDeviceId()));
+
+            getGroupMembers(mGroup.getGroupId());
         }
 
         @Override
         public void onError(Throwable _e) {
+            Log.e(LOG_TAG, "onError: ", _e);
             // some not transient error must happened!
         }
     }
@@ -304,8 +322,8 @@ public class DefaultGroupManagerController implements IGroupManagerController {
                     Log.i(LOG_TAG, "onCompleted: update new member: " + groupMemberRetrofit.getName());
                 }
             }
-
-            EventBus.getDefault().post(new GroupMemberListMessageEvent(groupMemberList, mGroupId));
+            EventBus.getDefault().post(new GroupMemberUpdateMessageEvent(mGroupId));
+            // EventBus.getDefault().post(new GroupMemberListMessageEvent(groupMemberList, mGroupId));
         }
 
         @Override

@@ -4,7 +4,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSORT_MODE;
+import org.noorganization.instalistsynch.utils.eSortMode;
 
 import java.util.List;
 
@@ -73,6 +73,6 @@ public interface IGroupMemberDbController {
      * @param _sortMode the mode how to sort the entries.
      * @return a cursor to all groupmembers
      */
-    Cursor getAllGroupMembersByGroup(eSORT_MODE _sortMode);
+    Cursor getAllGroupMembersByGroup(eSortMode _sortMode);
 
 }

@@ -100,4 +100,5 @@
     <string name="abc_remove">Remove</string>
     <string name="internal_server_error">Internal server error!</string>
     <string name="abc_error_member_not_existing">The group member does not exist anymore!</string>
+    <string name="abc_refresh">Refresh</string>
 </resources>

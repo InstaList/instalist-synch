@@ -8,7 +8,7 @@ import java.util.Date;
  */
 public class ModelMapping {
     public String mUUID;
-    public String mDeviceId;
+    public int mGroupId;
     public String mServerSideUUID;
     public String mClientSideUUID;
     public Date mLastServerChanged;
@@ -16,19 +16,19 @@ public class ModelMapping {
 
     public final static class COLUMN {
         public final static String ID = "uuid";
-        public final static String DEVICE_ID = "device_id";
+        public final static String GROUP_ID = "device_id";
         public final static String SERVER_SIDE_UUID = "server_side_uuid";
         public final static String CLIENT_SIDE_UUID = "client_side_uuid";
         public final static String LAST_SERVER_CHANGE = "last_server_change";
         public final static String LAST_CLIENT_CHANGE = "last_server_change";
 
-        public final static String[] ALL_COLUMNS = {ID, DEVICE_ID, SERVER_SIDE_UUID, CLIENT_SIDE_UUID, LAST_SERVER_CHANGE, LAST_CLIENT_CHANGE};
+        public final static String[] ALL_COLUMNS = {ID, GROUP_ID, SERVER_SIDE_UUID, CLIENT_SIDE_UUID, LAST_SERVER_CHANGE, LAST_CLIENT_CHANGE};
     }
 
     public static final String SHOPPING_LIST_MAPPING_TABLE_NAME = "shopping_list_mapping";
     public static final String DB_CREATE_SHOPPING_LIST_MAPPING = "CREATE TABLE " + SHOPPING_LIST_MAPPING_TABLE_NAME + "(" +
             COLUMN.ID + " TEXT PRIMARY KEY NOT NULL, " +
-            COLUMN.DEVICE_ID + " TEXT NOT NULL," +
+            COLUMN.GROUP_ID + " TEXT NOT NULL," +
             COLUMN.SERVER_SIDE_UUID + " TEXT," +
             COLUMN.CLIENT_SIDE_UUID + " TEXT," +
             COLUMN.LAST_SERVER_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'," +
@@ -37,16 +37,17 @@ public class ModelMapping {
 
     /**
      * Constructor of ModelMapping
-     * @param UUID the uuid of the mapping.
-     * @param deviceId the device id (group id)
-     * @param serverSideUUID the uuid on server side.
-     * @param clientSideUUID the uuid on client side.
+     *
+     * @param UUID              the uuid of the mapping.
+     * @param groupId           the group id
+     * @param serverSideUUID    the uuid on server side.
+     * @param clientSideUUID    the uuid on client side.
      * @param lastServerChanged the date when the server has made the last change.
-     * @param lastClientChange the date when the client has made the last change.
+     * @param lastClientChange  the date when the client has made the last change.
      */
-    public ModelMapping(String UUID, String deviceId, String serverSideUUID, String clientSideUUID, Date lastServerChanged, Date lastClientChange) {
+    public ModelMapping(String UUID, int groupId, String serverSideUUID, String clientSideUUID, Date lastServerChanged, Date lastClientChange) {
         mUUID = UUID;
-        mDeviceId = deviceId;
+        mGroupId = groupId;
         mServerSideUUID = serverSideUUID;
         mClientSideUUID = clientSideUUID;
         mLastServerChanged = lastServerChanged;
@@ -61,8 +62,8 @@ public class ModelMapping {
         mUUID = UUID;
     }
 
-    public String getDeviceId() {
-        return mDeviceId;
+    public int getGroupId() {
+        return mGroupId;
     }
 
     public String getServerSideUUID() {

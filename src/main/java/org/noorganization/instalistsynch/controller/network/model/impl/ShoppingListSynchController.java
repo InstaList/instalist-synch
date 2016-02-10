@@ -2,20 +2,16 @@ package org.noorganization.instalistsynch.controller.network.model.impl;
 
 import android.util.Log;
 
-import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.controller.network.model.IModelSynchController;
 import org.noorganization.instalistsynch.events.SynchronizationMessageEvent;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
-import org.noorganization.instalistsynch.utils.GlobalObjects;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
-import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
@@ -41,7 +37,7 @@ public class ShoppingListSynchController implements IModelSynchController {
     }
 
     @Override
-    public void startSynchronization(GroupAuthAccess _groupAuthAccess) {
+    public void startSynchronization(String _groupAuthAccess, int _groupId) {
         // start a thread to synchronize
         /*Call<List<ShoppingListResponse>> shoppingListsSince = mInstantListApiService.getShoppingLists(_groupAuthAccess.getToken(),
                 ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,13 +29,14 @@ import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
 import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
+import org.noorganization.instalistsynch.events.GroupMemberUpdateMessageEvent;
 import org.noorganization.instalistsynch.events.HttpResponseCodeErrorMessageEvent;
 import org.noorganization.instalistsynch.events.LocalGroupExistsEvent;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupExpandableList;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSORT_MODE;
+import org.noorganization.instalistsynch.utils.eSortMode;
 
 import java.util.List;
 
@@ -122,7 +124,7 @@ public class SynchOverview extends AppCompatActivity {
 
         mGroupManagerController = DefaultManagerFactory.getGroupManagerController();
         mGroupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
-        Cursor authAccessCursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSORT_MODE.ASC);
+        Cursor authAccessCursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSortMode.ASC);
 
         mSimpleCursorTreeAdapter = new SimpleCursorTreeAdapter(this, authAccessCursor,
                 android.R.layout.simple_expandable_list_item_1, android.R.layout.simple_expandable_list_item_1,
@@ -196,8 +198,34 @@ public class SynchOverview extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_refresh:
+                mGroupManagerController.refreshGroupMember();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Updates the child cursor, so that the data is on a current state.
+     *
+     * @param _msg the message with the info of the updated group.
+     */
+    public void onEvent(GroupMemberUpdateMessageEvent _msg) {
+        Cursor cursor = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext).getCursorByGroup(_msg.mGroupId);
+        mSimpleCursorTreeAdapter.setChildrenCursor(_msg.mGroupId, cursor);
+    }
+
     public void onEvent(GroupJoinedMessageEvent _msg) {
-        Cursor cursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSORT_MODE.ASC);
+        Cursor cursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSortMode.ASC);
         // also closes the old cursor.
         mSimpleCursorTreeAdapter.changeCursor(cursor);
     }

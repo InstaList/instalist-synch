@@ -9,7 +9,7 @@ import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
-import org.noorganization.instalistsynch.utils.eSORT_MODE;
+import org.noorganization.instalistsynch.utils.eSortMode;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,7 +92,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
     }
 
     @Override
-    public Cursor getGroupAuthAccessesCursor(eSORT_MODE _sortMode) {
+    public Cursor getGroupAuthAccessesCursor(eSortMode _sortMode) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME, GroupAuthAccess.COLUMN.ALL_COLUMNS, null, null, null, null, GroupAuthAccess.COLUMN.GROUP_ID + " " + _sortMode.toString());
         return authAccessCursor;

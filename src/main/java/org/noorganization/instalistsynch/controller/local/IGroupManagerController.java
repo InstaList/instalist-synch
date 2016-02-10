@@ -51,6 +51,11 @@ public interface IGroupManagerController {
     void getGroupMembers(int _groupId);
 
     /**
+     * Refresh all group members.
+     */
+    void refreshGroupMember();
+
+    /**
      * approve the given groupmember.
      *
      * @param _groupId  the id of the group.

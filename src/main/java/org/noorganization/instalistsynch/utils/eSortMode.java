@@ -3,7 +3,7 @@ package org.noorganization.instalistsynch.utils;
 /**
  * The mode to sort the entries.
  */
-public enum eSORT_MODE {
+public enum eSortMode {
     ASC("ASC"),
     DESC("DESC");
 
@@ -14,7 +14,7 @@ public enum eSORT_MODE {
      *
      * @param _string the string by sort mode
      */
-    eSORT_MODE(String _string) {
+    eSortMode(String _string) {
         mMode = _string;
     }
 
