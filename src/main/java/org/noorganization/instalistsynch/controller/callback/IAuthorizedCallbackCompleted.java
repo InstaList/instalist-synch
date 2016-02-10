@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.callback;
+package org.noorganization.instalistsynch.controller.callback;
 
 /**
  * Callback for

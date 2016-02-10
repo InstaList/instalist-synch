@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.auth;
+package org.noorganization.instalistsynch.network.auth;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;

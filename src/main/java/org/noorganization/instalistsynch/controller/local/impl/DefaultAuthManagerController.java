@@ -2,7 +2,8 @@ package org.noorganization.instalistsynch.controller.local.impl;
 
 import android.util.Log;
 
-import org.noorganization.instalistsynch.callback.ICallbackCompleted;
+import org.noorganization.instalist.comm.message.TokenInfo;
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.IAuthManagerController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
@@ -12,7 +13,6 @@ import org.noorganization.instalistsynch.controller.network.impl.NetworkControll
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
-import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.util.List;
@@ -91,7 +91,7 @@ public class DefaultAuthManagerController implements IAuthManagerController {
         requestToken(_msg.getGroupId());
     }
 
-    private class AuthTokenResponse implements ICallbackCompleted<RetrofitAuthToken> {
+    private class AuthTokenResponse implements ICallbackCompleted<TokenInfo> {
 
 
         private GroupAuth mGroupAuth;
@@ -106,9 +106,9 @@ public class DefaultAuthManagerController implements IAuthManagerController {
         }
 
         @Override
-        public void onCompleted(RetrofitAuthToken _next) {
-            mSessionController.addOrUpdateToken(mGroupAuth.getGroupId(), _next.token);
-            dbController.updateToken(mGroupAuth.getGroupId(), _next.token);
+        public void onCompleted(TokenInfo _next) {
+            mSessionController.addOrUpdateToken(mGroupAuth.getGroupId(), _next.getToken());
+            dbController.updateToken(mGroupAuth.getGroupId(), _next.getToken());
         }
 
         @Override

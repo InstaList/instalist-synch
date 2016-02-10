@@ -1,6 +1,6 @@
 package org.noorganization.instalistsynch.controller.handler;
 
-import org.noorganization.instalistsynch.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 
 import retrofit2.Call;

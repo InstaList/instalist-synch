@@ -1,7 +1,6 @@
 package org.noorganization.instalistsynch.controller.local;
 
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
-import org.noorganization.instalistsynch.model.GroupMember;
 
 /**
  * The manager for groups. Processes network and db interaction.
@@ -19,18 +18,19 @@ public interface IGroupManagerController {
 
     /**
      * Join a given group.
-     *  @param _groupAccessKey the temporary generated group access id.
+     *
+     * @param _groupAccessKey the temporary generated group access id.
      * @param _deviceName     the device name.
      * @param _isLocal        indicates if this is a local group or an remote one.
-     * @param _groupId
+     * @param _groupId        the id of the group.
      */
     void joinGroup(String _groupAccessKey, String _deviceName, boolean _isLocal, int _groupId);
 
     /**
      * Leave the given group.
      *
-     * @param _groupId the group to delete.
-     * @param _deviceId
+     * @param _groupId  the group to delete.
+     * @param _deviceId  the id of the device.
      */
     void deleteMemberOfGroup(int _groupId, int _deviceId);
 
@@ -38,7 +38,7 @@ public interface IGroupManagerController {
      * Requests an temporary GroupAccessToken.
      *
      * @param _groupId the auth token for the group to get the access token.
-     *                   Sends an {@link org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent}.
+     *                 Sends an {@link org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent}.
      */
     void requestGroupAccessToken(int _groupId);
 
@@ -46,14 +46,15 @@ public interface IGroupManagerController {
      * Get all group members with the given auth token
      *
      * @param _groupId the auth token to the group.
-     *                   Creates an GroupMemberListMessageEvent.
+     *                 Creates an GroupMemberListMessageEvent.
      */
     void getGroupMembers(int _groupId);
 
     /**
      * approve the given groupmember.
-     *  @param _groupMember the groupmember to approve to the list.
-     * @param _groupId       the token to authorize.
+     *
+     * @param _groupId  the id of the group.
+     * @param _deviceId the id of the device.
      */
-    void authorizeGroupMember(GroupMember _groupMember, int _groupId);
+    void authorizeGroupMember(int _groupId, int _deviceId);
 }

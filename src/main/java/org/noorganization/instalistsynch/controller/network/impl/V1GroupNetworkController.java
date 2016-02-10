@@ -2,22 +2,23 @@ package org.noorganization.instalistsynch.controller.network.impl;
 
 import android.util.Log;
 
-import org.noorganization.instalistsynch.callback.IAuthorizedCallbackCompleted;
-import org.noorganization.instalistsynch.callback.ICallbackCompleted;
+import org.noorganization.instalist.comm.message.DeviceInfo;
+import org.noorganization.instalist.comm.message.DeviceRegistration;
+import org.noorganization.instalist.comm.message.GroupInfo;
+import org.noorganization.instalistsynch.R;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.handler.AuthorizedCallbackHandler;
 import org.noorganization.instalistsynch.controller.handler.UnauthorizedCallbackHandler;
 import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
-import org.noorganization.instalistsynch.model.Group;
+import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.model.network.response.GroupAccessKey;
-import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
-import org.noorganization.instalistsynch.model.network.response.GroupResponse;
-import org.noorganization.instalistsynch.model.network.response.RegisterDeviceResponse;
 import org.noorganization.instalistsynch.network.api.authorized.IGroupApiService;
 import org.noorganization.instalistsynch.utils.ApiUtils;
 
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import retrofit2.Call;
 
 /**
@@ -47,16 +48,20 @@ public class V1GroupNetworkController implements IGroupNetworkController {
 
 
     @Override
-    public void createGroup(ICallbackCompleted<GroupResponse> _callbackCompleted) {
-        Call<GroupResponse> groupCall = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerGroup();
+    public void createGroup(ICallbackCompleted<GroupInfo> _callbackCompleted) {
+        Call<GroupInfo> groupCall = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerGroup();
         groupCall.enqueue(new UnauthorizedCallbackHandler<>(_callbackCompleted, groupCall));
         Log.i(LOG_TAG, "createGroup: enquedCallback");
     }
 
     @Override
-    public void joinGroup(ICallbackCompleted<RegisterDeviceResponse> _callback, String _groupAccessToken, String _deviceName, int _groupId, String _secret) {
-        Group group = new Group(_groupAccessToken, _secret, _deviceName);
-        Call<RegisterDeviceResponse> joinGroupCall = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerDevice(_groupId, group);
+    public void joinGroup(ICallbackCompleted<DeviceInfo> _callback, String _groupAccessToken, String _deviceName, int _groupId, String _secret) {
+        DeviceRegistration registration = new DeviceRegistration();
+        registration.setGroupAuth(_groupAccessToken);
+        registration.setName(_deviceName);
+        registration.setSecret(_secret);
+
+        Call<DeviceInfo> joinGroupCall = ApiUtils.getInstance().getUnauthorizedInstantListApiService().registerDevice(_groupId, registration);
         joinGroupCall.enqueue(new UnauthorizedCallbackHandler<>(_callback, joinGroupCall));
         Log.i(LOG_TAG, "createGroup: enquedCallback");
 
@@ -70,8 +75,8 @@ public class V1GroupNetworkController implements IGroupNetworkController {
     }
 
     @Override
-    public void requestGroupAccessToken(IAuthorizedCallbackCompleted<GroupAccessKey> _callback, int _groupId, String _authToken) {
-        Call<GroupAccessKey> requestAccessTokenCall = ApiUtils.getInstance()
+    public void requestGroupAccessToken(IAuthorizedCallbackCompleted<GroupInfo> _callback, int _groupId, String _authToken) {
+        Call<GroupInfo> requestAccessTokenCall = ApiUtils.getInstance()
                 .getAuthorizedApiService(IGroupApiService.class, _authToken)
                 .getGroupAccessKey(_groupId);
         requestAccessTokenCall.enqueue(new AuthorizedCallbackHandler<>(_groupId, _callback, requestAccessTokenCall));
@@ -79,8 +84,8 @@ public class V1GroupNetworkController implements IGroupNetworkController {
     }
 
     @Override
-    public void getGroupMembers(IAuthorizedCallbackCompleted<List<GroupMemberRetrofit>> _callback, int _groupId, String _authToken) {
-        Call<List<GroupMemberRetrofit>> requestAccessTokenCall = ApiUtils.getInstance()
+    public void getGroupMembers(IAuthorizedCallbackCompleted<List<DeviceInfo>> _callback, int _groupId, String _authToken) {
+        Call<List<DeviceInfo>> requestAccessTokenCall = ApiUtils.getInstance()
                 .getAuthorizedApiService(IGroupApiService.class, _authToken)
                 .getDevicesOfGroup(_groupId);
         requestAccessTokenCall.enqueue(new AuthorizedCallbackHandler<>(_groupId, _callback, requestAccessTokenCall));
@@ -89,15 +94,18 @@ public class V1GroupNetworkController implements IGroupNetworkController {
 
     @Override
     public void authorizeGroupMember(IAuthorizedCallbackCompleted<Void> _callback, GroupMember _groupMember, String _authToken) {
-
-        GroupMemberRetrofit groupMemberRetrofit = new GroupMemberRetrofit();
-        groupMemberRetrofit.authorized = _groupMember.getAccessRights().hasReadRight() && _groupMember.getAccessRights().hasWriteRight();
-        groupMemberRetrofit.id = _groupMember.getGroupId();
-        groupMemberRetrofit.name = _groupMember.getName();
+        if (_groupMember == null || _groupMember.hasNullFields()) {
+            EventBus.getDefault().post(new ErrorMessageEvent(R.string.abc_error_member_not_existing));
+            return;
+        }
+        DeviceInfo deviceInfo = new DeviceInfo();
+        deviceInfo.setId(_groupMember.getGroupId());
+        deviceInfo.setName(_groupMember.getName());
+        deviceInfo.setAuthorized(_groupMember.getAccessRights().hasReadRight() && _groupMember.getAccessRights().hasWriteRight());
 
         Call<Void> authorizeGroupMember = ApiUtils.getInstance()
                 .getAuthorizedApiService(IGroupApiService.class, _authToken)
-                .updateDeviceOfGroup(_groupMember.getGroupId(), _groupMember.getDeviceId(), groupMemberRetrofit);
+                .updateDeviceOfGroup(_groupMember.getGroupId(), _groupMember.getDeviceId(), deviceInfo);
         authorizeGroupMember.enqueue(new AuthorizedCallbackHandler<>(_groupMember.getGroupId(), _callback, authorizeGroupMember));
         Log.i(LOG_TAG, "authorizeGroupMember: enquedCallback");
     }

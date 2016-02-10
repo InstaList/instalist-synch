@@ -1,9 +1,10 @@
 package org.noorganization.instalistsynch.network.api.unauthorized;
 
-import org.noorganization.instalistsynch.model.Group;
-import org.noorganization.instalistsynch.model.network.response.GroupResponse;
+import org.noorganization.instalist.comm.message.DeviceInfo;
+import org.noorganization.instalist.comm.message.DeviceRegistration;
+import org.noorganization.instalist.comm.message.GroupInfo;
+import org.noorganization.instalist.comm.message.TokenInfo;
 import org.noorganization.instalistsynch.model.network.response.RegisterDeviceResponse;
-import org.noorganization.instalistsynch.model.network.response.RetrofitAuthToken;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -24,17 +25,17 @@ public interface IUnauthorizedApiService {
      * @return an temporary group-access-id.
      */
     @POST("groups")
-    Call<GroupResponse> registerGroup();
+    Call<GroupInfo> registerGroup();
 
 
     /**
      * Register this device to a specific group.
      *
-     * @param _group the temporary group object.
+     * @param _registration the registration object.
      * @return the registered device id in this group.
      */
     @POST("groups/{id}/devices")
-    Call<RegisterDeviceResponse> registerDevice(@Path("id") int _id, @Body Group _group);
+    Call<DeviceInfo> registerDevice(@Path("id") int _id, @Body DeviceRegistration _registration);
 
 
     /**
@@ -44,7 +45,7 @@ public interface IUnauthorizedApiService {
      * @return a token for this specific group.
      */
     @GET("groups/{id}/devices/token")
-    Call<RetrofitAuthToken> token(@Path("id") int _id, @Header("Authorization") String _authorization);
+    Call<TokenInfo> token(@Path("id") int _id, @Header("Authorization") String _authorization);
 
 
 }

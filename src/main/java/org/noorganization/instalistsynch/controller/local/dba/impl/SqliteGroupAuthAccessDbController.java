@@ -55,7 +55,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues(4);
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, _groupAuthAccess.getGroupId());
-        cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken());
+        cv.put(GroupAuthAccess.COLUMN.TOKEN, _groupAuthAccess.getToken() == null? "" : _groupAuthAccess.getToken());
         cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAuthAccess.getLastTokenRequest()));
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, _groupAuthAccess.isSynchronize());

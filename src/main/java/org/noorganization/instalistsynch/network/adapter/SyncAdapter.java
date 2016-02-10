@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.adapter;
+package org.noorganization.instalistsynch.network.adapter;
 
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
@@ -22,8 +22,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     /**
      * Set up of the SyncAdapter. Specially for android 3.0+ versions.
      * @param _context the context of the app.
-     * @param _autoInitialize
-     * @param _allowParallelSyncs
+     * @param _autoInitialize true if it should, false if not auto initialize.
+     * @param _allowParallelSyncs allows parallel syncs or not.
      */
     public SyncAdapter(Context _context, boolean _autoInitialize, boolean _allowParallelSyncs) {
         super(_context, _autoInitialize, _allowParallelSyncs);

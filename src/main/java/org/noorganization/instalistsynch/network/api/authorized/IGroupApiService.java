@@ -1,7 +1,7 @@
 package org.noorganization.instalistsynch.network.api.authorized;
 
-import org.noorganization.instalistsynch.model.network.response.GroupAccessKey;
-import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
+import org.noorganization.instalist.comm.message.DeviceInfo;
+import org.noorganization.instalist.comm.message.GroupInfo;
 
 import java.util.List;
 
@@ -24,16 +24,16 @@ public interface IGroupApiService {
      * @return a List of associated GroupMembers.
      */
     @GET("groups/{id}/devices")
-    Call<List<GroupMemberRetrofit>> getDevicesOfGroup(@Path("id") int _id);
+    Call<List<DeviceInfo>> getDevicesOfGroup(@Path("id") int _id);
 
     /**
      * Updates the given groupmember.
      *
-     * @param _groupMembers the groupmember list to be updated.
+     * @param _deviceInfo the info of the device.
      * @return nothing.
      */
     @PUT("groups/{id}/devices/{deviceid}")
-    Call<Void> updateDeviceOfGroup(@Path("id") int _id, @Path("deviceid") int _deviceId, @Body GroupMemberRetrofit _groupMembers);
+    Call<Void> updateDeviceOfGroup(@Path("id") int _id, @Path("deviceid") int _deviceId, @Body DeviceInfo _deviceInfo);
 
 
     /**
@@ -51,5 +51,5 @@ public interface IGroupApiService {
      * @return the access token to the group.
      */
     @GET("groups/{id}/access_key")
-    Call<GroupAccessKey> getGroupAccessKey(@Path("id") int _id);
+    Call<GroupInfo> getGroupAccessKey(@Path("id") int _id);
 }

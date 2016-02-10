@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import org.noorganization.instalistsynch.adapter.SyncAdapter;
+import org.noorganization.instalistsynch.network.adapter.SyncAdapter;
 
 /**
  * Service that returns an IBinder for the sync adapter class.

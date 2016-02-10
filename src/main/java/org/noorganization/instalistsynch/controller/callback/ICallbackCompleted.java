@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.callback;
+package org.noorganization.instalistsynch.controller.callback;
 
 /**
  * Callback when a network request was finally parsed. Use it for a callback of unauthorized callbacks.

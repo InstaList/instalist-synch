@@ -3,9 +3,12 @@ package org.noorganization.instalistsynch.controller.local.impl;
 import android.content.Context;
 import android.util.Log;
 
-import org.noorganization.instalistsynch.callback.IAuthorizedCallbackCompleted;
-import org.noorganization.instalistsynch.callback.ICallbackCompleted;
+import org.noorganization.instalist.comm.message.DeviceInfo;
+import org.noorganization.instalist.comm.message.GroupInfo;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.IGroupManagerController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
 import org.noorganization.instalistsynch.controller.local.dba.ITempGroupAccessTokenDbController;
@@ -19,18 +22,16 @@ import org.noorganization.instalistsynch.events.CreateGroupNetworkExceptionMessa
 import org.noorganization.instalistsynch.events.DeletedMemberMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenErrorMessageEvent;
 import org.noorganization.instalistsynch.events.GroupAccessTokenMessageEvent;
+import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
 import org.noorganization.instalistsynch.events.GroupMemberListMessageEvent;
 import org.noorganization.instalistsynch.events.GroupMemberNotExistingMessageEvent;
 import org.noorganization.instalistsynch.events.LocalGroupExistsEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.AccessRight;
 import org.noorganization.instalistsynch.model.GroupAuth;
+import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
-import org.noorganization.instalistsynch.model.network.response.GroupAccessKey;
-import org.noorganization.instalistsynch.model.network.response.GroupMemberRetrofit;
-import org.noorganization.instalistsynch.model.network.response.GroupResponse;
-import org.noorganization.instalistsynch.model.network.response.RegisterDeviceResponse;
 import org.noorganization.instalistsynch.model.observable.GroupMemberAuthorized;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -54,6 +56,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     private IGroupMemberDbController mGroupMemberDbController;
     private ITempGroupAccessTokenDbController mTempGroupAccessTokenDbController;
     private IGroupNetworkController mGroupNetworkController;
+    private IGroupAuthAccessDbController mGroupAuthAccessDbController;
     private ISessionController mSessionController;
     private Context mContext;
 
@@ -73,6 +76,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
         mTempGroupAccessTokenDbController = LocalSqliteDbControllerFactory.getTempGroupAccessTokenDbController(mContext);
         mGroupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
+        mGroupAuthAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
         mGroupNetworkController = NetworkControllerFactory.getGroupController();
         mSessionController = InMemorySessionController.getInstance();
     }
@@ -89,9 +93,9 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         // if there is an access token available, we know that the device has not joined the group yet.
         if (accessToken != null) {
             int groupId = accessToken.getGroupId();
-           // requestGroupAccessToken(groupId);
-            //joinGroup(accessToken.getGroupAccessToken(), _deviceName, true, groupId);
-         //   return;
+            requestGroupAccessToken(groupId);
+            joinGroup(accessToken.getGroupAccessToken(), _deviceName, true, groupId);
+            return;
         }
 
         mGroupNetworkController.createGroup(new CreateGroupResponse(_deviceName));
@@ -129,9 +133,10 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     }
 
     @Override
-    public void authorizeGroupMember(GroupMember _groupMember, int _groupId) {
+    public void authorizeGroupMember(int _groupId, int _deviceId) {
         String authToken = mSessionController.getToken(_groupId);
-        mGroupNetworkController.authorizeGroupMember(new GroupMemberAuthorizeResponse(_groupId, _groupMember.getDeviceId()), _groupMember, authToken);
+        GroupMember groupMember = mGroupMemberDbController.getById(_groupId, _deviceId);
+        mGroupNetworkController.authorizeGroupMember(new GroupMemberAuthorizeResponse(_groupId, _deviceId), groupMember, authToken);
     }
 
     // -----------------------------------------------------------------------------------------
@@ -139,7 +144,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     /**
      * Response for createGroup request.
      */
-    private class CreateGroupResponse implements ICallbackCompleted<GroupResponse> {
+    private class CreateGroupResponse implements ICallbackCompleted<GroupInfo> {
 
         private String mDeviceName;
 
@@ -148,9 +153,9 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         }
 
         @Override
-        public void onCompleted(GroupResponse _next) {
-            mTempGroupAccessTokenDbController.insertAccessToken(_next.id, _next.accesskey, true);
-            joinGroup(_next.accesskey, mDeviceName, true, _next.id);
+        public void onCompleted(GroupInfo _next) {
+            mTempGroupAccessTokenDbController.insertAccessToken(_next.getId(), _next.getReadableId(), true);
+            joinGroup(_next.getReadableId(), mDeviceName, true, _next.getId());
         }
 
         @Override
@@ -168,7 +173,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     /**
      * Response for joinGroup request.
      */
-    private class JoinGroupResponse implements ICallbackCompleted<RegisterDeviceResponse> {
+    private class JoinGroupResponse implements ICallbackCompleted<DeviceInfo> {
 
         private GroupAuth mGroup;
         private boolean mIsLocal;
@@ -179,19 +184,28 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         }
 
         @Override
-        public void onCompleted(RegisterDeviceResponse _next) {
-            GroupAuth groupAuth = new GroupAuth(mGroup.getGroupId(), _next.deviceid, mGroup.getSecret(), mGroup.getDeviceName(), mIsLocal);
+        public void onCompleted(DeviceInfo _next) {
+            GroupAuth groupAuth = new GroupAuth(mGroup.getGroupId(), _next.getId(), mGroup.getSecret(), mGroup.getDeviceName(), mIsLocal);
             mGroupAuthDbController.insertRegisteredGroup(groupAuth);
+            GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
+            groupAuthAccess.setLastUpdated(new Date(0));
+            groupAuthAccess.setLastTokenRequest(new Date(0));
+            groupAuthAccess.setSynchronize(true);
+            groupAuthAccess.setInterrupted(false);
+            mGroupAuthAccessDbController.insert(groupAuthAccess);
+
+            GroupMember groupMember = new GroupMember(mGroup.getGroupId(), _next.getId(), mGroup.getDeviceName(), new AccessRight(_next.getAuthorized(), _next.getAuthorized()));
+            mGroupMemberDbController.insert(groupMember);
+
             mTempGroupAccessTokenDbController.deleteAccessToken(mGroup.getGroupId());
 
+            EventBus.getDefault().post(new GroupJoinedMessageEvent());
             // send this event to trigger authToken fetch!
             EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(groupAuth.getGroupId(), groupAuth.getDeviceId()));
         }
 
         @Override
         public void onError(Throwable _e) {
-            String m = _e.getLocalizedMessage();
-            return;
             // some not transient error must happened!
         }
     }
@@ -232,7 +246,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     /**
      * Response for getGroupAccessKey request.
      */
-    private class GroupAccessKeyResponse implements IAuthorizedCallbackCompleted<GroupAccessKey> {
+    private class GroupAccessKeyResponse implements IAuthorizedCallbackCompleted<GroupInfo> {
 
         private int mGroupId;
 
@@ -246,8 +260,8 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         }
 
         @Override
-        public void onCompleted(GroupAccessKey _next) {
-            EventBus.getDefault().post(new GroupAccessTokenMessageEvent(mGroupId, _next.groupid));
+        public void onCompleted(GroupInfo _next) {
+            EventBus.getDefault().post(new GroupAccessTokenMessageEvent(mGroupId, _next.getReadableId()));
         }
 
         @Override
@@ -259,7 +273,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     /**
      * Response for get groupMembers request.
      */
-    private class GetGroupMemberResponse implements IAuthorizedCallbackCompleted<List<GroupMemberRetrofit>> {
+    private class GetGroupMemberResponse implements IAuthorizedCallbackCompleted<List<DeviceInfo>> {
 
         private int mGroupId;
 
@@ -273,21 +287,21 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         }
 
         @Override
-        public void onCompleted(List<GroupMemberRetrofit> _next) {
+        public void onCompleted(List<DeviceInfo> _next) {
             List<GroupMember> groupMemberList = new ArrayList<>(_next.size());
-            for (GroupMemberRetrofit groupMemberRetrofit : _next) {
-                GroupMember groupMember = mGroupMemberDbController.getById(mGroupId, groupMemberRetrofit.id);
-                AccessRight accessRight = new AccessRight(groupMemberRetrofit.authorized, groupMemberRetrofit.authorized);
-                GroupMember newMember = new GroupMember(mGroupId, groupMemberRetrofit.id, groupMemberRetrofit.name, accessRight);
+            for (DeviceInfo groupMemberRetrofit : _next) {
+                GroupMember groupMember = mGroupMemberDbController.getById(mGroupId, groupMemberRetrofit.getId());
+                AccessRight accessRight = new AccessRight(groupMemberRetrofit.getAuthorized(), groupMemberRetrofit.getAuthorized());
+                GroupMember newMember = new GroupMember(mGroupId, groupMemberRetrofit.getId(), groupMemberRetrofit.getName(), accessRight);
                 groupMemberList.add(newMember);
                 if (groupMember == null) {
                     // insert
                     mGroupMemberDbController.insert(newMember);
-                    Log.i(LOG_TAG, "onCompleted: insert new member: " + groupMemberRetrofit.name);
+                    Log.i(LOG_TAG, "onCompleted: insert new member: " + groupMemberRetrofit.getName());
                 } else if (!groupMember.equals(newMember)) {
                     //update
                     mGroupMemberDbController.update(newMember);
-                    Log.i(LOG_TAG, "onCompleted: update new member: " + groupMemberRetrofit.name);
+                    Log.i(LOG_TAG, "onCompleted: update new member: " + groupMemberRetrofit.getName());
                 }
             }
 

@@ -1,13 +1,10 @@
 package org.noorganization.instalistsynch.controller.network.impl;
 
 import org.noorganization.instalistsynch.controller.network.ISessionController;
-import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * The InMemorySessionManager that holds the session info inside the cache.
@@ -47,10 +44,7 @@ public class InMemorySessionController implements ISessionController {
 
     @Override
     public String getToken(int _groupId) {
-        String token = mSessions.get(_groupId);
-        if(token == null)
-            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
-        return token;
+        return mSessions.get(_groupId);
     }
 
     @Override

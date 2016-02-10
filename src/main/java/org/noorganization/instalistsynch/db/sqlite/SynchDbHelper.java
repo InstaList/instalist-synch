@@ -15,7 +15,7 @@ import org.noorganization.instalistsynch.model.TempGroupAccessToken;
  */
 public class SynchDbHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
     public static final String DATABASE_NAME = "ISSynch.db";
 
     public SynchDbHelper(Context context) {
@@ -43,6 +43,8 @@ public class SynchDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onOpen(SQLiteDatabase db) {
+        onUpgrade(db, 5, 5);
+
         super.onOpen(db);
     }
 }

@@ -1,10 +1,7 @@
 package org.noorganization.instalistsynch.network.api;
 
-import org.noorganization.instalistsynch.events.HttpResponseCodeErrorMessageEvent;
-
 import java.io.IOException;
 
-import de.greenrobot.event.EventBus;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -62,15 +59,6 @@ public class ApiServiceGenerator {
                 }
             });
         }
-        sHttpClient.addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Response response = chain.proceed(chain.request());
-                if (response.code() == 500)
-                    EventBus.getDefault().post(new HttpResponseCodeErrorMessageEvent(response.code()));
-                return response;
-            }
-        });
         OkHttpClient client = sHttpClient.build();
         Retrofit retrofit = sBuilder.client(client).build();
         return retrofit.create(_serviceClass);
