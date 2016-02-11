@@ -220,8 +220,8 @@ public class SynchOverview extends AppCompatActivity {
      * @param _msg the message with the info of the updated group.
      */
     public void onEvent(GroupMemberUpdateMessageEvent _msg) {
-        Cursor cursor = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext).getCursorByGroup(_msg.mGroupId);
-        mSimpleCursorTreeAdapter.setChildrenCursor(_msg.mGroupId, cursor);
+        Cursor cursor = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext).getRegisteredGroupsCursor();
+        mSimpleCursorTreeAdapter.changeCursor(cursor);
     }
 
     public void onEvent(GroupJoinedMessageEvent _msg) {

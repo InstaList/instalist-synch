@@ -43,7 +43,8 @@ public class SynchDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onOpen(SQLiteDatabase db) {
-        onUpgrade(db, 5, 5);
+
+       // onUpgrade(db, 5, 5);
 
         super.onOpen(db);
     }

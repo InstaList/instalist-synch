@@ -93,7 +93,6 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         // if there is an access token available, we know that the device has not joined the group yet.
         if (accessToken != null) {
             int groupId = accessToken.getGroupId();
-            requestGroupAccessToken(groupId);
             joinGroup(accessToken.getGroupAccessToken(), _deviceName, true, groupId);
             return;
         }

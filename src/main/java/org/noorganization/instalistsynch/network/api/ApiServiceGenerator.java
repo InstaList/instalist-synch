@@ -52,6 +52,7 @@ public class ApiServiceGenerator {
                     Request request = _chain.request();
                     Request.Builder reqBuilder = request.newBuilder();
                     reqBuilder
+                            .removeHeader("Authorization")
                             .addHeader("Authorization", "X-Token ".concat(_token))
                             .method(request.method(), request.body());
                     Request requestRet = reqBuilder.build();

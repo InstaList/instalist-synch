@@ -15,7 +15,7 @@ public class NetworkControllerFactory {
      *
      * @return the instance of V1GroupNetworkController.
      */
-    public static IGroupNetworkController getGroupController() {
+    public static synchronized IGroupNetworkController getGroupController() {
         return V1GroupNetworkController.getInstance();
     }
 
@@ -24,7 +24,7 @@ public class NetworkControllerFactory {
      *
      * @return the instance of InMemorySessionManager.
      */
-    public static ISessionController getSessionController() {
+    public static synchronized ISessionController getSessionController() {
         return InMemorySessionController.getInstance();
     }
 
@@ -33,7 +33,7 @@ public class NetworkControllerFactory {
      *
      * @return the AuthNetworkController instance.
      */
-    public static IAuthNetworkController getAuthNetworkController() {
+    public static synchronized IAuthNetworkController getAuthNetworkController() {
         return AuthNetworkController.getInstance();
     }
 }

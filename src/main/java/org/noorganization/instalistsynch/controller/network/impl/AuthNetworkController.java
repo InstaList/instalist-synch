@@ -25,7 +25,7 @@ public class AuthNetworkController implements IAuthNetworkController {
      *
      * @return the instance.
      */
-    public static AuthNetworkController getInstance() {
+    public static synchronized AuthNetworkController getInstance() {
         if (sInstance == null)
             sInstance = new AuthNetworkController();
 
