@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.greenrobot.event.EventBus;
 
@@ -36,13 +37,8 @@ public class DefaultAuthManagerController implements IAuthManagerController {
     /**
      * The delay that should be  waited until a new request should be made.
      */
-    private static final int REQUEST_DELAY = 1000 * 10; // 10 seconds
+    private static final int REQUEST_DELAY = 1000 * 30; // 10 seconds
 
-    /**
-     * Map the group id to the date when the call for this group was last made.
-     * This should prevent some race conditions if two requests were made in a near specific time.
-     */
-    private Map<Integer, Date> mCallMapping;
 
     /**
      * Get the DefaultAuthManagerController.
@@ -64,8 +60,6 @@ public class DefaultAuthManagerController implements IAuthManagerController {
         dbController = LocalSqliteDbControllerFactory
                 .getAuthAccessDbController(GlobalObjects.getInstance()
                         .getApplicationContext());
-
-        mCallMapping = new Hashtable<>(2);
     }
 
 
@@ -74,17 +68,18 @@ public class DefaultAuthManagerController implements IAuthManagerController {
         Log.i(LOG_TAG, "requestToken: requesting new token for " + _groupId);
         if (_groupId < 0)
             return;
-        GroupAuth groupAuth = LocalSqliteDbControllerFactory
-                .getGroupAuthDbController(GlobalObjects.getInstance()
-                        .getApplicationContext()).findById(_groupId);
 
-        if (groupAuth == null)
-            return;
+        Boolean inProceeding = GlobalObjects.sCallMapping.get(_groupId);
+        if ((inProceeding == null) || !inProceeding) {
 
-        Date date = mCallMapping.get(_groupId);
-        if (date == null || new Date().getTime() < date.getTime() + REQUEST_DELAY) {
+            GlobalObjects.sCallMapping.put(_groupId, true);
+            GroupAuth groupAuth = LocalSqliteDbControllerFactory
+                    .getGroupAuthDbController(GlobalObjects.getInstance()
+                            .getApplicationContext()).findById(_groupId);
+
+            if (groupAuth == null)
+                return;
             NetworkControllerFactory.getAuthNetworkController().requestAuthToken(new AuthTokenResponse(groupAuth), groupAuth);
-            mCallMapping.put(_groupId, new Date());
         }
     }
 
@@ -99,7 +94,7 @@ public class DefaultAuthManagerController implements IAuthManagerController {
         if (_groupId < 0)
             return;
 
-        mCallMapping.remove(_groupId);
+        GlobalObjects.sCallMapping.remove(_groupId);
         mSessionController.removeToken(_groupId);
         dbController.updateToken(_groupId, null);
     }
@@ -127,16 +122,16 @@ public class DefaultAuthManagerController implements IAuthManagerController {
 
         @Override
         public void onCompleted(TokenInfo _next) {
-            mCallMapping.remove(mGroupAuth.getGroupId());
+            GlobalObjects.sCallMapping.put(mGroupAuth.getGroupId(), false);
             mSessionController.addOrUpdateToken(mGroupAuth.getGroupId(), _next.getToken());
             dbController.updateToken(mGroupAuth.getGroupId(), _next.getToken());
         }
 
         @Override
         public void onError(Throwable _e) {
-            mCallMapping.remove(mGroupAuth.getGroupId());
+            GlobalObjects.sCallMapping.put(mGroupAuth.getGroupId(), false);
             _e.printStackTrace();
-            // mSessionController.removeToken(mGroupAuth.getGroupId());
+            mSessionController.removeToken(mGroupAuth.getGroupId());
             // dbController.updateToken(mGroupAuth.getGroupId(), null);
         }
     }

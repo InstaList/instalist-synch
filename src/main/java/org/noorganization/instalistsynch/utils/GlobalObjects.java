@@ -3,12 +3,20 @@ package org.noorganization.instalistsynch.utils;
 import android.content.Context;
 
 import java.security.SecureRandom;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Global object singleton. Holds objects that only must created once.
  * Created by tinos_000 on 29.01.2016.
  */
 public class GlobalObjects {
+
+    /**
+     * Map the group id to a boolean that indicates if the token is currently new requested.
+     *
+     */
+    public static Map<Integer, Boolean> sCallMapping = new ConcurrentHashMap<>(2);
 
     /**
      * Instance of this class.

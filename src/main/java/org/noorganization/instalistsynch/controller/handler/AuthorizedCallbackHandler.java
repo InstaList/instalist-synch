@@ -1,8 +1,11 @@
 package org.noorganization.instalistsynch.controller.handler;
 
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
+import org.noorganization.instalistsynch.utils.GlobalObjects;
 import org.noorganization.instalistsynch.utils.NetworkUtils;
 
+import de.greenrobot.event.EventBus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -42,6 +45,9 @@ public class AuthorizedCallbackHandler<T> implements Callback<T> {
         if (!NetworkUtils.isSuccessful(response)) {
             if (response.code() == 401) {
                 //unauthorized
+                // check if there is not another call to not initiate a new fetch of a new access token for this group.
+                if (GlobalObjects.sCallMapping.get(mGroupId) == null || !GlobalObjects.sCallMapping.get(mGroupId))
+                    EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(mGroupId, -1));
                 mICallbackCompleted.onUnauthorized(mGroupId);
             } else {
                 mICallbackCompleted.onError(new Throwable("Other invalid network request: response code: " + String.valueOf(response.code())));

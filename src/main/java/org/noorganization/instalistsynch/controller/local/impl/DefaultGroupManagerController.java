@@ -244,7 +244,6 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
         }
 
         @Override
@@ -273,7 +272,6 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
         }
 
         @Override
@@ -300,7 +298,6 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
         }
 
         @Override
@@ -346,7 +343,6 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
         }
 
         @Override

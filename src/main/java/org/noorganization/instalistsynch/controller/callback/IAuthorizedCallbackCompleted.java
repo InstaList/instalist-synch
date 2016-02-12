@@ -7,7 +7,7 @@ package org.noorganization.instalistsynch.controller.callback;
 public interface IAuthorizedCallbackCompleted<T> extends ICallbackCompleted<T> {
 
     /**
-     * Called when the user is unauthorized.
+     * Called when the user is unauthorized. It fires an {@link org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent} event.
      *
      * @param _groupId the groupId where the accesstoken is not valid.
      */
