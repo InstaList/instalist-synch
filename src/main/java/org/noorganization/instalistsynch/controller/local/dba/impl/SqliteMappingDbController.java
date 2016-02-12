@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalist.utils.SQLiteUtils;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.exception.SqliteMappingDbControllerException;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
@@ -14,36 +15,35 @@ import org.noorganization.instalistsynch.model.network.ModelMapping;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Sqlite db access controller for ShoppingListModel Mapping
  * Created by tinos_000 on 31.01.2016.
  */
-public class SqliteShoppingListMappingDbController implements IModelMappingDbController {
+public class SqliteMappingDbController implements IModelMappingDbController {
 
-    private static SqliteShoppingListMappingDbController sInstance;
+    private static SqliteMappingDbController sInstance;
     private SynchDbHelper mDbHelper;
     private String mTableName;
 
-    public static SqliteShoppingListMappingDbController getInstance() {
-        if (sInstance == null)
-            sInstance = new SqliteShoppingListMappingDbController();
-
-        return sInstance;
-    }
-
-    private SqliteShoppingListMappingDbController() {
+    public SqliteMappingDbController(String _tableName) throws SqliteMappingDbControllerException {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT name FROM sqlite_master WHERE name='?'", new String[]{_tableName});
+        if(c.getCount() == 0){
+            throw new SqliteMappingDbControllerException("Table " + _tableName + " does not exist!");
+        }
         mTableName = ModelMapping.SHOPPING_LIST_MAPPING_TABLE_NAME;
     }
 
+
+
     @Override
-    public boolean insert(ModelMapping _element) {
+    public ModelMapping insert(ModelMapping _element) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         String uuid = SQLiteUtils.generateId(db, ModelMapping.SHOPPING_LIST_MAPPING_TABLE_NAME).toString();
         _element.setUUID(uuid);
-
+        _element.setUUID(uuid);
         ContentValues cv = new ContentValues(6);
         cv.put(ModelMapping.COLUMN.ID, _element.mUUID);
         cv.put(ModelMapping.COLUMN.GROUP_ID, _element.getGroupId());
@@ -54,9 +54,9 @@ public class SqliteShoppingListMappingDbController implements IModelMappingDbCon
 
         long rowId = db.insert(mTableName, null, cv);
         if (rowId == -1)
-            return false;
+            return null;
 
-        return true;
+        return _element;
     }
 
     @Override

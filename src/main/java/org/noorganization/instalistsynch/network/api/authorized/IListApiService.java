@@ -1,5 +1,6 @@
 package org.noorganization.instalistsynch.network.api.authorized;
 
+import org.noorganization.instalist.comm.message.ListInfo;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalistsynch.model.network.response.RetrofitUUIDResponse;
 import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
@@ -30,7 +31,7 @@ public interface IListApiService {
      * @return the list of lists changed since this date.
      */
     @GET("groups/{id}/lists")
-    Call<List<ShoppingListResponse>> getShoppingLists(@Path("id") int _id, @Query("changedSince") String _sinceTimeString);
+    Call<List<ListInfo>> getShoppingLists(@Path("id") int _id, @Query("changedSince") String _sinceTimeString);
 
     /**
      * Create a ShoppingList with the given id.
@@ -39,7 +40,7 @@ public interface IListApiService {
      * @return the uuid of the created ShoppingList.
      */
     @POST("groups/{id}/lists")
-    Call<RetrofitUUIDResponse> createShoppingList(@Path("id") int _id, @Body ShoppingList _ShoppingList);
+    Call<Void> createShoppingList(@Path("id") int _id, @Body ListInfo _ShoppingList);
 
     //endregion
 
@@ -52,7 +53,7 @@ public interface IListApiService {
      * @return the associated ShoppingList.
      */
     @GET("groups/{id}/lists/{uuid}")
-    Call<ShoppingListResponse> getShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<ListInfo> getShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the ShoppingList by the given ShoppingList.
@@ -62,7 +63,7 @@ public interface IListApiService {
      * @return the uuid of the updated ShoppingList.
      */
     @PUT("groups/{id}/lists/{uuid}")
-    Call<RetrofitUUIDResponse> updateShoppingList(@Path("id") int _id, @Path("uuid") String _uuid, @Body ShoppingList _ShoppingList);
+    Call<Void> updateShoppingList(@Path("id") int _id, @Path("uuid") String _uuid, @Body ListInfo _ShoppingList);
 
     /**
      * Delete the ShoppingList from the remote server with the given id.
@@ -71,6 +72,6 @@ public interface IListApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/lists/{uuid}")
-    Call<RetrofitUUIDResponse> deleteShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
     //endregion
 }

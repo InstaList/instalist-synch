@@ -13,10 +13,10 @@ public interface IModelMappingDbController {
     /**
      * Insert the model element into the database.
      *
-     * @param _element the element to insert.
-     * @return true if insertion was successful, false if not.
+     * @param _element the element to insert. Only the uuid should not be set.
+     * @return the element with a uuid or null if a failure happened.
      */
-    boolean insert(ModelMapping _element);
+    ModelMapping insert(ModelMapping _element);
 
     /**
      * Updates the element at the id given by the element.
