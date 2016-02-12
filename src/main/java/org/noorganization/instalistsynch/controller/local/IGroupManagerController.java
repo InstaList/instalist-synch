@@ -45,8 +45,8 @@ public interface IGroupManagerController {
     /**
      * Get all group members with the given auth token
      *
-     * @param _groupId the auth token to the group.
-     *                 Creates an GroupMemberListMessageEvent.
+     * @param _groupId id of the group.
+     * Creates an GroupMemberListMessageEvent.
      */
     void getGroupMembers(int _groupId);
 

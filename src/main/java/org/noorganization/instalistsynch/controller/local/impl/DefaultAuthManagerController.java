@@ -35,12 +35,6 @@ public class DefaultAuthManagerController implements IAuthManagerController {
     private IGroupAuthAccessDbController dbController;
 
     /**
-     * The delay that should be  waited until a new request should be made.
-     */
-    private static final int REQUEST_DELAY = 1000 * 30; // 10 seconds
-
-
-    /**
      * Get the DefaultAuthManagerController.
      *
      * @return the DefaultAuthManagerController instance.

@@ -1,5 +1,6 @@
 package org.noorganization.instalistsynch.controller.local.impl;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -26,6 +27,7 @@ import org.noorganization.instalistsynch.events.GroupJoinedMessageEvent;
 import org.noorganization.instalistsynch.events.GroupMemberNotExistingMessageEvent;
 import org.noorganization.instalistsynch.events.GroupMemberUpdateMessageEvent;
 import org.noorganization.instalistsynch.events.LocalGroupExistsEvent;
+import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.AccessRight;
 import org.noorganization.instalistsynch.model.GroupAuth;
@@ -40,7 +42,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.greenrobot.event.EventBus;
 
@@ -61,6 +65,22 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     private Context mContext;
 
     /**
+     * The request type that is buffered and waits for a token.
+     */
+    enum eRequestType {
+        GROUP_ACCESS_TOKEN,
+        DELETE_MEMBER,
+        GET_MEMBERS,
+        AUTHORIZE_MEMBER,
+        ALL,;
+    }
+
+    /**
+     * All cached tasks that should be executed.
+     */
+    private Map<Integer, Map<eRequestType, Object>> mCachedTaskObjects;
+
+    /**
      * Get the DefaultGroupManagerController instance.
      *
      * @return DefaultGroupManagerController instance.
@@ -79,6 +99,8 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         mGroupAuthAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
         mGroupNetworkController = NetworkControllerFactory.getGroupController();
         mSessionController = InMemorySessionController.getInstance();
+        mCachedTaskObjects = new HashMap();
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -115,21 +137,56 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     @Override
     public void deleteMemberOfGroup(int _groupId, int _deviceId) {
         String authToken = mSessionController.getToken(_groupId);
-        // lazy loading, do not check if null, because an event is triggered when token is not valid.
-        mGroupNetworkController.deleteMemberOfGroup(new DeleteMemberResponse(_groupId, _deviceId), authToken, _groupId, _deviceId);
+        DeleteMemberResponse deleteGroupMember = new DeleteMemberResponse(_groupId, _deviceId);
+
+        if (authToken != null) {
+            mGroupNetworkController.deleteMemberOfGroup(deleteGroupMember, authToken, _groupId, _deviceId);
+        } else {
+            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, _deviceId));
+            queueAuthorizedQueue(_groupId, eRequestType.DELETE_MEMBER, deleteGroupMember);
+        }
+
     }
 
     @Override
     public void requestGroupAccessToken(int _groupId) {
         String authToken = mSessionController.getToken(_groupId);
-        mGroupNetworkController.requestGroupAccessToken(new GroupAccessKeyResponse(_groupId), _groupId, authToken);
+        GroupAccessKeyResponse groupAccessKeyResponse = new GroupAccessKeyResponse(_groupId);
+        if (authToken != null) {
+            mGroupNetworkController.requestGroupAccessToken(groupAccessKeyResponse, _groupId, authToken);
+        } else {
+            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
+            queueAuthorizedQueue(_groupId, eRequestType.GROUP_ACCESS_TOKEN, groupAccessKeyResponse);
+        }
     }
-
 
     @Override
     public void getGroupMembers(int _groupId) {
         String authToken = mSessionController.getToken(_groupId);
-        mGroupNetworkController.getGroupMembers(new GetGroupMemberResponse(_groupId), _groupId, authToken);
+
+        GetGroupMemberResponse response = new GetGroupMemberResponse(_groupId);
+        if (authToken != null) {
+            mGroupNetworkController.getGroupMembers(response, _groupId, authToken);
+        } else {
+            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
+            queueAuthorizedQueue(_groupId, eRequestType.GET_MEMBERS, response);
+        }
+    }
+
+
+    @Override
+    public void authorizeGroupMember(int _groupId, int _deviceId) {
+        String authToken = mSessionController.getToken(_groupId);
+        GroupMember groupMember = mGroupMemberDbController.getById(_groupId, _deviceId);
+        GroupMemberAuthorizeResponse response = new GroupMemberAuthorizeResponse(_groupId, _deviceId);
+
+        if (authToken != null) {
+            mGroupNetworkController.authorizeGroupMember(response, groupMember, authToken);
+
+        } else {
+            EventBus.getDefault().post(new UnauthorizedErrorMessageEvent(_groupId, -1));
+            queueAuthorizedQueue(_groupId, eRequestType.AUTHORIZE_MEMBER, response);
+        }
     }
 
     @Override
@@ -139,12 +196,55 @@ public class DefaultGroupManagerController implements IGroupManagerController {
         }
     }
 
-    @Override
-    public void authorizeGroupMember(int _groupId, int _deviceId) {
-        String authToken = mSessionController.getToken(_groupId);
-        GroupMember groupMember = mGroupMemberDbController.getById(_groupId, _deviceId);
-        mGroupNetworkController.authorizeGroupMember(new GroupMemberAuthorizeResponse(_groupId, _deviceId), groupMember, authToken);
+    @SuppressLint("Eventbus")
+    public void onEvent(TokenMessageEvent _msg) {
+        Map<eRequestType, Object> map = mCachedTaskObjects.get(_msg.getGroupId());
+        if (map == null || map.size() == 0)
+            return;
+
+        mCachedTaskObjects.remove(_msg.getGroupId());
+        for (eRequestType requestType : map.keySet()) {
+            Object obj = map.get(requestType);
+            switch (requestType) {
+                case GROUP_ACCESS_TOKEN:
+                    GroupAccessKeyResponse accessKeyResponse = (GroupAccessKeyResponse) obj;
+                    requestGroupAccessToken(accessKeyResponse.mGroupId);
+                    break;
+                case DELETE_MEMBER:
+                    DeleteMemberResponse deleteMemberResponse = (DeleteMemberResponse) obj;
+                    deleteMemberOfGroup(deleteMemberResponse.mGroupId, deleteMemberResponse.mDeviceId);
+                    break;
+                case GET_MEMBERS:
+                    GetGroupMemberResponse groupMemberResponse = (GetGroupMemberResponse) obj;
+                    getGroupMembers(groupMemberResponse.mGroupId);
+                    break;
+                case AUTHORIZE_MEMBER:
+                    GroupMemberAuthorizeResponse groupMemberAuthorizeResponse = (GroupMemberAuthorizeResponse) obj;
+                    authorizeGroupMember(groupMemberAuthorizeResponse.mGroupId, groupMemberAuthorizeResponse.mDeviceId);
+                    break;
+                case ALL:
+                    break;
+            }
+        }
     }
+
+
+    /**
+     * Queue an authorized action if there is no auth token.
+     *
+     * @param _groupId       the id of the group.
+     * @param _requestType   the type of the request.
+     * @param _requestObject the requested object.
+     */
+    private void queueAuthorizedQueue(int _groupId, eRequestType _requestType, Object _requestObject) {
+        if (mCachedTaskObjects.get(_groupId) == null) {
+            mCachedTaskObjects.put(_groupId, new HashMap<eRequestType, Object>(eRequestType.ALL.ordinal()));
+        }
+        Map<eRequestType, Object> map = mCachedTaskObjects.get(_groupId);
+        map.put(_requestType, _requestObject);
+        mCachedTaskObjects.put(_groupId, map);
+    }
+
 
     // -----------------------------------------------------------------------------------------
 

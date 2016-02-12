@@ -188,13 +188,17 @@ public class SynchOverview extends AppCompatActivity {
                     // has no child
                     inflater.inflate(R.menu.action_menu_group, menu);
                 } else {
-                    inflater.inflate(R.menu.action_menu_child, menu);
-                }
+                    Cursor cursor = mSimpleCursorTreeAdapter.getChild(groupPos, childPos);
 
+                    if (cursor.getCount() > 1) {
+                        boolean authorized = cursor.getInt(cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED)) == 1;
+                        inflater.inflate(R.menu.action_menu_child, menu);
+                        if (authorized)
+                            menu.removeItem(R.id.menu_item_action_authorize);
+                    }
+                }
             }
         });
-
-
     }
 
 
