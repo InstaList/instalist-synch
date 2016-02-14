@@ -17,12 +17,16 @@ import retrofit2.Call;
  */
 public class ListNetworkController implements IListNetworkController {
 
-    private ListNetworkController sInstance;
+    private static ListNetworkController sInstance;
 
-    public ListNetworkController getsInstance() {
+    public static ListNetworkController getInstance() {
         if (sInstance == null)
             sInstance = new ListNetworkController();
         return sInstance;
+    }
+
+    private ListNetworkController(){
+
     }
 
     @Override

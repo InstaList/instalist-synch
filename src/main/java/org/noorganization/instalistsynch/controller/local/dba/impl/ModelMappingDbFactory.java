@@ -18,7 +18,7 @@ public class ModelMappingDbFactory {
 
     private final static int SHOPPING_LIST = 0;
 
-    ModelMappingDbFactory getInstance() {
+    public static ModelMappingDbFactory getInstance() {
         if (sInstance == null)
             sInstance = new ModelMappingDbFactory();
 
@@ -34,7 +34,7 @@ public class ModelMappingDbFactory {
      *
      * @return the controller to handle ShoppingListMapping Db interactions. Or null if table does not exist!
      */
-    private IModelMappingDbController getSqliteShoppingListMappingDbController() {
+    public IModelMappingDbController getSqliteShoppingListMappingDbController() {
         if (mModelDbMap.get(SHOPPING_LIST) == null) {
             try {
                 mModelDbMap.put(SHOPPING_LIST, new SqliteMappingDbController(ModelMapping.SHOPPING_LIST_MAPPING_TABLE_NAME));
@@ -46,4 +46,8 @@ public class ModelMappingDbFactory {
         return (IModelMappingDbController) mModelDbMap.get(SHOPPING_LIST);
     }
 
+    public IModelMappingDbController getSqliteCategoryMappingDbController() {
+        //TODO implement
+        return null;
+    }
 }

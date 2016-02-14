@@ -1,5 +1,6 @@
 package org.noorganization.instalistsynch.controller.network.model.impl;
 
+import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
 import org.noorganization.instalistsynch.controller.network.model.IModelSynchController;
 
 /**
@@ -12,7 +13,7 @@ public class ModelSynchControllerFactory {
      * Get the instance of the {@link ShoppingListSynchController}.
      * @return the SynchController of the ShoppingList.
      */
-    public static IModelSynchController getShoppingListSynchController(){
-        return ShoppingListSynchController.getInstance();
+    public static IListNetworkController getShoppingListSynchController(){
+        return ListNetworkController.getInstance();
     }
 }
