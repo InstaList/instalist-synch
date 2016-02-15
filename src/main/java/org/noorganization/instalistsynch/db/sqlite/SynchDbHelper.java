@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
+import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
 
 /**
@@ -28,6 +29,7 @@ public class SynchDbHelper extends SQLiteOpenHelper {
         db.execSQL(GroupAuth.DB_CREATE);
         db.execSQL(GroupMember.DB_CREATE);
         db.execSQL(TempGroupAccessToken.DB_CREATE);
+        db.execSQL(TaskErrorLog.DB_CREATE);
     }
 
     @Override
@@ -37,7 +39,7 @@ public class SynchDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + GroupAuth.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");
-
+        db.execSQL("DROP TABLE IF EXISTS " + TaskErrorLog.TABLE_NAME + ";");
         onCreate(db);
     }
 

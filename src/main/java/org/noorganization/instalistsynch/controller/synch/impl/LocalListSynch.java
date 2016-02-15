@@ -1,6 +1,7 @@
 package org.noorganization.instalistsynch.controller.synch.impl;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
@@ -16,12 +17,18 @@ import org.noorganization.instalist.presenter.implementation.ControllerFactory;
 import org.noorganization.instalist.utils.ProviderUtils;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.ISynchLogDbController;
+import org.noorganization.instalistsynch.controller.local.dba.ITaskErrorLogDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
 import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
 import org.noorganization.instalistsynch.controller.network.model.impl.ModelSynchControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.ILocalListSynch;
+import org.noorganization.instalistsynch.controller.synch.task.ITask;
+import org.noorganization.instalistsynch.controller.synch.task.list.ListDeleteTask;
+import org.noorganization.instalistsynch.controller.synch.task.list.ListInsertTask;
+import org.noorganization.instalistsynch.events.MergeConflictMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
@@ -30,6 +37,7 @@ import org.noorganization.instalistsynch.utils.GlobalObjects;
 import java.security.Provider;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -83,88 +91,43 @@ public class LocalListSynch implements ILocalListSynch {
 
         @Override
         public void onCompleted(List<ListInfo> _next) {
-            IListController controller = ControllerFactory.getListController(GlobalObjects.getInstance().getApplicationContext());
-            ICategoryController categoryController = ControllerFactory.getCategoryController(GlobalObjects.getInstance().getApplicationContext());
-            Cursor cursor = mResolver.query(
-                    Uri.withAppendedPath(ProviderUtils.BASE_CONTENT_URI, "list"),
-                    ShoppingList.COLUMN.ALL_COLUMNS, null, null, null);
 
+            List<ITask> tasks = new ArrayList<>(_next.size());
+            // tasks that are waiting for a category.
+            List<ITask> tasksAwaitingCategories = new ArrayList<>((_next.size() + 1) / 10);
+
+            Context context = GlobalObjects.getInstance().getApplicationContext();
+            IListController controller = ControllerFactory.getListController(context);
+            ICategoryController categoryController = ControllerFactory.getCategoryController(context);
+            ITaskErrorLogDbController taskErrorLogDbController = LocalSqliteDbControllerFactory.getTaskErrorLogDbController(context);
             IModelMappingDbController modelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
             IModelMappingDbController modelCategoryMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
 
             for (ListInfo listInfo : _next) {
                 List<ModelMapping> listModelMappingList = modelMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{listInfo.getUUID()});
-                if (listModelMappingList.size() == 0) {
-                    Category category = null;
-                    if (listInfo.getCategoryUUID() != null) {
-                        // if this list is assigned to a category
-                        List<ModelMapping> categoryModelMappingList = modelCategoryMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{listInfo.getCategoryUUID()});
-                        if (categoryModelMappingList.size() == 0) {
-                            // TODO create this category
-                            // this should never happen
-                            // if this happen there is data invalid on the server or on the client.
-                        }
-                        category = categoryController.getCategoryByID(categoryModelMappingList.get(0).getClientSideUUID());
-                    }
-                    // insert a list with deps to a category or not
-                    ShoppingList list = controller.addList(listInfo.getName(), category);
-                    try {
-                        Date lastChange = ISO8601Utils.parse(listInfo.getLastChanged(), new ParsePosition(0));
-                        // insert this into the database
-                        modelMappingDbController.insert(new ModelMapping(null, mGroupId, listInfo.getUUID(), list.mUUID, lastChange, lastChange));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "onCompleted: problem while parsing date", e);
-                        // TODO insert an action that has to be done! Rollback!
-                        if (!controller.removeList(list)) {
-                            // TODO action to schedule this list for removal
-                            // skip to the next sent listInfo
-                            continue;
-                        }
-                    }
+                if (listInfo.getDeleted()) {
+                    // elements deleted on server.
+                    if (listModelMappingList.size() > 0)
+                        tasks.add(new ListDeleteTask(listModelMappingList.get(0), controller, modelMappingDbController));
                 } else {
-                    // there is a local shoppinglist
-                    // get the local uuid
-                    ModelMapping modelMapping = listModelMappingList.get(0);
-                    String uuid = modelMapping.getClientSideUUID();
-                    ShoppingList list = controller.getListById(uuid);
-                    if (listInfo.getDeleted()) {
-                        // deleted on server side.
-                        removeLocalList(controller, modelMappingDbController, modelMapping, list);
-                    } else {
-                        // not deleted
-                        if (!list.mName.contentEquals(listInfo.getName())) {
-                            list = controller.renameList(list, listInfo.getName());
-                            if (list == null) {
-                                // TODO retry the insertion
-                                // jump to the next.
-                                continue;
-                            }
-                        }
-                        if (list.mCategory == null) {
-                            if (listInfo.getCategoryUUID() != null) {
-                                // TODO update these entries
-                            }
-                        }
+                    // elements are new or changed
+                    ModelMapping modelMapping = listModelMappingList.size() == 0 ? null : listModelMappingList.get(0);
+                    tasks.add(new ListInsertTask(modelMapping, listInfo, controller,
+                            categoryController, modelMappingDbController, modelCategoryMappingDbController, mGroupId));
+                }
+            }
 
+            for (ITask task : tasks) {
+                int returnCode = task.execute(ITask.ResolveCodes.NO_RESOLVE);
+                if (returnCode != ITask.ReturnCodes.SUCCESS) {
+                    if (returnCode == ITask.ReturnCodes.MERGE_CONFLICT) {
+                        // TODDO use conflict code
+                        EventBus.getDefault().post(new MergeConflictMessageEvent(mGroupId, task.getUUID()));
                     }
+                    taskErrorLogDbController.insert(task.getUUID(), ISynchLogDbController.eModelType.LIST.ordinal(), returnCode, mGroupId);
                 }
             }
-        }
 
-        private void removeLocalList(IListController controller, IModelMappingDbController modelMappingDbController, ModelMapping modelMapping, ShoppingList list) {
-            // if the list was deleted
-
-            // delete the local list
-            if (controller.removeList(list)) {
-                if (!modelMappingDbController.delete(modelMapping)) {
-                    // TODO what  to do in here.
-                }
-            } else {
-                // removing was not possible.
-                // TODO
-            }
-            // end of delete area.
         }
 
         @Override
