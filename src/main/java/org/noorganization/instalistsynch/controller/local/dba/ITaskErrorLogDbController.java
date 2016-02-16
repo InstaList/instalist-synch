@@ -30,6 +30,13 @@ public interface ITaskErrorLogDbController {
     List<TaskErrorLog> get(int _groupId, int _type, int _errorType);
 
     /**
+     * Find the TaskErrorLog by its id.
+     * @param _id the id of the error log.
+     * @return the TaskErrorLog.
+     */
+    TaskErrorLog findById(int _id);
+
+    /**
      * Remove entry by its given id.
      * @param _id the id of the element to remove.
      */

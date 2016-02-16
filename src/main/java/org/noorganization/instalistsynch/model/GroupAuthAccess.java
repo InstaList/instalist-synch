@@ -28,8 +28,9 @@ public class GroupAuthAccess {
         /**
          * The column name of last updated.
          */
-        public static final String LAST_UPDATED = "last_updated";
+        public static final String LAST_UPDATE_FROM_SERVER = "last_update_from_server";
 
+        public static final String LAST_UPDATE_FROM_CLIENT = "last_update_from_client";
         /**
          * The column name of last token request.
          */
@@ -48,13 +49,14 @@ public class GroupAuthAccess {
         /**
          * All column names.
          */
-        public static final String ALL_COLUMNS[] = {GROUP_ID, TOKEN, LAST_UPDATED, LAST_TOKEN_REQUEST, SYNCHRONIZE, INTERRUPTED};
+        public static final String ALL_COLUMNS[] = {GROUP_ID, TOKEN, LAST_UPDATE_FROM_SERVER, LAST_UPDATE_FROM_CLIENT, LAST_TOKEN_REQUEST, SYNCHRONIZE, INTERRUPTED};
     }
 
     public static final String DB_CREATE = "CREATE TABLE " + TABLE_NAME + " (" +
             COLUMN.GROUP_ID + " INTEGER PRIMARY KEY NOT NULL, " +
             COLUMN.TOKEN + " TEXT NOT NULL, " +
-            COLUMN.LAST_UPDATED + " TEXT NOT NULL, " +
+            COLUMN.LAST_UPDATE_FROM_SERVER + " TEXT NOT NULL, " +
+            COLUMN.LAST_UPDATE_FROM_CLIENT + " TEXT NOT NULL, " +
             COLUMN.LAST_TOKEN_REQUEST + " TEXT NOT NULL," +
             COLUMN.SYNCHRONIZE + " INTEGER NOT NULL," +
             COLUMN.INTERRUPTED + " INTEGER NOT NULL," +
@@ -66,7 +68,7 @@ public class GroupAuthAccess {
         mGroupId = groupId;
         mToken = token;
         mLastTokenRequest = new Date(System.currentTimeMillis() - 100000000L);
-        mLastUpdated = new Date(System.currentTimeMillis() - 100000000L);
+        mLastUpdateFromServer = new Date(System.currentTimeMillis() - 100000000L);
     }
 
 
@@ -83,7 +85,12 @@ public class GroupAuthAccess {
     /**
      * The date when this device/group was last updated.
      */
-    private Date mLastUpdated;
+    private Date mLastUpdateFromServer;
+
+    /**
+     * The last update from the client.
+     */
+    private Date mLastUpdateFromClient;
 
     /**
      * The date when the token was last refreshed.
@@ -112,12 +119,12 @@ public class GroupAuthAccess {
         mToken = token;
     }
 
-    public Date getLastUpdated() {
-        return mLastUpdated;
+    public Date getLastUpdateFromServer() {
+        return mLastUpdateFromServer;
     }
 
-    public void setLastUpdated(Date lastUpdated) {
-        mLastUpdated = lastUpdated;
+    public void setLastUpdateFromServer(Date lastUpdateFromServer) {
+        mLastUpdateFromServer = lastUpdateFromServer;
     }
 
     public Date getLastTokenRequest() {
@@ -142,5 +149,13 @@ public class GroupAuthAccess {
 
     public void setInterrupted(boolean interrupted) {
         mInterrupted = interrupted;
+    }
+
+    public Date getLastUpdateFromClient() {
+        return mLastUpdateFromClient;
+    }
+
+    public void setLastUpdateFromClient(Date lastUpdateFromClient) {
+        mLastUpdateFromClient = lastUpdateFromClient;
     }
 }

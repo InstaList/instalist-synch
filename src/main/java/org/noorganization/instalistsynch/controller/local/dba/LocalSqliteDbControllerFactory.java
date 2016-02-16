@@ -2,12 +2,12 @@ package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.content.Context;
 
+import org.noorganization.instalistsynch.controller.local.dba.impl.ClientLogDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.GroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.GroupMemberDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.SqliteGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.TaskErrorLogDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.TempGroupAccessTokenDbController;
-import org.noorganization.instalistsynch.controller.synch.task.ITask;
 
 /**
  * Get all controllers that manage the access to database.
@@ -64,4 +64,16 @@ public class LocalSqliteDbControllerFactory {
     public static ITaskErrorLogDbController getTaskErrorLogDbController(Context _context) {
         return TaskErrorLogDbController.getInstance(_context);
     }
+
+    /**
+     * Get the sqlite implementation of the {@link ITaskErrorLogDbController} interface.
+     *
+     * @param _context the context of the app.
+     * @return the requested controller instance.
+     */
+    public static IClientLogDbController getClientLogController(Context _context) {
+        return ClientLogDbController.getInstance(_context);
+    }
+
+
 }

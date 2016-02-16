@@ -40,7 +40,7 @@ public class ShoppingListSynchController implements IModelSynchController {
     public void startSynchronization(String _groupAuthAccess, int _groupId) {
         // start a thread to synchronize
         /*Call<List<ShoppingListResponse>> shoppingListsSince = mInstantListApiService.getShoppingLists(_groupAuthAccess.getToken(),
-                ISO8601Utils.format(_groupAuthAccess.getLastUpdated()));
+                ISO8601Utils.format(_groupAuthAccess.getLastUpdateFromServer()));
 
         shoppingListsSince.enqueue(new GetShoppingListsSinceCallback());
 */

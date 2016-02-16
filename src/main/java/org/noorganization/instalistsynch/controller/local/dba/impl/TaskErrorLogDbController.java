@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The controller for TaskErrorLogs.
  * Created by Desnoo on 15.02.2016.
  */
 public class TaskErrorLogDbController implements ITaskErrorLogDbController {
@@ -74,6 +75,31 @@ public class TaskErrorLogDbController implements ITaskErrorLogDbController {
         cursor.close();
 
         return ret;
+    }
+
+    @Override
+    public TaskErrorLog findById(int _id) {
+        SQLiteDatabase db = mSynchDbHelper.getReadableDatabase();
+        Cursor cursor = db.query(TaskErrorLog.TABLE_NAME, TaskErrorLog.COLUMN.ALL_COLUMNS,
+                TaskErrorLog.COLUMN.ID + " = ? ",
+                new String[]{String.valueOf(_id)}, null, null, null, null);
+
+        if (cursor.getCount() == 0) {
+            cursor.close();
+            return null;
+        }
+
+        cursor.moveToFirst();
+        String uuid = cursor.getString(cursor.getColumnIndex(TaskErrorLog.COLUMN.SERVER_UUID));
+        int id = cursor.getInt(cursor.getColumnIndex(TaskErrorLog.COLUMN.ID));
+        int errorType = cursor.getInt(cursor.getColumnIndex(TaskErrorLog.COLUMN.ERROR_TYPE));
+        int type = cursor.getInt(cursor.getColumnIndex(TaskErrorLog.COLUMN.TYPE));
+        int groupId = cursor.getInt(cursor.getColumnIndex(TaskErrorLog.COLUMN.GROUP_ID));
+
+        TaskErrorLog errorLog = new TaskErrorLog(id, uuid, groupId, type, errorType);
+        cursor.close();
+
+        return errorLog;
     }
 
     @Override

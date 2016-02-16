@@ -302,7 +302,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
             }
 
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
-            groupAuthAccess.setLastUpdated(new Date(0));
+            groupAuthAccess.setLastUpdateFromServer(new Date(0));
             groupAuthAccess.setLastTokenRequest(new Date(0));
             groupAuthAccess.setSynchronize(true);
             groupAuthAccess.setInterrupted(false);

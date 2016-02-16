@@ -18,7 +18,7 @@ public interface ILocalListSynch {
      *
      * @param _groupId the id of the group to synchronize.
      */
-    void synchGroup(int _groupId);
+    void synchGroupFromNetwork(int _groupId);
 
     /**
      * Resolve the conflict with the given conflict id.

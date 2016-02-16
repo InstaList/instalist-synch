@@ -44,7 +44,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         Date currentDate = new Date();
         GroupAuthAccess groupAuthAccess = new GroupAuthAccess(1, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
         groupAuthAccess.setLastTokenRequest(currentDate);
-        groupAuthAccess.setLastUpdated(currentDate);
+        groupAuthAccess.setLastUpdateFromServer(currentDate);
         groupAuthAccess.setSynchronize(true);
         groupAuthAccess.setInterrupted(false);
 
@@ -62,7 +62,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         boolean synchronize = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.SYNCHRONIZE)) == 1;
         boolean interrupted = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.INTERRUPTED)) == 1;
         Date lastTokenRequestDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST)), new ParsePosition(0));
-        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATED)), new ParsePosition(0));
+        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER)), new ParsePosition(0));
         String token = cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.TOKEN));
 
         cursor.close();
@@ -84,7 +84,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -95,7 +95,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         assertEquals(1, groupAuthAccess.getGroupId());
         assertEquals(false, groupAuthAccess.wasInterrupted());
         assertEquals(true, groupAuthAccess.isSynchronize());
-        assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+        assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdateFromServer()));
         assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
         assertEquals("fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.", groupAuthAccess.getToken());
     }
@@ -107,7 +107,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         Date currentDate = new Date();
         GroupAuthAccess groupAuthAccess = new GroupAuthAccess(1, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
         groupAuthAccess.setLastTokenRequest(currentDate);
-        groupAuthAccess.setLastUpdated(currentDate);
+        groupAuthAccess.setLastUpdateFromServer(currentDate);
         groupAuthAccess.setSynchronize(true);
         groupAuthAccess.setInterrupted(false);
 
@@ -115,7 +115,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
 
         groupAuthAccess = new GroupAuthAccess(1, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
         groupAuthAccess.setLastTokenRequest(currentDate);
-        groupAuthAccess.setLastUpdated(currentDate);
+        groupAuthAccess.setLastUpdateFromServer(currentDate);
         groupAuthAccess.setSynchronize(true);
         groupAuthAccess.setInterrupted(false);
 
@@ -131,7 +131,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -141,7 +141,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 2);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, true);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(otherDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddu3rssNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -158,7 +158,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
                     assertEquals(1, groupAuthAccess.getGroupId());
                     assertEquals(false, groupAuthAccess.wasInterrupted());
                     assertEquals(true, groupAuthAccess.isSynchronize());
-                    assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+                    assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdateFromServer()));
                     assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
                     assertEquals("fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.", groupAuthAccess.getToken());
                     break;
@@ -166,7 +166,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
                     assertEquals(2, groupAuthAccess.getGroupId());
                     assertEquals(true, groupAuthAccess.wasInterrupted());
                     assertEquals(true, groupAuthAccess.isSynchronize());
-                    assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+                    assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastUpdateFromServer()));
                     assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
                     assertEquals("fdskhbvvkddscddu3rssNDFSAdnandk3229df-dFSJDKMds.", groupAuthAccess.getToken());
                     break;
@@ -186,7 +186,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -196,7 +196,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 2);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, true);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, false);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(otherDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddu3rssNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -213,7 +213,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
                     assertEquals(1, groupAuthAccess.getGroupId());
                     assertEquals(false, groupAuthAccess.wasInterrupted());
                     assertEquals(true, groupAuthAccess.isSynchronize());
-                    assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+                    assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastUpdateFromServer()));
                     assertEquals(ISO8601Utils.format(currentDate), ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
                     assertEquals("fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.", groupAuthAccess.getToken());
                     break;
@@ -233,7 +233,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -243,7 +243,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 2);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, true);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, false);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(otherDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(otherDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddu3rssNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -260,7 +260,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
                     assertEquals(2, groupAuthAccess.getGroupId());
                     assertEquals(true, groupAuthAccess.wasInterrupted());
                     assertEquals(false, groupAuthAccess.isSynchronize());
-                    assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastUpdated()));
+                    assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastUpdateFromServer()));
                     assertEquals(ISO8601Utils.format(otherDate), ISO8601Utils.format(groupAuthAccess.getLastTokenRequest()));
                     assertEquals("fdskhbvvkddscddu3rssNDFSAdnandk3229df-dFSJDKMds.", groupAuthAccess.getToken());
                     break;
@@ -279,7 +279,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -287,7 +287,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
 
         GroupAuthAccess groupAuthAccess = new GroupAuthAccess(1, "fdskhbvvkddscddueasdfeSAdnandk3229df-dFSJDKMds.");
         groupAuthAccess.setLastTokenRequest(currentDate);
-        groupAuthAccess.setLastUpdated(currentDate);
+        groupAuthAccess.setLastUpdateFromServer(currentDate);
         groupAuthAccess.setSynchronize(true);
         groupAuthAccess.setInterrupted(true);
 
@@ -303,7 +303,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         boolean synchronize = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.SYNCHRONIZE)) == 1;
         boolean interrupted = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.INTERRUPTED)) == 1;
         Date lastTokenRequestDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST)), new ParsePosition(0));
-        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATED)), new ParsePosition(0));
+        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER)), new ParsePosition(0));
         String token = cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.TOKEN));
         cursor.close();
 
@@ -325,7 +325,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 
@@ -343,7 +343,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         boolean synchronize = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.SYNCHRONIZE)) == 1;
         boolean interrupted = cursor.getInt(cursor.getColumnIndex(GroupAuthAccess.COLUMN.INTERRUPTED)) == 1;
         Date lastTokenRequestDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST)), new ParsePosition(0));
-        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATED)), new ParsePosition(0));
+        Date lastUpdateDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER)), new ParsePosition(0));
         String token = cursor.getString(cursor.getColumnIndex(GroupAuthAccess.COLUMN.TOKEN));
         cursor.close();
 
@@ -364,7 +364,7 @@ public class SqliteGroupAuthAccessDbControllerTest extends AndroidTestCase {
         cv.put(GroupAuthAccess.COLUMN.GROUP_ID, 1);
         cv.put(GroupAuthAccess.COLUMN.INTERRUPTED, false);
         cv.put(GroupAuthAccess.COLUMN.SYNCHRONIZE, true);
-        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATED, ISO8601Utils.format(currentDate));
+        cv.put(GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(currentDate));
         cv.put(GroupAuthAccess.COLUMN.TOKEN, "fdskhbvvkddscddueFSNDFSAdnandk3229df-dFSJDKMds.");
 

@@ -2,6 +2,9 @@ package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.database.Cursor;
 
+import org.noorganization.instalist.enums.eActionType;
+import org.noorganization.instalist.enums.eModelType;
+
 import java.util.Date;
 
 /**
@@ -9,27 +12,6 @@ import java.util.Date;
  * Created by tinos_000 on 10.02.2016.
  */
 public interface ISynchLogDbController {
-
-    enum eModelType {
-        CATEGORY,
-        LIST,
-        LIST_ENTRY,
-        INGREDIENT,
-        PRODUCT,
-        RECIPE,
-        TAG,
-        TAGGED_PRODUCT,
-        UNIT,
-        ALL
-    }
-
-    enum eActionType {
-        UPDATE,
-        DELETE,
-        INSERT,
-        CONFLICT,
-        ALL
-    }
 
     /**
      * Insert into the log.
