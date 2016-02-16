@@ -24,7 +24,6 @@ public interface ITask {
         public final static int RESOLVE_USE_SERVER_SIDE = 2;
     }
 
-
     /**
      * Executes the given command.
      *
@@ -33,5 +32,5 @@ public interface ITask {
      */
     int execute(int _resolveCode);
 
-    String getUUID();
+    String getServerUUID();
 }

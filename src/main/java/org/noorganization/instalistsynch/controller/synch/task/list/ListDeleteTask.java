@@ -22,17 +22,23 @@ public class ListDeleteTask implements ITask {
     }
 
     @Override
-    public int execute() {
+    public int execute(int _resolveCode) {
         // if the list was deleted
         ShoppingList list = mController.getListById(mModelMapping.getClientSideUUID());
         // delete the local list
         if (!mController.removeList(list))
-            return false;
+            return ReturnCodes.INTERNAL_DB_ERROR;
 
         if (!mModelMappingDbController.delete(mModelMapping)) {
-            // TODO revert changes
-            return false;
+            // TODO reinsert the list items :(
+            mController.addList(list.mName, list.mCategory);
+            return ReturnCodes.INTERNAL_DB_ERROR;
         }
-        return true;
+        return ReturnCodes.SUCCESS;
+    }
+
+    @Override
+    public String getServerUUID() {
+        return mModelMapping.mServerSideUUID;
     }
 }

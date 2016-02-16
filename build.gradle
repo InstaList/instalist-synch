@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
+
     packagingOptions {
         exclude 'META-INF/ASL2.0'
         exclude 'META-INF/LICENSE'
@@ -38,4 +39,5 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-jackson:2.0.0-beta3'
 
     compile project(':instantlistcommondata')
+    compile 'org.jetbrains:annotations:13.0'
 }

@@ -24,7 +24,7 @@ import org.noorganization.instalistsynch.controller.network.model.impl.ModelSync
 import org.noorganization.instalistsynch.controller.synch.ILocalListSynch;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.task.list.ListDeleteTask;
-import org.noorganization.instalistsynch.controller.synch.task.list.ListInsertTask;
+import org.noorganization.instalistsynch.controller.synch.task.list.ListUpdateTask;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.MergeConflictMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
@@ -123,12 +123,13 @@ public class LocalListSynch implements ILocalListSynch {
                 List<ModelMapping> listModelMappingList = modelMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{listInfo.getUUID()});
                 if (listInfo.getDeleted()) {
                     // elements deleted on server.
+                    // only delete if there is a linking between server and client
                     if (listModelMappingList.size() > 0)
                         tasks.add(new ListDeleteTask(listModelMappingList.get(0), controller, modelMappingDbController));
                 } else {
                     // elements are new or changed
                     ModelMapping modelMapping = listModelMappingList.size() == 0 ? null : listModelMappingList.get(0);
-                    tasks.add(new ListInsertTask(modelMapping, listInfo, controller,
+                    tasks.add(new ListUpdateTask(modelMapping, listInfo, controller,
                             categoryController, modelMappingDbController, modelCategoryMappingDbController, mGroupId));
                 }
             }
@@ -137,9 +138,9 @@ public class LocalListSynch implements ILocalListSynch {
                 int returnCode = task.execute(ITask.ResolveCodes.NO_RESOLVE);
                 if (returnCode != ITask.ReturnCodes.SUCCESS) {
                     if (returnCode == ITask.ReturnCodes.MERGE_CONFLICT) {
-                        EventBus.getDefault().post(new MergeConflictMessageEvent(mGroupId, task.getUUID()));
+                        EventBus.getDefault().post(new MergeConflictMessageEvent(mGroupId, task.getServerUUID()));
                     }
-                    taskErrorLogDbController.insert(task.getUUID(), eModelType.LIST.ordinal(), returnCode, mGroupId);
+                    taskErrorLogDbController.insert(task.getServerUUID(), eModelType.LIST.ordinal(), returnCode, mGroupId);
                 }
             }
             IGroupAuthAccessDbController accessController = LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance().getApplicationContext());
@@ -188,7 +189,7 @@ public class LocalListSynch implements ILocalListSynch {
             List<ModelMapping> listModelMappingList = modelMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{_next.getUUID()});
             // elements are new or changed
             ModelMapping modelMapping = listModelMappingList.size() == 0 ? null : listModelMappingList.get(0);
-            task = new ListInsertTask(modelMapping, _next, controller,
+            task = new ListUpdateTask(modelMapping, _next, controller,
                     categoryController, modelMappingDbController, modelCategoryMappingDbController, mTaskErrorLog.getGroupId());
 
             if (task == null)
@@ -198,7 +199,7 @@ public class LocalListSynch implements ILocalListSynch {
             if (returnCode == ITask.ReturnCodes.SUCCESS) {
                 taskErrorLogDbController.remove(mTaskErrorLog.getId());
             } else {
-                //  taskErrorLogDbController.insert(task.getUUID(), ISynchLogDbController.eModelType.LIST.ordinal(), returnCode, mTaskErrorLog.getGroupId());
+                //  taskErrorLogDbController.insert(task.getServerUUID(), ISynchLogDbController.eModelType.LIST.ordinal(), returnCode, mTaskErrorLog.getGroupId());
             }
 
 
