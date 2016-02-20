@@ -36,7 +36,7 @@ import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupExpandableList;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSortMode;
+import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.List;
 

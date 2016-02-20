@@ -20,20 +20,21 @@ public class ModelMapping {
         public final static String SERVER_SIDE_UUID = "server_side_uuid";
         public final static String CLIENT_SIDE_UUID = "client_side_uuid";
         public final static String LAST_SERVER_CHANGE = "last_server_change";
-        public final static String LAST_CLIENT_CHANGE = "last_server_change";
+        public final static String LAST_CLIENT_CHANGE = "last_client_change";
 
         public final static String[] ALL_COLUMNS = {ID, GROUP_ID, SERVER_SIDE_UUID, CLIENT_SIDE_UUID, LAST_SERVER_CHANGE, LAST_CLIENT_CHANGE};
     }
 
-    public static final String SHOPPING_LIST_MAPPING_TABLE_NAME = "shopping_list_mapping";
-    public static final String DB_CREATE_SHOPPING_LIST_MAPPING = "CREATE TABLE " + SHOPPING_LIST_MAPPING_TABLE_NAME + "(" +
-            COLUMN.ID + " TEXT PRIMARY KEY NOT NULL, " +
-            COLUMN.GROUP_ID + " TEXT NOT NULL," +
-            COLUMN.SERVER_SIDE_UUID + " TEXT," +
-            COLUMN.CLIENT_SIDE_UUID + " TEXT," +
-            COLUMN.LAST_SERVER_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'," +
-            COLUMN.LAST_CLIENT_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'"
-            + ")";
+    public static final String getDbCreateString(eModelMappingTableNames _tableName) {
+        return "CREATE TABLE " + _tableName.toString() + "(" +
+                COLUMN.ID + " TEXT PRIMARY KEY NOT NULL, " +
+                COLUMN.GROUP_ID + " TEXT NOT NULL," +
+                COLUMN.SERVER_SIDE_UUID + " TEXT," +
+                COLUMN.CLIENT_SIDE_UUID + " TEXT," +
+                COLUMN.LAST_SERVER_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'," +
+                COLUMN.LAST_CLIENT_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'"
+                + ")";
+    }
 
     /**
      * Constructor of ModelMapping

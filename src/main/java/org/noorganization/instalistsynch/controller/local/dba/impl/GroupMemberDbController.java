@@ -10,7 +10,7 @@ import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbCont
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.AccessRight;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSortMode;
+import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import android.database.Cursor;
 
 import org.noorganization.instalist.enums.eActionType;
 import org.noorganization.instalist.enums.eModelType;
-import org.noorganization.instalist.model.Log;
+import org.noorganization.instalist.model.LogInfo;
 
 import java.util.List;
 
@@ -22,6 +22,15 @@ public interface IClientLogDbController {
     Cursor getLogs();
 
     /**
+     * Get all logs since a given time.
+     *
+     * @param _date      the date since when to check changes.
+     * @param _modelType the type of the model.
+     * @return a cursor pointing to the logs.
+     */
+    Cursor getLogsSince(String _date, eModelType _modelType);
+
+    /**
      * Get the last update date of the given uuid in the specified model.
      *
      * @param _uuid      the uuid of the client side model.
@@ -30,5 +39,5 @@ public interface IClientLogDbController {
      * @param _date      the string of the date.
      * @return a list with matching entries.
      */
-    List<Log> getElementByUuid(String _uuid, eActionType _type, eModelType _modelType, String _date);
+    List<LogInfo> getElementByUuid(String _uuid, eActionType _type, eModelType _modelType, String _date);
 }

@@ -1,6 +1,7 @@
 package org.noorganization.instalistsynch.controller.local.dba.impl;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,6 +12,7 @@ import org.noorganization.instalistsynch.controller.local.dba.exception.SqliteMa
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.network.eModelMappingTableNames;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,22 +28,18 @@ public class SqliteMappingDbController implements IModelMappingDbController {
     private SynchDbHelper mDbHelper;
     private String mTableName;
 
-    public SqliteMappingDbController(String _tableName) throws SqliteMappingDbControllerException {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT name FROM sqlite_master WHERE name='?'", new String[]{_tableName});
-        if(c.getCount() == 0){
-            throw new SqliteMappingDbControllerException("Table " + _tableName + " does not exist!");
-        }
-        mTableName = ModelMapping.SHOPPING_LIST_MAPPING_TABLE_NAME;
-    }
+    public SqliteMappingDbController(eModelMappingTableNames _tableName, Context _context) throws SqliteMappingDbControllerException {
+        mTableName = _tableName.toString();
+        mDbHelper = new SynchDbHelper(_context);
 
+    }
 
 
     @Override
     public ModelMapping insert(ModelMapping _element) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        String uuid = SQLiteUtils.generateId(db, ModelMapping.SHOPPING_LIST_MAPPING_TABLE_NAME).toString();
+        String uuid = SQLiteUtils.generateId(db, mTableName).toString();
         _element.setUUID(uuid);
         _element.setUUID(uuid);
         ContentValues cv = new ContentValues(6);

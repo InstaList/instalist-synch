@@ -9,7 +9,7 @@ import org.codehaus.jackson.map.util.ISO8601Utils;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
-import org.noorganization.instalistsynch.utils.eSortMode;
+import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -205,7 +205,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(groupId, token);
             groupAuthAccess.setLastTokenRequest(ISO8601Utils.parse(lastTokenRequest));
             groupAuthAccess.setLastUpdateFromServer(ISO8601Utils.parse(lastUpdateFromServer));
-            groupAuthAccess.setLastUpdateFromServer(ISO8601Utils.parse(lastUpdateFromClient));
+            groupAuthAccess.setLastUpdateFromClient(ISO8601Utils.parse(lastUpdateFromClient));
             groupAuthAccess.setInterrupted(interrupted);
             groupAuthAccess.setSynchronize(synchronize);
             groupAuthAccesses.add(groupAuthAccess);

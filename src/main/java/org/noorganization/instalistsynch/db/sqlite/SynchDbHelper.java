@@ -9,6 +9,8 @@ import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
+import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.network.eModelMappingTableNames;
 
 /**
  * Helper to access synch database.
@@ -30,6 +32,10 @@ public class SynchDbHelper extends SQLiteOpenHelper {
         db.execSQL(GroupMember.DB_CREATE);
         db.execSQL(TempGroupAccessToken.DB_CREATE);
         db.execSQL(TaskErrorLog.DB_CREATE);
+
+        for (eModelMappingTableNames modelMappingTableNames : eModelMappingTableNames.values()) {
+            db.execSQL(ModelMapping.getDbCreateString(modelMappingTableNames));
+        }
     }
 
     @Override
@@ -40,13 +46,16 @@ public class SynchDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + TaskErrorLog.TABLE_NAME + ";");
+        for (eModelMappingTableNames modelMappingTableNames : eModelMappingTableNames.values()) {
+            db.execSQL("DROP TABLE IF EXISTS " + modelMappingTableNames.toString() + ";");
+        }
         onCreate(db);
     }
 
     @Override
     public void onOpen(SQLiteDatabase db) {
 
-       // onUpgrade(db, 5, 5);
+        // onUpgrade(db, 5, 5);
 
         super.onOpen(db);
     }

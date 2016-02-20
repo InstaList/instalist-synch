@@ -13,6 +13,7 @@ public class MainApplication extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         GlobalObjects.getInstance().setApplicationContext(this.getApplicationContext());
+        GlobalObjects.getInstance().initController();
 
         SynchDbHelper synchDbHelper = new SynchDbHelper(this);
         synchDbHelper.onUpgrade(synchDbHelper.getWritableDatabase(), 6, 6);

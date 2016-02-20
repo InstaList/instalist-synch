@@ -1,4 +1,4 @@
-package org.noorganization.instalistsynch.utils;
+package org.noorganization.instalistsynch.model;
 
 /**
  * The mode to sort the entries.

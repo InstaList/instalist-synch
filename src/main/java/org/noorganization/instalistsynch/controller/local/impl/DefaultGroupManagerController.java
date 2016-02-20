@@ -34,7 +34,7 @@ import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
-import org.noorganization.instalistsynch.model.observable.GroupMemberAuthorized;
+import org.noorganization.instalistsynch.events.GroupMemberAuthorizedMessageEvent;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.io.IOException;
@@ -303,6 +303,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
             groupAuthAccess.setLastUpdateFromServer(new Date(0));
+            groupAuthAccess.setLastUpdateFromClient(new Date(0));
             groupAuthAccess.setLastTokenRequest(new Date(0));
             groupAuthAccess.setSynchronize(true);
             groupAuthAccess.setInterrupted(false);
@@ -455,7 +456,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
 
             groupMember.setAccessRights(new AccessRight(true, true));
             mGroupMemberDbController.update(groupMember);
-            EventBus.getDefault().post(new GroupMemberAuthorized(groupMember, true));
+            EventBus.getDefault().post(new GroupMemberAuthorizedMessageEvent(groupMember, true));
         }
 
         @Override

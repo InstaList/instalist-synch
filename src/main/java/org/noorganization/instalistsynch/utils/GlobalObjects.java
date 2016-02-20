@@ -2,7 +2,18 @@ package org.noorganization.instalistsynch.utils;
 
 import android.content.Context;
 
+import org.noorganization.instalist.enums.eControllerType;
+import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.presenter.ICategoryController;
+import org.noorganization.instalist.presenter.IListController;
+import org.noorganization.instalist.presenter.implementation.ControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.ITaskErrorLogDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
+import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
+
 import java.security.SecureRandom;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,9 +25,14 @@ public class GlobalObjects {
 
     /**
      * Map the group id to a boolean that indicates if the token is currently new requested.
-     *
      */
     public static Map<Integer, Boolean> sCallMapping = new ConcurrentHashMap<>(2);
+
+    /**
+     * Map the model type to the corresponding controller.
+     */
+
+    public static Map<eControllerType, Object> sControllerMapping = new ConcurrentHashMap<>(eControllerType.ALL.ordinal());
 
     /**
      * Instance of this class.
@@ -69,7 +85,21 @@ public class GlobalObjects {
      */
     private GlobalObjects() {
         mSecureRandom = new SecureRandom();
+    }
 
+    /**
+     * Initializes all controllers and map them to a Hashmap.
+     * As always first set the context.
+     */
+    public void initController() {
+        sControllerMapping.put(eControllerType.CATEGORY, ControllerFactory.getCategoryController(mContext));
+        sControllerMapping.put(eControllerType.LIST, ControllerFactory.getListController(mContext));
+        sControllerMapping.put(eControllerType.PRODUCT, ControllerFactory.getProductController(mContext));
+        sControllerMapping.put(eControllerType.RECIPE, ControllerFactory.getRecipeController(mContext));
+        sControllerMapping.put(eControllerType.TAG, ControllerFactory.getTagController(mContext));
+        sControllerMapping.put(eControllerType.UNIT, ControllerFactory.getUnitController(mContext));
+        sControllerMapping.put(eControllerType.MODEL_MAPPING, ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController());
+        sControllerMapping.put(eControllerType.ERROR_LOG, LocalSqliteDbControllerFactory.getTaskErrorLogDbController(mContext));
     }
 
     /**

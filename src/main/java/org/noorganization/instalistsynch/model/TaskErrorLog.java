@@ -39,8 +39,8 @@ public class TaskErrorLog {
             COLUMN.GROUP_ID + " INTEGER NOT NULL, " +
             COLUMN.SERVER_UUID + " TEXT NOT NULL," +
             COLUMN.TYPE + " INTEGER NOT NULL," +
-            COLUMN.ERROR_TYPE + " INTEGER NOT NULL" +
-            "FOREIGN KEY (" + COLUMN.GROUP_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
+            COLUMN.ERROR_TYPE + " INTEGER NOT NULL, " +
+            " FOREIGN KEY (" + COLUMN.GROUP_ID + ") REFERENCES " + GroupAuth.TABLE_NAME + " (" +
             GroupAuth.COLUMN.GROUP_ID + ") ON UPDATE CASCADE ON DELETE CASCADE " +
             ")";
 

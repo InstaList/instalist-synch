@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.enums.eActionType;
 import org.noorganization.instalist.enums.eModelType;
-import org.noorganization.instalist.model.Log;
+import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.provider.InstalistProvider;
 import org.noorganization.instalistsynch.controller.local.dba.IClientLogDbController;
 
@@ -24,9 +24,12 @@ import java.util.List;
  */
 public class ClientLogDbController implements IClientLogDbController {
 
-    private ContentResolver mContentResolver;
-
     private static ClientLogDbController sInstance;
+    private        ContentResolver       mContentResolver;
+
+    private ClientLogDbController(Context _context) {
+        mContentResolver = _context.getContentResolver();
+    }
 
     public static ClientLogDbController getInstance(Context _context) {
         if (sInstance == null) {
@@ -35,46 +38,61 @@ public class ClientLogDbController implements IClientLogDbController {
         return sInstance;
     }
 
-    private ClientLogDbController(Context _context) {
-        mContentResolver = _context.getContentResolver();
-    }
-
     @Override
     public Cursor getLogs() {
-        return mContentResolver.query(Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"), Log.COLUMN.ALL_COLUMNS, null, null, "DESC datetime(" + Log.COLUMN.ACTION_DATE + ")");
+        return mContentResolver.query(
+                Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
+                LogInfo.COLUMN.ALL_COLUMNS, null, null,
+                "DESC datetime(" + LogInfo.COLUMN.ACTION_DATE + ")");
     }
 
     @Override
-    public List<Log> getElementByUuid(String _uuid, eActionType _actionType, eModelType _modelType, String _time) {
-        Cursor cursor = mContentResolver.query(Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"), Log.COLUMN.ALL_COLUMNS,
-                Log.COLUMN.ITEM_UUID + " LIKE ? AND "
-                        + Log.COLUMN.ACTION + " = ? AND "
-                        + Log.COLUMN.MODEL + " = ? "
-                        + Log.COLUMN.ACTION_DATE + " >= datetime( ? )"
+    public Cursor getLogsSince(String _date, eModelType _modelType) {
+        return mContentResolver.query(
+                Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
+                LogInfo.COLUMN.ALL_COLUMNS,
+                LogInfo.COLUMN.MODEL + " = ? AND " + LogInfo.COLUMN.ACTION_DATE + " >= datetime(?)",
+                new String[]{String.valueOf(_modelType.ordinal()), _date},
+                "DESC datetime(" + LogInfo.COLUMN.ACTION_DATE + ")");
+    }
+
+    @Override
+    public List<LogInfo> getElementByUuid(
+            String _uuid, eActionType _actionType, eModelType _modelType, String _time) {
+        Cursor cursor = mContentResolver.query(
+                Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
+                LogInfo.COLUMN.ALL_COLUMNS,
+                LogInfo.COLUMN.ITEM_UUID + " LIKE ? AND "
+                        + LogInfo.COLUMN.ACTION + " = ? AND "
+                        + LogInfo.COLUMN.MODEL + " = ? "
+                        + LogInfo.COLUMN.ACTION_DATE + " >= datetime( ? )"
                         + ")",
-                new String[]{_uuid, String.valueOf(_actionType.ordinal()), String.valueOf(_modelType.ordinal()), _time},
+                new String[]{_uuid, String.valueOf(_actionType.ordinal()),
+                        String.valueOf(_modelType.ordinal()), _time},
                 null);
-        if (cursor == null)
+        if (cursor == null) {
             return new ArrayList<>();
+        }
 
         if (cursor.getCount() == 0) {
             cursor.close();
             return new ArrayList<>();
         }
 
-        List<Log> list = new ArrayList<>(cursor.getCount());
+        List<LogInfo> list = new ArrayList<>(cursor.getCount());
         cursor.moveToFirst();
         try {
             do {
-                int id = cursor.getInt(cursor.getColumnIndex(Log.COLUMN.ID));
-                String uuid = cursor.getString(cursor.getColumnIndex(Log.COLUMN.ITEM_UUID));
-                int action = cursor.getInt(cursor.getColumnIndex(Log.COLUMN.ACTION));
+                int id = cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.ID));
+                String uuid = cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
+                int action = cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.ACTION));
                 eActionType actionType = eActionType.getTypeById(action);
-                int model = cursor.getInt(cursor.getColumnIndex(Log.COLUMN.MODEL));
+                int model = cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.MODEL));
                 eModelType modelType = eModelType.getTypeId(model);
-                String date = cursor.getString(cursor.getColumnIndex(Log.COLUMN.ACTION_DATE));
+                String date = cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
 
-                list.add(new Log(id, uuid, actionType, modelType, ISO8601Utils.parse(date, new ParsePosition(0))));
+                list.add(new LogInfo(id, uuid, actionType, modelType,
+                        ISO8601Utils.parse(date, new ParsePosition(0))));
             } while (cursor.moveToNext());
         } catch (ParseException e) {
             e.printStackTrace();

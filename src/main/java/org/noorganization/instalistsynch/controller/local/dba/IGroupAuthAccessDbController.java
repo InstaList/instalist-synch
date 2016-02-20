@@ -4,7 +4,7 @@ import android.database.Cursor;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
-import org.noorganization.instalistsynch.utils.eSortMode;
+import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.List;
 

@@ -51,7 +51,8 @@ public class LocalSqliteDbControllerFactory {
      * @param _context the context of the app.
      * @return the requested controller instance.
      */
-    public static ITempGroupAccessTokenDbController getTempGroupAccessTokenDbController(Context _context) {
+    public static ITempGroupAccessTokenDbController getTempGroupAccessTokenDbController(
+            Context _context) {
         return TempGroupAccessTokenDbController.getInstance(_context);
     }
 

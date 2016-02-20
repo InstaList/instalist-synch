@@ -4,7 +4,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.utils.eSortMode;
+import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.List;
 

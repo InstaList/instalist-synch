@@ -1,17 +1,17 @@
-package org.noorganization.instalistsynch.model.observable;
+package org.noorganization.instalistsynch.events;
 
 import org.noorganization.instalistsynch.model.GroupMember;
 
 /**
- * The observable object when it is deleted or it failed.
- * Created by Desnoo on 04.02.2016.
+ * A event object that holds the authorized group member.
+ * Created by Desnoo on 07.02.2016.
  */
-public class GroupMemberDeleted {
+public class GroupMemberAuthorizedMessageEvent {
 
     private GroupMember mGroupMember;
     private boolean mAuthorized;
 
-    public GroupMemberDeleted(GroupMember groupMember, boolean authorized) {
+    public GroupMemberAuthorizedMessageEvent(GroupMember groupMember, boolean authorized) {
         mGroupMember = groupMember;
         mAuthorized = authorized;
     }
@@ -29,7 +29,7 @@ public class GroupMemberDeleted {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        GroupMemberDeleted that = (GroupMemberDeleted) o;
+        GroupMemberAuthorizedMessageEvent that = (GroupMemberAuthorizedMessageEvent) o;
 
         if (mAuthorized != that.mAuthorized) return false;
         return !(mGroupMember != null ? !mGroupMember.equals(that.mGroupMember) : that.mGroupMember != null);

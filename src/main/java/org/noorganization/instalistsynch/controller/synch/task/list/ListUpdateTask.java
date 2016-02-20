@@ -3,15 +3,18 @@ package org.noorganization.instalistsynch.controller.synch.task.list;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.ListInfo;
+import org.noorganization.instalist.enums.eControllerType;
 import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.ICategoryController;
 import org.noorganization.instalist.presenter.IListController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.task.comparator.ISynchComperator;
 import org.noorganization.instalistsynch.controller.synch.task.comparator.impl.ListComperator;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -22,7 +25,7 @@ import java.util.List;
  * A task to insert a {@link org.noorganization.instalist.model.ShoppingList}
  * Created by Desnoo on 14.02.2016.
  */
-public class ListUpdateTask<T, S> implements ITask {
+public class ListUpdateTask implements ITask {
     private static final String TAG = "ListUpdateTask";
 
     private ListInfo mListInfo;
@@ -30,8 +33,8 @@ public class ListUpdateTask<T, S> implements ITask {
     private IListController mListController;
     private ICategoryController mCategoryController;
 
-    private IModelMappingDbController mModelMappingDbController;
-    private IModelMappingDbController mModelCategoryMappingDbController;
+    private IModelMappingDbController mListModelMappingDbController;
+    private IModelMappingDbController mCategoryModelMappingDbController;
 
 
     private int mGroupId;
@@ -39,15 +42,16 @@ public class ListUpdateTask<T, S> implements ITask {
 
     private ISynchComperator<ShoppingList, ListInfo> mComperator;
 
-    public ListUpdateTask(ModelMapping _modelMapping, ListInfo listInfo, IListController listController, ICategoryController categoryController, IModelMappingDbController modelMappingDbController, IModelMappingDbController modelCategoryMappingDbController, int groupId) {
+    public ListUpdateTask(ModelMapping _modelMapping, ListInfo listInfo, int groupId) {
         mListModelMapping = _modelMapping;
         mListInfo = listInfo;
-        mListController = listController;
-        mCategoryController = categoryController;
-        mModelMappingDbController = modelMappingDbController;
-        mModelCategoryMappingDbController = modelCategoryMappingDbController;
         mGroupId = groupId;
         mComperator = new ListComperator();
+
+        mListController = (IListController) GlobalObjects.sControllerMapping.get(eControllerType.LIST);
+        mCategoryController = (ICategoryController) GlobalObjects.sControllerMapping.get(eControllerType.CATEGORY);
+        mListModelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
+        mCategoryModelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
     }
 
     @Override
@@ -76,7 +80,7 @@ public class ListUpdateTask<T, S> implements ITask {
                         return ReturnCodes.MERGE_CONFLICT;
                     case ResolveCodes.RESOLVE_USE_CLIENT_SIDE:
                         // maybe sent update to server.
-                        mModelMappingDbController.update(mListModelMapping);
+                        mListModelMappingDbController.update(mListModelMapping);
                         return ReturnCodes.SUCCESS;
                     case ResolveCodes.RESOLVE_USE_SERVER_SIDE:
                         return changeShoppingList(list, lastServerChange);
@@ -102,19 +106,17 @@ public class ListUpdateTask<T, S> implements ITask {
         Category clientCategory = null;
 
         if (mListInfo.getCategoryUUID() != null) {
-            List<ModelMapping> categoryModelMappingList = mModelCategoryMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{mListInfo.getCategoryUUID()});
+            List<ModelMapping> categoryModelMappingList = mCategoryModelMappingDbController.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?", new String[]{mListInfo.getCategoryUUID()});
             if (categoryModelMappingList.size() == 0) {
                 return ReturnCodes.WAITING_FOR_RESOURCE;
             }
             clientCategory = mCategoryController.getCategoryByID(categoryModelMappingList.get(0).getClientSideUUID());
         }
 
-        if (list.mCategory == null && mListInfo.getCategoryUUID() != null) {
+        if (list.mCategory == null && mListInfo.getCategoryUUID() != null || list.mCategory != null && mListInfo.getCategoryUUID() == null) {
             list = mListController.moveToCategory(list, clientCategory);
         }
-        if (list.mCategory != null && mListInfo.getCategoryUUID() == null) {
-            list = mListController.moveToCategory(list, null);
-        }
+
         if (list.mCategory != null && mListInfo.getCategoryUUID() != null) {
             if (!list.mCategory.equals(clientCategory)) {
                 // list was moved from category to new category.
@@ -137,7 +139,7 @@ public class ListUpdateTask<T, S> implements ITask {
 
         mListModelMapping.setLastClientChange(new Date());
         mListModelMapping.setLastServerChanged(_lastServerChange);
-        mModelMappingDbController.update(mListModelMapping);
+        mListModelMappingDbController.update(mListModelMapping);
         return ReturnCodes.SUCCESS;
     }
 
