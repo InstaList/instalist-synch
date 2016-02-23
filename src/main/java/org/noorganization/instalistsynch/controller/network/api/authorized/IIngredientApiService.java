@@ -19,7 +19,7 @@ import retrofit2.http.Query;
  * Groups/{id} is prefixed at any item to declare the unique association of the {@link Ingredient}.
  * Created by Desnoo on 06.02.2016.
  */
-public interface IIngredientService {
+public interface IIngredientApiService {
     /**
      * Get the ingredients since the given time.
      *
@@ -27,7 +27,7 @@ public interface IIngredientService {
      * @return the list of ingredients changed since this date.
      */
     @GET("groups/{id}/ingredients")
-    Call<List<IngredientInfo>> getIngredients(@Path("id") int _id,
+    Call<List<IngredientInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -37,7 +37,7 @@ public interface IIngredientService {
      * @return the uuid of the created Ingredient.
      */
     @POST("groups/{id}/ingredients")
-    Call<Void> createIngredient(@Path("id") int _id, @Body IngredientInfo _Ingredient);
+    Call<Void> createItem(@Path("id") int _id, @Body IngredientInfo _Ingredient);
 
     /**
      * Get a Ingredient by its id.
@@ -46,7 +46,7 @@ public interface IIngredientService {
      * @return the associated Ingredient.
      */
     @GET("groups/{id}/ingredients/{uuid}")
-    Call<IngredientInfo> getIngredient(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<IngredientInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the Ingredient by the given Ingredient.
@@ -56,7 +56,7 @@ public interface IIngredientService {
      * @return the uuid of the updated Ingredient.
      */
     @PUT("groups/{id}/ingredients/{uuid}")
-    Call<Void> updateIngredient(@Path("id") int _id, @Path("uuid") String _uuid,
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body IngredientInfo _Ingredient);
 
     /**
@@ -66,6 +66,6 @@ public interface IIngredientService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/ingredients/{uuid}")
-    Call<Void> deleteIngredient(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
 }

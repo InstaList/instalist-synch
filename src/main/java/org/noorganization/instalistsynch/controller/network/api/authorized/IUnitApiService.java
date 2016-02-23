@@ -28,7 +28,7 @@ public interface IUnitApiService {
      * @return the list of units changed since this date.
      */
     @GET("groups/{id}/units")
-    Call<List<UnitInfo>> getUnits(@Path("id") int _id,
+    Call<List<UnitInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -38,7 +38,7 @@ public interface IUnitApiService {
      * @return the uuid of the created Unit.
      */
     @POST("groups/{id}/units")
-    Call<Void> createUnit(@Path("id") int _id, @Body UnitInfo _Unit);
+    Call<Void> createItem(@Path("id") int _id, @Body UnitInfo _Unit);
 
     /**
      * Get a Unit by its id.
@@ -47,7 +47,7 @@ public interface IUnitApiService {
      * @return the associated Unit.
      */
     @GET("groups/{id}/units/{uuid}")
-    Call<UnitInfo> getUnit(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<UnitInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the Unit by the given Unit.
@@ -57,7 +57,7 @@ public interface IUnitApiService {
      * @return the uuid of the updated Unit.
      */
     @PUT("groups/{id}/units/{uuid}")
-    Call<Void> updateUnit(@Path("id") int _id, @Path("uuid") String _uuid, @Body Unit _Unit);
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid, @Body UnitInfo _Unit);
 
     /**
      * Delete the Unit from the remote server with the given id.
@@ -66,6 +66,5 @@ public interface IUnitApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/units/{uuid}")
-    Call<Void> deleteUnit(@Path("id") int _id, @Path("uuid") String _uuid);
-
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 }

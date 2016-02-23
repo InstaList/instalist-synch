@@ -28,7 +28,7 @@ public interface ITaggedProductApiService {
      * @return the list of taggedProducts changed since this date.
      */
     @GET("groups/{id}/taggedProducts")
-    Call<List<TaggedProductInfo>> getTaggedProducts(@Path("id") int _id,
+    Call<List<TaggedProductInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -38,7 +38,7 @@ public interface ITaggedProductApiService {
      * @return the uuid of the created TaggedProduct.
      */
     @POST("groups/{id}/taggedProducts")
-    Call<Void> createTaggedProduct(@Path("id") int _id, @Body TaggedProductInfo _TaggedProduct);
+    Call<Void> createItem(@Path("id") int _id, @Body TaggedProductInfo _TaggedProduct);
 
     /**
      * Get a TaggedProduct by its id.
@@ -47,7 +47,7 @@ public interface ITaggedProductApiService {
      * @return the associated TaggedProduct.
      */
     @GET("groups/{id}/taggedProducts/{uuid}")
-    Call<TaggedProductInfo> getTaggedProduct(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<TaggedProductInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the TaggedProduct by the given TaggedProduct.
@@ -57,7 +57,7 @@ public interface ITaggedProductApiService {
      * @return the uuid of the updated TaggedProduct.
      */
     @PUT("groups/{id}/taggedProducts/{uuid}")
-    Call<Void> updateTaggedProduct(@Path("id") int _id, @Path("uuid") String _uuid,
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body TaggedProductInfo _TaggedProduct);
 
     /**
@@ -67,5 +67,5 @@ public interface ITaggedProductApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/taggedProducts/{uuid}")
-    Call<Void> deleteTaggedProduct(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 }

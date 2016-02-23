@@ -28,7 +28,7 @@ public interface ITagApiService {
      * @return the list of tags changed since this date.
      */
     @GET("groups/{id}/tags")
-    Call<List<TagInfo>> getTags(@Path("id") int _id,
+    Call<List<TagInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -38,7 +38,7 @@ public interface ITagApiService {
      * @return the uuid of the created Tag.
      */
     @POST("groups/{id}/tags")
-    Call<Void> createTag(@Path("id") int _id, @Body TagInfo _Tag);
+    Call<Void> createItem(@Path("id") int _id, @Body TagInfo _Tag);
 
     /**
      * Get a Tag by its id.
@@ -47,7 +47,7 @@ public interface ITagApiService {
      * @return the associated Tag.
      */
     @GET("groups/{id}/tags/{uuid}")
-    Call<TagInfo> getTag(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<TagInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the Tag by the given Tag.
@@ -57,7 +57,7 @@ public interface ITagApiService {
      * @return the uuid of the updated Tag.
      */
     @PUT("groups/{id}/tags/{uuid}")
-    Call<Void> updateTag(@Path("id") int _id, @Path("uuid") String _uuid, @Body TagInfo _Tag);
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid, @Body TagInfo _Tag);
 
     /**
      * Delete the Tag from the remote server with the given id.
@@ -66,6 +66,6 @@ public interface ITagApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/tags/{uuid}")
-    Call<Void> deleteTag(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
 }

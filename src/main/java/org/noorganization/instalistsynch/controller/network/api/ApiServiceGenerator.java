@@ -45,6 +45,7 @@ public class ApiServiceGenerator {
      * @return the new request
      */
     public static <S> S createService(Class<S> _serviceClass, final String _token) {
+
         if (_token != null) {
             sHttpClient.addInterceptor(new Interceptor() {
                 @Override

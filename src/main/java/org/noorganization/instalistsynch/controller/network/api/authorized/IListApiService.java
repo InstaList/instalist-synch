@@ -2,7 +2,6 @@ package org.noorganization.instalistsynch.controller.network.api.authorized;
 
 import org.noorganization.instalist.comm.message.ListInfo;
 import org.noorganization.instalist.model.ShoppingList;
-import org.noorganization.instalistsynch.model.network.response.ShoppingListResponse;
 
 import java.util.List;
 
@@ -30,47 +29,48 @@ public interface IListApiService {
      * @return the list of lists changed since this date.
      */
     @GET("groups/{id}/lists")
-    Call<List<ListInfo>> getShoppingLists(@Path("id") int _id, @Query("changedSince") String _sinceTimeString);
+    Call<List<ListInfo>> getList(@Path("id") int _id,
+            @Query("changedSince") String _sinceTimeString);
 
     /**
-     * Create a ShoppingList with the given id.
+     * Create a Item with the given id.
      *
-     * @param _ShoppingList the ShoppingList to create.
-     * @return the uuid of the created ShoppingList.
+     * @param _Item the Item to create.
+     * @return the uuid of the created Item.
      */
     @POST("groups/{id}/lists")
-    Call<Void> createShoppingList(@Path("id") int _id, @Body ListInfo _ShoppingList);
+    Call<Void> createItem(@Path("id") int _id, @Body ListInfo _Item);
 
     //endregion
 
     //region Path groups/{id}/lists/{uuid}
 
     /**
-     * Get a ShoppingList by its id.
+     * Get a Item by its id.
      *
-     * @param _uuid the uuid of the affected ShoppingList.
-     * @return the associated ShoppingList.
+     * @param _uuid the uuid of the affected Item.
+     * @return the associated Item.
      */
     @GET("groups/{id}/lists/{uuid}")
-    Call<ListInfo> getShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<ListInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
-     * Update the ShoppingList by the given ShoppingList.
+     * Update the Item by the given Item.
      *
-     * @param _uuid         the uuid of the affected ShoppingList.
-     * @param _ShoppingList the ShoppingList with updates.
-     * @return the uuid of the updated ShoppingList.
+     * @param _uuid the uuid of the affected Item.
+     * @param _Item the Item with updates.
+     * @return the uuid of the updated Item.
      */
     @PUT("groups/{id}/lists/{uuid}")
-    Call<Void> updateShoppingList(@Path("id") int _id, @Path("uuid") String _uuid, @Body ListInfo _ShoppingList);
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid, @Body ListInfo _Item);
 
     /**
-     * Delete the ShoppingList from the remote server with the given id.
+     * Delete the Item from the remote server with the given id.
      *
-     * @param _uuid the uuid of the affected ShoppingList.
+     * @param _uuid the uuid of the affected Item.
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/lists/{uuid}")
-    Call<Void> deleteShoppingList(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
     //endregion
 }

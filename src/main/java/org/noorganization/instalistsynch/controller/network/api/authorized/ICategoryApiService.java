@@ -19,7 +19,8 @@ import retrofit2.http.Query;
  * Groups/{id} is prefixed at any item to declare the unique association of the {@link Category}.
  * Created by Desnoo on 06.02.2016.
  */
-public interface ICategoryApiService {
+public interface ICategoryApiService{
+
 
     //region path groups/{id}/categories
 
@@ -30,16 +31,17 @@ public interface ICategoryApiService {
      * @return the list of categories changed since this date.
      */
     @GET("groups/{id}/categories")
-    Call<List<CategoryInfo>> getCategories(@Path("id") int _id, @Query("changedSince") String _sinceTimeString);
+    Call<List<CategoryInfo>> getList(@Path("id") int _id,
+            @Query("changedSince") String _sinceTimeString);
 
     /**
      * Create a category with the given id.
--     *
+     *
      * @param _category the category to create.
      * @return the uuid of the created category.
      */
     @POST("groups/{id}/categories")
-    Call<Void> createCategory(@Path("id") int _id, @Body CategoryInfo _category);
+    Call<Void> createItem(@Path("id") int _id, @Body CategoryInfo _category);
 
     //endregion
 
@@ -52,7 +54,7 @@ public interface ICategoryApiService {
      * @return the associated category.
      */
     @GET("groups/{id}/categories/{uuid}")
-    Call<CategoryInfo> getCategory(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<CategoryInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the category by the given category.
@@ -62,7 +64,7 @@ public interface ICategoryApiService {
      * @return the uuid of the updated category.
      */
     @PUT("groups/{id}/categories/{uuid}")
-    Call<Void> updateCategory(@Path("id") int _id, @Path("uuid") String _uuid, @Body
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid, @Body
     CategoryInfo _category);
 
     /**
@@ -72,7 +74,7 @@ public interface ICategoryApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/categories/{uuid}")
-    Call<Void> deleteCategory(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     //endregion
 }

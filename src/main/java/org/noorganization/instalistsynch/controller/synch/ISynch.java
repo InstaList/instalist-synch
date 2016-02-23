@@ -6,7 +6,17 @@ import java.util.Date;
  * Interface that handles the synchronization of the list on the local side.
  * Created by Desnoo on 14.02.2016.
  */
-public interface ILocalListSynch {
+public interface ISynch {
+
+    /**
+     * This method must only be called once before the first sycnhronization with the server.
+     * It is a one time action. It indexes all models on client side and assigns them to a specific group
+     * or to not a group.
+     *
+     * @param _groupId could be -1 if the items should be indexed to no group, else the group to which they should be indexed.
+     */
+    void indexLocalEntries(int _groupId);
+
 
     /**
      * Submits the local results to the server.
@@ -15,15 +25,6 @@ public interface ILocalListSynch {
      * @param _lastUpdate the date when the client last sent the local changes.
      */
     void synchronizeLocalToNetwork(int _groupId, String _lastUpdate);
-
-
-    /**
-     * This method should only be called once before the first sycnhronization with the server.
-     * It detects new, updated and delted elments on the client side.
-     *
-     * @param _groupId
-     */
-    void indexLocalEntries(int _groupId);
 
     /**
      * This is used to refresh the local mapping before each synch process.

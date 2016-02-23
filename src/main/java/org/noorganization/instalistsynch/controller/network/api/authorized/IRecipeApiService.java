@@ -27,7 +27,7 @@ public interface IRecipeApiService {
      * @return the list of recipes changed since this date.
      */
     @GET("groups/{id}/recipes")
-    Call<List<RecipeInfo>> getRecipes(@Path("id") int _id,
+    Call<List<RecipeInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -37,7 +37,7 @@ public interface IRecipeApiService {
      * @return the uuid of the created Recipe.
      */
     @POST("groups/{id}/recipes")
-    Call<Void> createRecipe(@Path("id") int _id, @Body RecipeInfo _Recipe);
+    Call<Void> createItem(@Path("id") int _id, @Body RecipeInfo _Recipe);
 
     /**
      * Get a Recipe by its id.
@@ -46,7 +46,7 @@ public interface IRecipeApiService {
      * @return the associated Recipe.
      */
     @GET("groups/{id}/recipes/{uuid}")
-    Call<RecipeInfo> getRecipe(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<RecipeInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the Recipe by the given Recipe.
@@ -56,7 +56,7 @@ public interface IRecipeApiService {
      * @return the uuid of the updated Recipe.
      */
     @PUT("groups/{id}/recipes/{uuid}")
-    Call<Void> updateRecipe(@Path("id") int _id, @Path("uuid") String _uuid,
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body RecipeInfo _Recipe);
 
     /**
@@ -66,6 +66,6 @@ public interface IRecipeApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/recipes/{uuid}")
-    Call<Void> deleteRecipe(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
 }

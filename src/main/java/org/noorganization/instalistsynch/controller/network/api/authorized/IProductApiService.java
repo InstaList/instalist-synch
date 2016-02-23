@@ -29,7 +29,7 @@ public interface IProductApiService {
      * @return the list of products changed since this date.
      */
     @GET("groups/{id}/products")
-    Call<List<ProductInfo>> getProducts(@Path("id") int _id,
+    Call<List<ProductInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -39,7 +39,7 @@ public interface IProductApiService {
      * @return the uuid of the created Product.
      */
     @POST("groups/{id}/products")
-    Call<Void> createProduct(@Path("id") int _id, @Body ProductInfo _Product);
+    Call<Void> createItem(@Path("id") int _id, @Body ProductInfo _Product);
 
     //endregion
 
@@ -52,7 +52,7 @@ public interface IProductApiService {
      * @return the associated Product.
      */
     @GET("groups/{id}/products/{uuid}")
-    Call<ProductInfo> getProduct(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<ProductInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the Product by the given Product.
@@ -62,7 +62,7 @@ public interface IProductApiService {
      * @return the uuid of the updated Product.
      */
     @PUT("groups/{id}/products/{uuid}")
-    Call<Void> updateProduct(@Path("id") int _id, @Path("uuid") String _uuid,
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body ProductInfo _Product);
 
     /**
@@ -72,7 +72,7 @@ public interface IProductApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/products/{uuid}")
-    Call<Void> deleteProduct(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     //endregion
 

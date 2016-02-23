@@ -26,9 +26,9 @@ import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbContr
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
-import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
+import org.noorganization.instalistsynch.controller.network.model.INetworkController;
 import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
-import org.noorganization.instalistsynch.controller.synch.ILocalListSynch;
+import org.noorganization.instalistsynch.controller.synch.ISynch;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.task.list.ListDeleteTask;
 import org.noorganization.instalistsynch.controller.synch.task.list.ListInsertTask;
@@ -37,8 +37,8 @@ import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.MergeConflictMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAccess;
-import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.model.ModelMapping;
+import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.utils.Constants;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -54,24 +54,28 @@ import de.greenrobot.event.EventBus;
  * Synchronization of the list.
  * Created by Desnoo on 14.02.2016.
  */
-public class LocalListSynch implements ILocalListSynch {
-    private static final String TAG = "LocalListSynch";
+public class ListSynch implements ISynch {
+    private static final String TAG = "ListSynch";
     private ContentResolver mResolver;
 
-    private ITaskErrorLogDbController mTaskErrorLogDbController;
-    private IModelMappingDbController mModelMappingDbController;
-    private ISessionController        mSessioncontroller;
+    private ITaskErrorLogDbController    mTaskErrorLogDbController;
+    private IModelMappingDbController    mModelMappingDbController;
+    private ISessionController           mSessioncontroller;
+    private IListController              mListController;
+    private INetworkController<ListInfo> mListNetworkController;
 
-    public LocalListSynch() {
-        mResolver = GlobalObjects.getInstance()
-                .getApplicationContext()
-                .getContentResolver();
+    public ListSynch() {
+        Context context = GlobalObjects.getInstance().getApplicationContext();
+        mResolver = context.getContentResolver();
         mTaskErrorLogDbController =
                 (ITaskErrorLogDbController) GlobalObjects.sControllerMapping
                         .get(eControllerType.ERROR_LOG);
-        mModelMappingDbController = ModelMappingDbFactory.getInstance()
-                .getSqliteShoppingListMappingDbController();
+        mModelMappingDbController =
+                ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
         mSessioncontroller = InMemorySessionController.getInstance();
+        mListController = ControllerFactory.getListController(context);
+        mListNetworkController =
+                RemoteModelAccessControllerFactory.getInstance().getListNetworkController();
     }
 
 
@@ -80,11 +84,7 @@ public class LocalListSynch implements ILocalListSynch {
         ModelMapping listMapping;
         Date         currentClientDate = new Date();
 
-        IListController listController =
-                ControllerFactory.getListController(GlobalObjects.getInstance()
-                        .getApplicationContext());
-
-        List<ShoppingList> shoppingLists = listController.getAllLists();
+        List<ShoppingList> shoppingLists = mListController.getAllLists();
         // assign each list to a model mapping
         for (ShoppingList shoppingList : shoppingLists) {
             listMapping = new ModelMapping(null,
@@ -209,8 +209,6 @@ public class LocalListSynch implements ILocalListSynch {
                 ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >=  ?  AND "
                         + ModelMapping.COLUMN.GROUP_ID + " = ?",
                 new String[]{_lastUpdate, String.valueOf(_groupId)});
-        IListNetworkController listNetworkController =
-                RemoteModelAccessControllerFactory.getListSynchController();
         IListController listController =
                 ControllerFactory.getListController(GlobalObjects.getInstance()
                         .getApplicationContext());
@@ -234,7 +232,7 @@ public class LocalListSynch implements ILocalListSynch {
             if (listInfo.getDeleted()) {
                 // list was deleted
                 if (modelMapping.getServerSideUUID() != null) {
-                    listNetworkController.deleteShoppingList(new ListDeleteResponse(_groupId,
+                    mListNetworkController.deleteItem(new ListDeleteResponse(_groupId,
                                     modelMapping),
                             _groupId,
                             modelMapping.getServerSideUUID(),
@@ -252,7 +250,7 @@ public class LocalListSynch implements ILocalListSynch {
                     listInfo.setUUID(mModelMappingDbController.generateUuid());
                     modelMapping.setServerSideUUID(listInfo.getUUID());
                     // push this model as insert to the server
-                    listNetworkController.createList(new ListInsertResponse(_groupId,
+                    mListNetworkController.createItem(new ListInsertResponse(_groupId,
                                     modelMapping,
                                     listInfo),
                             _groupId,
@@ -260,7 +258,7 @@ public class LocalListSynch implements ILocalListSynch {
                             authToken);
                 } else {
                     // push the update to the server
-                    listNetworkController.updateShoppingList(new ListUpdateResponse(_groupId,
+                    mListNetworkController.updateItem(new ListUpdateResponse(_groupId,
                                     modelMapping),
                             _groupId,
                             modelMapping.getServerSideUUID(),
@@ -287,10 +285,10 @@ public class LocalListSynch implements ILocalListSynch {
             return;
         }
         // get the last update date.
-        Date lastUpdateDate = new Date(System.currentTimeMillis() - 10000000L);//access.getLastUpdateFromServer();
-        IListNetworkController networkController =
-                RemoteModelAccessControllerFactory.getListSynchController();
-        networkController.getLists(new GetListsResponse(_groupId,
+        Date lastUpdateDate =
+                new Date(System.currentTimeMillis() - 10000000L);//access.getLastUpdateFromServer();
+
+        mListNetworkController.getList(new GetListsResponse(_groupId,
                         ISO8601Utils.format(lastUpdateDate)),
                 _groupId,
                 ISO8601Utils.format(lastUpdateDate, true),
@@ -309,8 +307,6 @@ public class LocalListSynch implements ILocalListSynch {
             Log.i(TAG, "resolveConflict: No error log found for id " + String.valueOf(_conflictId));
             return;
         }
-        IListNetworkController networkController =
-                RemoteModelAccessControllerFactory.getListSynchController();
         String authToken = mSessioncontroller.getToken(taskErrorLog.getGroupId());
         if (authToken == null) {
             Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
@@ -318,7 +314,7 @@ public class LocalListSynch implements ILocalListSynch {
                     .post(new UnauthorizedErrorMessageEvent(taskErrorLog.getGroupId(), -1));
             return;
         }
-        networkController.getShoppingList(new GetListResponse(taskErrorLog, _resolveAction),
+        mListNetworkController.getItem(new GetListResponse(taskErrorLog, _resolveAction),
                 taskErrorLog.getGroupId(),
                 taskErrorLog.getUUID(),
                 authToken);
@@ -541,10 +537,8 @@ public class LocalListSynch implements ILocalListSynch {
             // generate new id
             mListInfo.setUUID(mModelMappingDbController.generateUuid());
             mModelMapping.setServerSideUUID(mListInfo.getUUID());
-            IListNetworkController listNetworkController =
-                    RemoteModelAccessControllerFactory.getListSynchController();
 
-            listNetworkController.createList(new ListInsertResponse(mModelMapping.getGroupId(),
+            mListNetworkController.createItem(new ListInsertResponse(mModelMapping.getGroupId(),
                             mModelMapping,
                             mListInfo),
                     mModelMapping.getGroupId(),

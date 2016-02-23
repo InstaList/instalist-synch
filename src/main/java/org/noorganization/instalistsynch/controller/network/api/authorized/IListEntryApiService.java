@@ -28,7 +28,7 @@ public interface IListEntryApiService {
      * @return the list of listEntries changed since this date.
      */
     @GET("groups/{id}/listEntries")
-    Call<List<EntryInfo>> getListEntries(@Path("id") int _id,
+    Call<List<EntryInfo>> getList(@Path("id") int _id,
             @Query("changedSince") String _sinceTimeString);
 
     /**
@@ -38,7 +38,7 @@ public interface IListEntryApiService {
      * @return the uuid of the created ListEntry.
      */
     @POST("groups/{id}/listEntries")
-    Call<Void> createListEntry(@Path("id") int _id, @Body EntryInfo _ListEntry);
+    Call<Void> createItem(@Path("id") int _id, @Body EntryInfo _ListEntry);
 
     /**
      * Get a ListEntry by its id.
@@ -47,7 +47,7 @@ public interface IListEntryApiService {
      * @return the associated ListEntry.
      */
     @GET("groups/{id}/listEntries/{uuid}")
-    Call<EntryInfo> getListEntry(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<EntryInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
      * Update the ListEntry by the given ListEntry.
@@ -57,7 +57,7 @@ public interface IListEntryApiService {
      * @return the uuid of the updated ListEntry.
      */
     @PUT("groups/{id}/listEntries/{uuid}")
-    Call<Void> updateListEntry(@Path("id") int _id, @Path("uuid") String _uuid,
+    Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body EntryInfo _ListEntry);
 
     /**
@@ -67,6 +67,6 @@ public interface IListEntryApiService {
      * @return the uuid of the deleted element.
      */
     @DELETE("groups/{id}/listEntries/{uuid}")
-    Call<Void> deleteListEntry(@Path("id") int _id, @Path("uuid") String _uuid);
+    Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
 }
