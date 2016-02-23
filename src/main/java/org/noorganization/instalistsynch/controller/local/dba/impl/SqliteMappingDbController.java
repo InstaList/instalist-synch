@@ -10,9 +10,9 @@ import org.noorganization.instalist.utils.SQLiteUtils;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.exception.SqliteMappingDbControllerException;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
-import org.noorganization.instalistsynch.model.network.ModelMapping;
-import org.noorganization.instalistsynch.model.network.eModelMappingTableNames;
+import org.noorganization.instalistsynch.model.GroupAccess;
+import org.noorganization.instalistsynch.model.ModelMapping;
+import org.noorganization.instalistsynch.model.eModelMappingTableNames;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,7 +89,7 @@ public class SqliteMappingDbController implements IModelMappingDbController {
 
         long updatedRows = db.update(mTableName,
                 cv,
-                GroupAuthAccess.COLUMN.GROUP_ID + " LIKE ?",
+                GroupAccess.COLUMN.GROUP_ID + " LIKE ?",
                 new String[]{_element.getUUID()});
         if (updatedRows <= 0) {
             return false;

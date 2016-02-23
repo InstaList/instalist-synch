@@ -9,17 +9,13 @@ import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDb
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
-import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
+import org.noorganization.instalistsynch.controller.network.AuthNetworkControllerFactory;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
-import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import de.greenrobot.event.EventBus;
 
@@ -73,14 +69,14 @@ public class DefaultAuthManagerController implements IAuthManagerController {
 
             if (groupAuth == null)
                 return;
-            NetworkControllerFactory.getAuthNetworkController().requestAuthToken(new AuthTokenResponse(groupAuth), groupAuth);
+            AuthNetworkControllerFactory.getAuthNetworkController().requestAuthToken(new AuthTokenResponse(groupAuth), groupAuth);
         }
     }
 
     @Override
     public void loadAllSessions() {
-        List<GroupAuthAccess> groupAuthAccessList = dbController.getGroupAuthAccesses(true);
-        InMemorySessionController.getInstance().loadToken(groupAuthAccessList);
+        List<GroupAccess> groupAccessList = dbController.getGroupAuthAccesses(true);
+        InMemorySessionController.getInstance().loadToken(groupAccessList);
     }
 
     @Override

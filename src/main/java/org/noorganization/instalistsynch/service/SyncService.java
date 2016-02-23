@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import org.noorganization.instalistsynch.network.adapter.SyncAdapter;
+import org.noorganization.instalistsynch.controller.network.adapter.SyncAdapter;
 
 /**
  * Service that returns an IBinder for the sync adapter class.
@@ -17,7 +17,7 @@ public class SyncService extends Service {
     /**
      * Reserved for an instance of the syncAdapter.
      */
-    private static SyncAdapter msSyncAdapter = null;
+    private static SyncAdapter sSyncAdapter = null;
 
     /**
      * This object is used as a thread-safe lock.
@@ -28,9 +28,9 @@ public class SyncService extends Service {
     public void onCreate() {
         super.onCreate();
         // create a singleton of syncAdapter
-        synchronized (msSyncAdapterLock){
-            if(msSyncAdapter == null){
-                msSyncAdapter = new SyncAdapter(getApplicationContext(),true, false);
+        synchronized (msSyncAdapterLock) {
+            if (sSyncAdapter == null) {
+                sSyncAdapter = new SyncAdapter(getApplicationContext(), true, false);
             }
         }
     }
@@ -39,7 +39,7 @@ public class SyncService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // get the object to call onPerformSync().
-        return msSyncAdapter.getSyncAdapterBinder();
+        return sSyncAdapter.getSyncAdapterBinder();
     }
 
 

@@ -1,6 +1,7 @@
 package org.noorganization.instalistsynch.model;
 
 /**
+ * log where all errors are saved.
  * Created by Desnoo on 15.02.2016.
  */
 public class TaskErrorLog {

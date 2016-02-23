@@ -8,7 +8,7 @@ import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDb
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.network.ISynchController;
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.util.List;
@@ -44,37 +44,37 @@ public class DefaultSynchController implements ISynchController {
 
     @Override
     public void synchronizeAllGroups() {
-        List<GroupAuthAccess> groupAuthAccessList = mGroupAuthAccessDbController
+        List<GroupAccess> groupAccessList = mGroupAuthAccessDbController
                 .getGroupAuthAccesses(true);
 
-        if (groupAuthAccessList.size() == 0) {
+        if (groupAccessList.size() == 0) {
             Log.e(LOG_TAG, "synchronizeAllGroups: no group auths to synch");
             return;
         }
 
-        for (GroupAuthAccess groupAuthAccessElem : groupAuthAccessList) {
-            synchronizeGroup(groupAuthAccessElem);
+        for (GroupAccess groupAccessElem : groupAccessList) {
+            synchronizeGroup(groupAccessElem);
         }
     }
 
     @Override
     public void synchronizeGroup(@NonNull GroupAuth _groupAuth) {
-        GroupAuthAccess groupAuthAccess = mGroupAuthAccessDbController.getGroupAuthAccess(_groupAuth.getDeviceId());
-        if(groupAuthAccess == null){
+        GroupAccess groupAccess = mGroupAuthAccessDbController.getGroupAuthAccess(_groupAuth.getDeviceId());
+        if(groupAccess == null){
             //TODO show some error
-            Log.e(LOG_TAG, "synchronizeAllGroups: no groupAuthAccess for given groupAuth " + _groupAuth.toString());
+            Log.e(LOG_TAG, "synchronizeAllGroups: no groupAccess for given groupAuth " + _groupAuth.toString());
             return;
         }
 
-        synchronizeGroup(groupAuthAccess);
+        synchronizeGroup(groupAccess);
     }
 
     /**
      * Does the whole synchronization process.
-     * @param _groupAuthAccess the group object to be synchronized.
+     * @param _groupAccess the group object to be synchronized.
      * @return true if synch runs through correct, else false.
      */
-    private boolean synchronizeGroup(@NonNull GroupAuthAccess _groupAuthAccess){
+    private boolean synchronizeGroup(@NonNull GroupAccess _groupAccess){
 
         return false;
     }

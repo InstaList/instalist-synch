@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.impl.LocalListSynch;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 /**
@@ -24,13 +24,13 @@ public class SynchManager {
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(
                         GlobalObjects.getInstance()
                                 .getApplicationContext());
-        GroupAuthAccess groupAuthAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
+        GroupAccess groupAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
 
 
         ILocalListSynch listSynch = new LocalListSynch();
-        listSynch.refreshLocalMapping(_groupId, groupAuthAccess.getLastUpdateFromClient());
-        listSynch.synchGroupFromNetwork(_groupId, groupAuthAccess.getLastUpdateFromServer());
+        listSynch.refreshLocalMapping(_groupId, groupAccess.getLastUpdateFromClient());
+        listSynch.synchGroupFromNetwork(_groupId, groupAccess.getLastUpdateFromServer());
         listSynch.synchronizeLocalToNetwork(_groupId,
-                ISO8601Utils.format(groupAuthAccess.getLastUpdateFromClient()));
+                ISO8601Utils.format(groupAccess.getLastUpdateFromClient()));
     }
 }

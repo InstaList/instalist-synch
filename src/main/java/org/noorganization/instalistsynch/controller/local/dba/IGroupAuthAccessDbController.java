@@ -2,15 +2,15 @@ package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.database.Cursor;
 
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.eSortMode;
 
 import java.util.List;
 
 /**
- * The interface to interact with the {@link org.noorganization.instalistsynch.model.GroupAuthAccess} data.
- * Deletion of {@link GroupAuthAccess} is not supported because it cascades on delete with the {@link GroupAuth}.
+ * The interface to interact with the {@link GroupAccess} data.
+ * Deletion of {@link GroupAccess} is not supported because it cascades on delete with the {@link GroupAuth}.
  * Created by tinos_000 on 30.01.2016.
  */
 public interface IGroupAuthAccessDbController {
@@ -34,30 +34,30 @@ public interface IGroupAuthAccessDbController {
     }
 
     /**
-     * Inserts the given {@link GroupAuthAccess} element.
+     * Inserts the given {@link GroupAccess} element.
      *
-     * @param _groupAuthAccess the element to insert.
+     * @param _groupAccess the element to insert.
      * @return {@see INSERTION_CODE}
      */
-    int insert(GroupAuthAccess _groupAuthAccess);
+    int insert(GroupAccess _groupAccess);
 
     /**
-     * Get the {@link GroupAuthAccess} object with the given id.
+     * Get the {@link GroupAccess} object with the given id.
      *
      * @param _groupId the device id.
-     * @return the {@link GroupAuthAccess} object associated with the id, or null if there is none with this id.
+     * @return the {@link GroupAccess} object associated with the id, or null if there is none with this id.
      */
-    GroupAuthAccess getGroupAuthAccess(int _groupId);
+    GroupAccess getGroupAuthAccess(int _groupId);
 
     /**
-     * Get all {@link GroupAuthAccess} objects.
+     * Get all {@link GroupAccess} objects.
      *
      * @return all saved access data.
      */
-    List<GroupAuthAccess> getGroupAuthAccesses();
+    List<GroupAccess> getGroupAuthAccesses();
 
     /**
-     * Get all {@link GroupAuthAccess} objects.
+     * Get all {@link GroupAccess} objects.
      *
      * @param _sortMode the mode sort the group items id.
      * @return a cursor to the group authAcess objects.
@@ -65,27 +65,27 @@ public interface IGroupAuthAccessDbController {
     Cursor getGroupAuthAccessesCursor(eSortMode _sortMode);
 
     /**
-     * Get all {@link GroupAuthAccess} objects.
+     * Get all {@link GroupAccess} objects.
      *
      * @param _synchronize indicates if only groups if synchronize enabled be returned. true if only those to synch else those to not synch
      * @return all saved access data.
      */
-    List<GroupAuthAccess> getGroupAuthAccesses(boolean _synchronize);
+    List<GroupAccess> getGroupAuthAccesses(boolean _synchronize);
 
     /**
-     * Get {@link GroupAuthAccess} objects since a given time they were updated.
+     * Get {@link GroupAccess} objects since a given time they were updated.
      *
      * @param _sinceTime all objects since this time in ISO8601 format.
      * @return all saved access data.
      */
-    List<GroupAuthAccess> getGroupAuthAccesses(String _sinceTime);
+    List<GroupAccess> getGroupAuthAccesses(String _sinceTime);
 
     /**
      * Update the entry in the associated database.
      *
-     * @param _groupAuthAccess the entry to be updated.
+     * @param _groupAccess the entry to be updated.
      */
-    boolean update(GroupAuthAccess _groupAuthAccess);
+    boolean update(GroupAccess _groupAccess);
 
     /**
      * Updates the token in the database.
@@ -101,7 +101,7 @@ public interface IGroupAuthAccessDbController {
      *
      * @param _groupAuthAccess the object to update in db.
      *
-    void touch(GroupAuthAccess _groupAuthAccess);
+    void touch(GroupAccess _groupAuthAccess);
      */
 
     /**

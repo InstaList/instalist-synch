@@ -17,7 +17,7 @@ import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbContr
 import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
-import org.noorganization.instalistsynch.controller.network.impl.NetworkControllerFactory;
+import org.noorganization.instalistsynch.controller.network.AuthNetworkControllerFactory;
 import org.noorganization.instalistsynch.events.CreateGroupErrorEvent;
 import org.noorganization.instalistsynch.events.CreateGroupNetworkExceptionMessageEvent;
 import org.noorganization.instalistsynch.events.DeletedMemberMessageEvent;
@@ -30,8 +30,8 @@ import org.noorganization.instalistsynch.events.LocalGroupExistsEvent;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.AccessRight;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
 import org.noorganization.instalistsynch.events.GroupMemberAuthorizedMessageEvent;
@@ -101,7 +101,7 @@ public class DefaultGroupManagerController implements IGroupManagerController {
                 LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
         mGroupAuthAccessDbController =
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
-        mGroupNetworkController = NetworkControllerFactory.getGroupController();
+        mGroupNetworkController = AuthNetworkControllerFactory.getGroupController();
         mSessionController = InMemorySessionController.getInstance();
         mCachedTaskObjects = new HashMap();
         EventBus.getDefault().register(this);
@@ -310,16 +310,17 @@ public class DefaultGroupManagerController implements IGroupManagerController {
                 return;
             }
 
-            GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
-            groupAuthAccess.setLastUpdateFromServer(new Date(Constants.INITIAL_DATE));
-            groupAuthAccess.setLastUpdateFromClient(new Date(Constants.INITIAL_DATE));
-            groupAuthAccess.setLastTokenRequest(new Date(Constants.INITIAL_DATE));
-            groupAuthAccess.setSynchronize(true);
-            groupAuthAccess.setInterrupted(false);
-            if (IGroupAuthAccessDbController.INSERTION_CODE.CORRECT != mGroupAuthAccessDbController.insert(groupAuthAccess)) {
+            GroupAccess groupAccess = new GroupAccess(mGroup.getGroupId(), null);
+            groupAccess.setLastUpdateFromServer(new Date(Constants.INITIAL_DATE));
+            groupAccess.setLastUpdateFromClient(new Date(Constants.INITIAL_DATE));
+            groupAccess.setLastTokenRequest(new Date(Constants.INITIAL_DATE));
+            groupAccess.setSynchronize(true);
+            groupAccess.setInterrupted(false);
+            if (IGroupAuthAccessDbController.INSERTION_CODE.CORRECT != mGroupAuthAccessDbController.insert(
+                    groupAccess)) {
                 // rollback needed
                 mGroupAuthDbController.removeRegisteredGroup(mGroup.getGroupId());
-                onError(new Throwable("Cannot insert into groupAuthAccess " + groupAuthAccess.toString()));
+                onError(new Throwable("Cannot insert into groupAccess " + groupAccess.toString()));
                 return;
             }
 

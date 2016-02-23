@@ -5,12 +5,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import org.noorganization.instalistsynch.model.GroupAuth;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
-import org.noorganization.instalistsynch.model.network.ModelMapping;
-import org.noorganization.instalistsynch.model.network.eModelMappingTableNames;
+import org.noorganization.instalistsynch.model.ModelMapping;
+import org.noorganization.instalistsynch.model.eModelMappingTableNames;
 
 /**
  * Helper to access synch database.
@@ -27,7 +27,7 @@ public class SynchDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(GroupAuthAccess.DB_CREATE);
+        db.execSQL(GroupAccess.DB_CREATE);
         db.execSQL(GroupAuth.DB_CREATE);
         db.execSQL(GroupMember.DB_CREATE);
         db.execSQL(TempGroupAccessToken.DB_CREATE);
@@ -41,7 +41,7 @@ public class SynchDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // nothing to update.
-        db.execSQL("DROP TABLE IF EXISTS " + GroupAuthAccess.TABLE_NAME + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + GroupAccess.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + GroupAuth.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
         db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");

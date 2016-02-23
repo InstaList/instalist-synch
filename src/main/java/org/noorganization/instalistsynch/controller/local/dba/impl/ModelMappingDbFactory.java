@@ -3,7 +3,7 @@ package org.noorganization.instalistsynch.controller.local.dba.impl;
 import org.noorganization.instalist.enums.eModelType;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.exception.SqliteMappingDbControllerException;
-import org.noorganization.instalistsynch.model.network.eModelMappingTableNames;
+import org.noorganization.instalistsynch.model.eModelMappingTableNames;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.util.HashMap;

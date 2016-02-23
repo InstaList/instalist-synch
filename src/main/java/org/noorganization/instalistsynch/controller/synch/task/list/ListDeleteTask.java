@@ -6,7 +6,7 @@ import org.noorganization.instalist.presenter.IListController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
-import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 /**

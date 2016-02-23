@@ -1,6 +1,6 @@
 package org.noorganization.instalistsynch.controller.local.dba;
 
-import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.ModelMapping;
 
 import java.util.List;
 

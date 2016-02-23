@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import org.noorganization.instalistsynch.network.auth.Authenticator;
+import org.noorganization.instalistsynch.controller.network.auth.Authenticator;
 
 
 /**

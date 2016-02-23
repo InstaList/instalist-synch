@@ -13,7 +13,7 @@ import org.noorganization.instalistsynch.controller.handler.UnauthorizedCallback
 import org.noorganization.instalistsynch.controller.network.IGroupNetworkController;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupMember;
-import org.noorganization.instalistsynch.network.api.authorized.IGroupApiService;
+import org.noorganization.instalistsynch.controller.network.api.authorized.IGroupApiService;
 import org.noorganization.instalistsynch.utils.ApiUtils;
 
 import java.util.List;

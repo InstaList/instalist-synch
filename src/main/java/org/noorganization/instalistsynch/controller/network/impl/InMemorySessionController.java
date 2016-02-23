@@ -2,7 +2,7 @@ package org.noorganization.instalistsynch.controller.network.impl;
 
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.events.TokenMessageEvent;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,8 +62,8 @@ public class InMemorySessionController implements ISessionController {
     }
 
     @Override
-    public void loadToken(List<GroupAuthAccess> _accessTokenPairs) {
-        for (GroupAuthAccess accessTokenPair : _accessTokenPairs) {
+    public void loadToken(List<GroupAccess> _accessTokenPairs) {
+        for (GroupAccess accessTokenPair : _accessTokenPairs) {
             mSessions.put(accessTokenPair.getGroupId(), accessTokenPair.getToken());
         }
     }

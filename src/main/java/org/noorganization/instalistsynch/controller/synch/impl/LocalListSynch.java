@@ -27,7 +27,7 @@ import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingD
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
 import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
-import org.noorganization.instalistsynch.controller.network.model.impl.ModelSynchControllerFactory;
+import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.ILocalListSynch;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.task.list.ListDeleteTask;
@@ -36,9 +36,9 @@ import org.noorganization.instalistsynch.controller.synch.task.list.ListUpdateTa
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
 import org.noorganization.instalistsynch.events.MergeConflictMessageEvent;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
-import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.Constants;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -210,7 +210,7 @@ public class LocalListSynch implements ILocalListSynch {
                         + ModelMapping.COLUMN.GROUP_ID + " = ?",
                 new String[]{_lastUpdate, String.valueOf(_groupId)});
         IListNetworkController listNetworkController =
-                ModelSynchControllerFactory.getShoppingListSynchController();
+                RemoteModelAccessControllerFactory.getListSynchController();
         IListController listController =
                 ControllerFactory.getListController(GlobalObjects.getInstance()
                         .getApplicationContext());
@@ -274,7 +274,7 @@ public class LocalListSynch implements ILocalListSynch {
 
     @Override
     public void synchGroupFromNetwork(int _groupId, Date _sinceTime) {
-        GroupAuthAccess access =
+        GroupAccess access =
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance()
                         .getApplicationContext())
                         .getGroupAuthAccess(_groupId);
@@ -289,7 +289,7 @@ public class LocalListSynch implements ILocalListSynch {
         // get the last update date.
         Date lastUpdateDate = new Date(System.currentTimeMillis() - 10000000L);//access.getLastUpdateFromServer();
         IListNetworkController networkController =
-                ModelSynchControllerFactory.getShoppingListSynchController();
+                RemoteModelAccessControllerFactory.getListSynchController();
         networkController.getLists(new GetListsResponse(_groupId,
                         ISO8601Utils.format(lastUpdateDate)),
                 _groupId,
@@ -310,7 +310,7 @@ public class LocalListSynch implements ILocalListSynch {
             return;
         }
         IListNetworkController networkController =
-                ModelSynchControllerFactory.getShoppingListSynchController();
+                RemoteModelAccessControllerFactory.getListSynchController();
         String authToken = mSessioncontroller.getToken(taskErrorLog.getGroupId());
         if (authToken == null) {
             Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
@@ -391,7 +391,7 @@ public class LocalListSynch implements ILocalListSynch {
                     LocalSqliteDbControllerFactory
                             .getAuthAccessDbController(GlobalObjects.getInstance()
                                     .getApplicationContext());
-            GroupAuthAccess access =
+            GroupAccess access =
                     accessController.getGroupAuthAccess(mGroupId);
             access.setLastUpdateFromServer(new Date());
             accessController.update(access);
@@ -404,7 +404,7 @@ public class LocalListSynch implements ILocalListSynch {
                     LocalSqliteDbControllerFactory
                             .getAuthAccessDbController(GlobalObjects.getInstance()
                                     .getApplicationContext());
-            GroupAuthAccess access =
+            GroupAccess access =
                     accessController.getGroupAuthAccess(mGroupId);
             access.setInterrupted(true);
             accessController.update(access);
@@ -542,7 +542,7 @@ public class LocalListSynch implements ILocalListSynch {
             mListInfo.setUUID(mModelMappingDbController.generateUuid());
             mModelMapping.setServerSideUUID(mListInfo.getUUID());
             IListNetworkController listNetworkController =
-                    ModelSynchControllerFactory.getShoppingListSynchController();
+                    RemoteModelAccessControllerFactory.getListSynchController();
 
             listNetworkController.createList(new ListInsertResponse(mModelMapping.getGroupId(),
                             mModelMapping,

@@ -1,6 +1,6 @@
 package org.noorganization.instalistsynch.controller.network;
 
-import org.noorganization.instalistsynch.model.GroupAuthAccess;
+import org.noorganization.instalistsynch.model.GroupAccess;
 
 import java.util.List;
 
@@ -42,5 +42,5 @@ public interface ISessionController {
      *
      * @param _accessTokenPairs a list of all known accessTokens.
      */
-    void loadToken(List<GroupAuthAccess> _accessTokenPairs);
+    void loadToken(List<GroupAccess> _accessTokenPairs);
 }

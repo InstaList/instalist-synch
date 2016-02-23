@@ -1,7 +1,7 @@
 package org.noorganization.instalistsynch.utils;
 
-import org.noorganization.instalistsynch.network.api.ApiServiceGenerator;
-import org.noorganization.instalistsynch.network.api.unauthorized.IUnauthorizedApiService;
+import org.noorganization.instalistsynch.controller.network.api.ApiServiceGenerator;
+import org.noorganization.instalistsynch.controller.network.api.unauthorized.IUnauthorizedApiService;
 
 /**
  * Utils to get the api interface for the interaction.
@@ -47,7 +47,7 @@ public class ApiUtils {
      *
      * @param _clazz the Api interface to get.
      * @param _token the token it should send in the Authorization header.
-     * @param <S>    the interface of an item in {@link org.noorganization.instalistsynch.network.api.authorized}.
+     * @param <S>    the interface of an item in {@link org.noorganization.instalistsynch.controller.network.api.authorized}.
      * @return the built api interaction class.
      */
     public <S> S getAuthorizedApiService(Class<S> _clazz, String _token) {

@@ -1,7 +1,5 @@
 package org.noorganization.instalistsynch.controller.synch.task.list;
 
-import com.fasterxml.jackson.databind.util.ISO8601Utils;
-
 import org.noorganization.instalist.comm.message.ListInfo;
 import org.noorganization.instalist.enums.eControllerType;
 import org.noorganization.instalist.model.Category;
@@ -11,7 +9,7 @@ import org.noorganization.instalist.presenter.IListController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
-import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.util.Date;

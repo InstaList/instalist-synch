@@ -6,7 +6,7 @@ import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCa
 import org.noorganization.instalistsynch.controller.handler.AuthorizedCallbackHandler;
 import org.noorganization.instalistsynch.controller.handler.AuthorizedInsertCallbackHandler;
 import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
-import org.noorganization.instalistsynch.network.api.authorized.IListApiService;
+import org.noorganization.instalistsynch.controller.network.api.authorized.IListApiService;
 import org.noorganization.instalistsynch.utils.ApiUtils;
 
 import java.util.List;
