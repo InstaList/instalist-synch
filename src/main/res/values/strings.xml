@@ -102,4 +102,5 @@
     <string name="abc_error_member_not_existing">The group member does not exist anymore!</string>
     <string name="abc_refresh">Refresh</string>
     <string name="abc_error_resolving_conflict">There was an error while resolving the conflict.</string>
+    <string name="abc_test_list_synch">Test List Synch</string>
 </resources>

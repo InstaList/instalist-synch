@@ -11,6 +11,12 @@ import java.util.List;
 public interface IModelMappingDbController {
 
     /**
+     * Generates a uuid that is unique.
+     * @return the generated uuid.
+     */
+    String generateUuid();
+
+    /**
      * Insert the model element into the database.
      *
      * @param _element the element to insert. Only the uuid should not be set.

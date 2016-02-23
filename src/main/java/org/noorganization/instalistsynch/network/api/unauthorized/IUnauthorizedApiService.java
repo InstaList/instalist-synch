@@ -46,6 +46,4 @@ public interface IUnauthorizedApiService {
      */
     @GET("groups/{id}/devices/token")
     Call<TokenInfo> token(@Path("id") int _id, @Header("Authorization") String _authorization);
-
-
 }

@@ -14,8 +14,6 @@ import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
-import java.text.ParseException;
-import java.text.ParsePosition;
 import java.util.Date;
 import java.util.List;
 
@@ -50,12 +48,8 @@ public class ListInsertTask implements ITask {
     public int execute(int _resolveCode) {
 
         Date lastServerChange;
-        try {
-            lastServerChange = ISO8601Utils.parse(mListInfo.getLastChanged(), new ParsePosition(0));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return ReturnCodes.PARSE_CONFLICT;
-        }
+        lastServerChange = mListInfo.getLastChanged();
+
 
         Category category = null;
         if (mListInfo.getCategoryUUID() != null) {

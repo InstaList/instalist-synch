@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.model;
 
+import org.noorganization.instalistsynch.utils.Constants;
+
 import java.util.Date;
 
 /**
@@ -67,8 +69,8 @@ public class GroupAuthAccess {
     public GroupAuthAccess(int groupId, String token) {
         mGroupId = groupId;
         mToken = token;
-        mLastTokenRequest = new Date(System.currentTimeMillis() - 100000000L);
-        mLastUpdateFromServer = new Date(System.currentTimeMillis() - 100000000L);
+        mLastTokenRequest = new Date(Constants.INITIAL_DATE);
+        mLastUpdateFromServer = new Date(Constants.INITIAL_DATE);
     }
 
 

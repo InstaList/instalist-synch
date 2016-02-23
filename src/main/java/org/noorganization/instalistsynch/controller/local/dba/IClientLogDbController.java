@@ -31,13 +31,14 @@ public interface IClientLogDbController {
     Cursor getLogsSince(String _date, eModelType _modelType);
 
     /**
-     * Get the last update date of the given uuid in the specified model.
+     * Get the LogInfo entries since a given time for a specified uuid of a element with the type of the specified model.
      *
-     * @param _uuid      the uuid of the client side model.
-     * @param _modelType the type of the model on the client side.
-     * @param _type      the type of the model.
-     * @param _date      the string of the date.
+     * @param _uuid       the uuid of the client side model.
+     * @param _modelType  the type of the model on the client side.
+     * @param _actionType the type of the action.
+     * @param _date       the string of the date.
      * @return a list with matching entries.
      */
-    List<LogInfo> getElementByUuid(String _uuid, eActionType _type, eModelType _modelType, String _date);
+    List<LogInfo> getElementByUuid(String _uuid, eActionType _actionType, eModelType _modelType,
+            String _date);
 }

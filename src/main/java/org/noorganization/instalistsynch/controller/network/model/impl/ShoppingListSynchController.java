@@ -12,6 +12,7 @@ import org.noorganization.instalistsynch.utils.NetworkUtils;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
@@ -55,7 +56,7 @@ public class ShoppingListSynchController implements IModelSynchController {
         private final String LOG_TAG = GetShoppingListsSinceCallback.class.getSimpleName();
 
         @Override
-        public void onResponse(Response<List<ShoppingListResponse>> _response) {
+        public void onResponse(Call<List<ShoppingListResponse>> _call, Response<List<ShoppingListResponse>> _response) {
             if (!NetworkUtils.isSuccessful(_response))
                 return;
 
@@ -74,7 +75,7 @@ public class ShoppingListSynchController implements IModelSynchController {
         }
 
         @Override
-        public void onFailure(Throwable t) {
+        public void onFailure(Call<List<ShoppingListResponse>> _call, Throwable t) {
             Log.e(LOG_TAG, "onFailure: Shoppinglistsynchronization connection went wrong.", t.getCause());
             mEventBus.post(new SynchronizationMessageEvent(ShoppingList.class, false, R.string.network_response_error));
         }

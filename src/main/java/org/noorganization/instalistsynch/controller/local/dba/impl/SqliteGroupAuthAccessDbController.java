@@ -104,7 +104,7 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor authAccessCursor = db.query(GroupAuthAccess.TABLE_NAME,
                 GroupAuthAccess.COLUMN.ALL_COLUMNS,
-                "datetime(" + GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER + ") >= datetime(?)",
+                "" + GroupAuthAccess.COLUMN.LAST_UPDATE_FROM_SERVER + " >= ?",
                 new String[]{_sinceTime}, null, null, null);
 
         List<GroupAuthAccess> groupAuthAccessList = getList(authAccessCursor);

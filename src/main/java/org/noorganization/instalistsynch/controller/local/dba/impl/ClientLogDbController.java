@@ -43,7 +43,7 @@ public class ClientLogDbController implements IClientLogDbController {
         return mContentResolver.query(
                 Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
                 LogInfo.COLUMN.ALL_COLUMNS, null, null,
-                "DESC datetime(" + LogInfo.COLUMN.ACTION_DATE + ")");
+                LogInfo.COLUMN.ACTION_DATE + " DESC ");
     }
 
     @Override
@@ -51,9 +51,9 @@ public class ClientLogDbController implements IClientLogDbController {
         return mContentResolver.query(
                 Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
                 LogInfo.COLUMN.ALL_COLUMNS,
-                LogInfo.COLUMN.MODEL + " = ? AND " + LogInfo.COLUMN.ACTION_DATE + " >= datetime(?)",
+                LogInfo.COLUMN.MODEL + " = ? AND " + LogInfo.COLUMN.ACTION_DATE + " >=  ? ",
                 new String[]{String.valueOf(_modelType.ordinal()), _date},
-                "DESC datetime(" + LogInfo.COLUMN.ACTION_DATE + ")");
+                LogInfo.COLUMN.ACTION_DATE + " DESC ");
     }
 
     @Override
@@ -64,9 +64,8 @@ public class ClientLogDbController implements IClientLogDbController {
                 LogInfo.COLUMN.ALL_COLUMNS,
                 LogInfo.COLUMN.ITEM_UUID + " LIKE ? AND "
                         + LogInfo.COLUMN.ACTION + " = ? AND "
-                        + LogInfo.COLUMN.MODEL + " = ? "
-                        + LogInfo.COLUMN.ACTION_DATE + " >= datetime( ? )"
-                        + ")",
+                        + LogInfo.COLUMN.MODEL + " = ? AND "
+                        + LogInfo.COLUMN.ACTION_DATE + " >= ? ",
                 new String[]{_uuid, String.valueOf(_actionType.ordinal()),
                         String.valueOf(_modelType.ordinal()), _time},
                 null);
@@ -89,7 +88,9 @@ public class ClientLogDbController implements IClientLogDbController {
                 eActionType actionType = eActionType.getTypeById(action);
                 int model = cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.MODEL));
                 eModelType modelType = eModelType.getTypeId(model);
-                String date = cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
+                String date =
+                        cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)).concat(
+                                "+00:00");
 
                 list.add(new LogInfo(id, uuid, actionType, modelType,
                         ISO8601Utils.parse(date, new ParsePosition(0))));

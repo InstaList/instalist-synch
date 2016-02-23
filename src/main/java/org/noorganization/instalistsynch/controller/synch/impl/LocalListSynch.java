@@ -12,13 +12,19 @@ import org.noorganization.instalist.enums.eActionType;
 import org.noorganization.instalist.enums.eControllerType;
 import org.noorganization.instalist.enums.eModelType;
 import org.noorganization.instalist.model.LogInfo;
+import org.noorganization.instalist.model.ShoppingList;
+import org.noorganization.instalist.presenter.IListController;
+import org.noorganization.instalist.presenter.implementation.ControllerFactory;
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
+import org.noorganization.instalistsynch.controller.local.dba.IClientLogDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.ITaskErrorLogDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
+import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
 import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
 import org.noorganization.instalistsynch.controller.network.model.impl.ModelSynchControllerFactory;
@@ -33,8 +39,11 @@ import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.model.network.ModelMapping;
+import org.noorganization.instalistsynch.utils.Constants;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
+import java.text.ParseException;
+import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,21 +58,49 @@ public class LocalListSynch implements ILocalListSynch {
     private static final String TAG = "LocalListSynch";
     private ContentResolver mResolver;
 
-    ITaskErrorLogDbController mTaskErrorLogDbController;
-    IModelMappingDbController mModelMappingDbController;
+    private ITaskErrorLogDbController mTaskErrorLogDbController;
+    private IModelMappingDbController mModelMappingDbController;
+    private ISessionController        mSessioncontroller;
 
     public LocalListSynch() {
         mResolver = GlobalObjects.getInstance()
                 .getApplicationContext()
                 .getContentResolver();
         mTaskErrorLogDbController =
-                (ITaskErrorLogDbController) GlobalObjects.sControllerMapping.get(eControllerType.ERROR_LOG);
+                (ITaskErrorLogDbController) GlobalObjects.sControllerMapping
+                        .get(eControllerType.ERROR_LOG);
         mModelMappingDbController = ModelMappingDbFactory.getInstance()
                 .getSqliteShoppingListMappingDbController();
+        mSessioncontroller = InMemorySessionController.getInstance();
+    }
+
+
+    @Override
+    public void indexLocalEntries(int _groupId) {
+        ModelMapping listMapping;
+        Date         currentClientDate = new Date();
+
+        IListController listController =
+                ControllerFactory.getListController(GlobalObjects.getInstance()
+                        .getApplicationContext());
+
+        List<ShoppingList> shoppingLists = listController.getAllLists();
+        // assign each list to a model mapping
+        for (ShoppingList shoppingList : shoppingLists) {
+            listMapping = new ModelMapping(null,
+                    _groupId,
+                    null,
+                    shoppingList.mUUID,
+                    new Date(Constants.INITIAL_DATE),
+                    currentClientDate);
+            mModelMappingDbController.insert(listMapping);
+        }
     }
 
     @Override
-    public void refreshLocalMapping(Date _sinceTime) {
+    public void refreshLocalMapping(int _groupId, Date _sinceTime) {
+        // this updates the whole last updateClients fields that were changed since the last synch process.
+        // fetch all log data that is related to the group and get the actions since a given date.
         Cursor cursor =
                 LocalSqliteDbControllerFactory.getClientLogController(GlobalObjects.getInstance()
                         .getApplicationContext())
@@ -77,35 +114,172 @@ public class LocalListSynch implements ILocalListSynch {
         cursor.moveToFirst();
         try {
             do {
+                String clientUuid =
+                        cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
+                Date clientChangeDate = ISO8601Utils.parse(cursor.getString(cursor.getColumnIndex(
+                        LogInfo.COLUMN.ACTION_DATE)).concat("+0000"), new ParsePosition(0));
                 eActionType actionType =
-                        eActionType.getTypeById(cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.ACTION)));
+                        eActionType.getTypeById(cursor.getInt(cursor
+                                .getColumnIndex(LogInfo.COLUMN.ACTION)));
+
+                // should never be the case
+                if (actionType == null) {
+                    continue;
+                }
+
+                // check if there is a model mapping for the item that was in the log.
                 List<ModelMapping> modelMappingList = mModelMappingDbController.get(
                         ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?",
-                        new String[]{cursor.getString(
-                                cursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID))});
-                ModelMapping modelMapping = modelMappingList.size() == 0 ? null : modelMappingList.get(0);
+                        new String[]{clientUuid});
+                ModelMapping modelMapping =
+                        modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
+                // decide which action to do
                 switch (actionType) {
-                    case INSERT:
-                        if(modelMapping == null){
-                            //mModelMappingDbController.insert(new ModelMapping(null,))
+                    case INSERT: {
+                        // check if the model was not inserted before
+                        if (modelMapping == null) {
+                            mModelMappingDbController.insert(new ModelMapping(null,
+                                    _groupId,
+                                    null,
+                                    clientUuid,
+                                    new Date(Constants.INITIAL_DATE),
+                                    clientChangeDate));
                         }
                         break;
+                    }
+                    case UPDATE: {
+                        if (modelMapping != null) {
+                            modelMapping.setLastClientChange(clientChangeDate);
+                            mModelMappingDbController.update(modelMapping);
+                        }
+                        break;
+                    }
+                    case DELETE: {
+                        if (modelMapping != null) {
+                            // remove this model mapping, because it is no longer valid
+                            mModelMappingDbController.delete(modelMapping);
+                        }
+                        break;
+                    }
                 }
             } while (cursor.moveToNext());
+        } catch (ParseException e) {
+            Log.e(TAG, "refreshLocalMapping: parse the date went wrong.", e);
+            e.printStackTrace();
         } finally {
             cursor.close();
         }
     }
 
+    public void addGroupToList(int _groupId, String _clientMapping) {
+        List<ModelMapping> listMapping = mModelMappingDbController.get(
+                ModelMapping.COLUMN.GROUP_ID + " = ? AND " + ModelMapping.COLUMN.CLIENT_SIDE_UUID
+                        + " LIKE ? ", new String[]{String.valueOf(_groupId), _clientMapping});
+
+        // return if there is already an mapping for this element
+        if (listMapping.size() > 0) {
+            return;
+        }
+
+        mModelMappingDbController.insert(new ModelMapping(null,
+                _groupId,
+                null,
+                _clientMapping,
+                new Date(Constants.INITIAL_DATE),
+                new Date()));
+    }
+
+    /**
+     * Submits the local results to the server.
+     *
+     * @param _groupId    the id of the group, to which the results should be synched.
+     * @param _lastUpdate the date when the client last sent the local changes.
+     */
     @Override
-    public void synchGroupFromNetwork(int _groupId) {
+    public void synchronizeLocalToNetwork(int _groupId, String _lastUpdate) {
+
+        String authToken = mSessioncontroller.getToken(_groupId);
+        if (authToken == null) {
+            // TODO do something
+            return;
+        }
+
+        List<ModelMapping> modelMappingList = mModelMappingDbController.get(
+                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >=  ?  AND "
+                        + ModelMapping.COLUMN.GROUP_ID + " = ?",
+                new String[]{_lastUpdate, String.valueOf(_groupId)});
+        IListNetworkController listNetworkController =
+                ModelSynchControllerFactory.getShoppingListSynchController();
+        IListController listController =
+                ControllerFactory.getListController(GlobalObjects.getInstance()
+                        .getApplicationContext());
+        IClientLogDbController logDbController =
+                LocalSqliteDbControllerFactory.getClientLogController(GlobalObjects.getInstance()
+                        .getApplicationContext());
+
+
+        ListInfo listInfo = new ListInfo();
+
+        for (ModelMapping modelMapping : modelMappingList) {
+
+            List<LogInfo> logInfoList =
+                    logDbController.getElementByUuid(modelMapping.getClientSideUUID(),
+                            eActionType.DELETE,
+                            eModelType.LIST,
+                            _lastUpdate);
+
+            // if there was an entry deleted, then also mark this for the server
+            listInfo.setDeleted(logInfoList.size() != 0);
+            if (listInfo.getDeleted()) {
+                // list was deleted
+                if (modelMapping.getServerSideUUID() != null) {
+                    listNetworkController.deleteShoppingList(new ListDeleteResponse(_groupId,
+                                    modelMapping),
+                            _groupId,
+                            modelMapping.getServerSideUUID(),
+                            authToken);
+                }
+            } else {
+                ShoppingList list = listController.getListById(modelMapping.getClientSideUUID());
+                listInfo.setUUID(list.mUUID);
+                listInfo.setCategoryUUID(list.mCategory == null ? null : list.mCategory.mUUID);
+                listInfo.setLastChanged(modelMapping.getLastClientChange());
+                listInfo.setName(list.mName);
+                listInfo.setRemoveCategory(false);
+
+                if (modelMapping.getServerSideUUID() == null) {
+                    listInfo.setUUID(mModelMappingDbController.generateUuid());
+                    modelMapping.setServerSideUUID(listInfo.getUUID());
+                    // push this model as insert to the server
+                    listNetworkController.createList(new ListInsertResponse(_groupId,
+                                    modelMapping,
+                                    listInfo),
+                            _groupId,
+                            listInfo,
+                            authToken);
+                } else {
+                    // push the update to the server
+                    listNetworkController.updateShoppingList(new ListUpdateResponse(_groupId,
+                                    modelMapping),
+                            _groupId,
+                            modelMapping.getServerSideUUID(),
+                            listInfo,
+                            authToken);
+                }
+            }
+        }
+    }
+
+
+    @Override
+    public void synchGroupFromNetwork(int _groupId, Date _sinceTime) {
         GroupAuthAccess access =
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance()
                         .getApplicationContext())
                         .getGroupAuthAccess(_groupId);
-        String authToken = InMemorySessionController.getInstance()
-                .getToken(_groupId);
+        // fetch the auth token
+        String authToken = mSessioncontroller.getToken(_groupId);
         if (authToken == null) {
             Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
             EventBus.getDefault()
@@ -113,19 +287,15 @@ public class LocalListSynch implements ILocalListSynch {
             return;
         }
         // get the last update date.
-        Date lastUpdateDate = access.getLastUpdateFromServer();
+        Date lastUpdateDate = new Date(System.currentTimeMillis() - 10000000L);//access.getLastUpdateFromServer();
         IListNetworkController networkController =
                 ModelSynchControllerFactory.getShoppingListSynchController();
-        networkController.getLists(new GetListsResponse(_groupId),
+        networkController.getLists(new GetListsResponse(_groupId,
+                        ISO8601Utils.format(lastUpdateDate)),
                 _groupId,
                 ISO8601Utils.format(lastUpdateDate, true),
                 authToken);
     }
-
-    public void synchGroupFromLocal(int _groupId) {
-
-    }
-
 
     @Override
     public void resolveConflict(int _conflictId, int _resolveAction) {
@@ -141,8 +311,7 @@ public class LocalListSynch implements ILocalListSynch {
         }
         IListNetworkController networkController =
                 ModelSynchControllerFactory.getShoppingListSynchController();
-        String authToken = InMemorySessionController.getInstance()
-                .getToken(taskErrorLog.getGroupId());
+        String authToken = mSessioncontroller.getToken(taskErrorLog.getGroupId());
         if (authToken == null) {
             Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
             EventBus.getDefault()
@@ -158,10 +327,12 @@ public class LocalListSynch implements ILocalListSynch {
 
     private class GetListsResponse implements IAuthorizedCallbackCompleted<List<ListInfo>> {
 
-        private int mGroupId;
+        private int    mGroupId;
+        private String mLastUpdateDate;
 
-        public GetListsResponse(int groupId) {
+        public GetListsResponse(int groupId, String _lastUpdateDate) {
             mGroupId = groupId;
+            mLastUpdateDate = _lastUpdateDate;
         }
 
         @Override
@@ -171,7 +342,6 @@ public class LocalListSynch implements ILocalListSynch {
 
         @Override
         public void onCompleted(List<ListInfo> _next) {
-
             List<ITask> tasks = new ArrayList<>(_next.size());
             // tasks that are waiting for a category.
             // List<ITask> tasksAwaitingCategories = new ArrayList<>((_next.size() + 1) / 10);
@@ -199,7 +369,6 @@ public class LocalListSynch implements ILocalListSynch {
                         // element was updated.
                         tasks.add(new ListUpdateTask(modelMapping, listInfo, mGroupId));
                     }
-
                 }
             }
 
@@ -219,8 +388,9 @@ public class LocalListSynch implements ILocalListSynch {
             }
 
             IGroupAuthAccessDbController accessController =
-                    LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance()
-                            .getApplicationContext());
+                    LocalSqliteDbControllerFactory
+                            .getAuthAccessDbController(GlobalObjects.getInstance()
+                                    .getApplicationContext());
             GroupAuthAccess access =
                     accessController.getGroupAuthAccess(mGroupId);
             access.setLastUpdateFromServer(new Date());
@@ -231,8 +401,9 @@ public class LocalListSynch implements ILocalListSynch {
         @Override
         public void onError(Throwable _e) {
             IGroupAuthAccessDbController accessController =
-                    LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance()
-                            .getApplicationContext());
+                    LocalSqliteDbControllerFactory
+                            .getAuthAccessDbController(GlobalObjects.getInstance()
+                                    .getApplicationContext());
             GroupAuthAccess access =
                     accessController.getGroupAuthAccess(mGroupId);
             access.setInterrupted(true);
@@ -289,6 +460,107 @@ public class LocalListSynch implements ILocalListSynch {
         public void onError(Throwable _e) {
             EventBus.getDefault()
                     .post(new ErrorMessageEvent(R.string.abc_error_resolving_conflict));
+        }
+    }
+
+    private class ListDeleteResponse implements IAuthorizedCallbackCompleted<Void> {
+        private static final String TAG = "ListDeleteResponse";
+        private int          mGroupId;
+        private ModelMapping mModelMapping;
+
+        public ListDeleteResponse(int _groupId,
+                ModelMapping _modelMapping) {
+            mGroupId = _groupId;
+            mModelMapping = _modelMapping;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            Log.i(TAG,
+                    "onCompleted: delete element from local mapping table: "
+                            + mModelMapping.getClientSideUUID());
+            mModelMappingDbController.delete(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+
+        }
+    }
+
+    private class ListUpdateResponse implements IAuthorizedCallbackCompleted<Void> {
+        private int          mGroupId;
+        private ModelMapping mModelMapping;
+
+        public ListUpdateResponse(int _groupId,
+                ModelMapping _modelMapping) {
+            mGroupId = _groupId;
+            mModelMapping = _modelMapping;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            mModelMappingDbController.update(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+
+        }
+    }
+
+    private class ListInsertResponse implements IAuthorizedInsertCallbackCompleted<Void> {
+        private int          mGroupId;
+        private ModelMapping mModelMapping;
+        private ListInfo     mListInfo;
+
+        public ListInsertResponse(int _groupId,
+                ModelMapping _modelMapping, ListInfo _listInfo) {
+            mGroupId = _groupId;
+            mModelMapping = _modelMapping;
+            mListInfo = _listInfo;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+
+        }
+
+        @Override
+        public void onConflict() {
+            // generate new id
+            mListInfo.setUUID(mModelMappingDbController.generateUuid());
+            mModelMapping.setServerSideUUID(mListInfo.getUUID());
+            IListNetworkController listNetworkController =
+                    ModelSynchControllerFactory.getShoppingListSynchController();
+
+            listNetworkController.createList(new ListInsertResponse(mModelMapping.getGroupId(),
+                            mModelMapping,
+                            mListInfo),
+                    mModelMapping.getGroupId(),
+                    mListInfo,
+                    mSessioncontroller.getToken(mModelMapping.getGroupId()));
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            mModelMappingDbController.update(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+            _e.printStackTrace();
+            Log.i(TAG, "onError: " + _e.getLocalizedMessage());
         }
     }
 }

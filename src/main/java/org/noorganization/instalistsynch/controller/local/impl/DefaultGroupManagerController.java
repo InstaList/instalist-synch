@@ -35,6 +35,7 @@ import org.noorganization.instalistsynch.model.GroupAuthAccess;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.TempGroupAccessToken;
 import org.noorganization.instalistsynch.events.GroupMemberAuthorizedMessageEvent;
+import org.noorganization.instalistsynch.utils.Constants;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
 import java.io.IOException;
@@ -55,14 +56,14 @@ import de.greenrobot.event.EventBus;
 public class DefaultGroupManagerController implements IGroupManagerController {
     private static final String LOG_TAG = DefaultGroupManagerController.class.getSimpleName();
 
-    private static DefaultGroupManagerController sInstance;
-    private IGroupAuthDbController mGroupAuthDbController;
-    private IGroupMemberDbController mGroupMemberDbController;
-    private ITempGroupAccessTokenDbController mTempGroupAccessTokenDbController;
-    private IGroupNetworkController mGroupNetworkController;
-    private IGroupAuthAccessDbController mGroupAuthAccessDbController;
-    private ISessionController mSessionController;
-    private Context mContext;
+    private static DefaultGroupManagerController     sInstance;
+    private        IGroupAuthDbController            mGroupAuthDbController;
+    private        IGroupMemberDbController          mGroupMemberDbController;
+    private        ITempGroupAccessTokenDbController mTempGroupAccessTokenDbController;
+    private        IGroupNetworkController           mGroupNetworkController;
+    private        IGroupAuthAccessDbController      mGroupAuthAccessDbController;
+    private        ISessionController                mSessionController;
+    private        Context                           mContext;
 
     /**
      * The request type that is buffered and waits for a token.
@@ -94,9 +95,12 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     private DefaultGroupManagerController() {
         mContext = GlobalObjects.getInstance().getApplicationContext();
         mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
-        mTempGroupAccessTokenDbController = LocalSqliteDbControllerFactory.getTempGroupAccessTokenDbController(mContext);
-        mGroupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
-        mGroupAuthAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
+        mTempGroupAccessTokenDbController =
+                LocalSqliteDbControllerFactory.getTempGroupAccessTokenDbController(mContext);
+        mGroupMemberDbController =
+                LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
+        mGroupAuthAccessDbController =
+                LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext);
         mGroupNetworkController = NetworkControllerFactory.getGroupController();
         mSessionController = InMemorySessionController.getInstance();
         mCachedTaskObjects = new HashMap();
@@ -123,15 +127,20 @@ public class DefaultGroupManagerController implements IGroupManagerController {
     }
 
     @Override
-    public void joinGroup(String _groupAccessKey, String _deviceName, boolean _isLocal, int _groupId) {
+    public void joinGroup(String _groupAccessKey, String _deviceName, boolean _isLocal,
+            int _groupId) {
         Log.i(LOG_TAG, "joinGroup: " + _groupAccessKey);
         SecureRandom secureRandom = GlobalObjects.getInstance().getSecureRandom();
-        String secret = new BigInteger(196, secureRandom).toString(32);
-        GroupAuth group = new GroupAuth();
+        String       secret       = new BigInteger(196, secureRandom).toString(32);
+        GroupAuth    group        = new GroupAuth();
         group.setGroupId(_groupId);
         group.setDeviceName(_deviceName);
         group.setSecret(secret);
-        mGroupNetworkController.joinGroup(new JoinGroupResponse(group, _isLocal), _groupAccessKey, _deviceName, _groupId, secret);
+        mGroupNetworkController.joinGroup(new JoinGroupResponse(group, _isLocal),
+                _groupAccessKey,
+                _deviceName,
+                _groupId,
+                secret);
     }
 
     @Override
@@ -302,9 +311,9 @@ public class DefaultGroupManagerController implements IGroupManagerController {
             }
 
             GroupAuthAccess groupAuthAccess = new GroupAuthAccess(mGroup.getGroupId(), null);
-            groupAuthAccess.setLastUpdateFromServer(new Date(0));
-            groupAuthAccess.setLastUpdateFromClient(new Date(0));
-            groupAuthAccess.setLastTokenRequest(new Date(0));
+            groupAuthAccess.setLastUpdateFromServer(new Date(Constants.INITIAL_DATE));
+            groupAuthAccess.setLastUpdateFromClient(new Date(Constants.INITIAL_DATE));
+            groupAuthAccess.setLastTokenRequest(new Date(Constants.INITIAL_DATE));
             groupAuthAccess.setSynchronize(true);
             groupAuthAccess.setInterrupted(false);
             if (IGroupAuthAccessDbController.INSERTION_CODE.CORRECT != mGroupAuthAccessDbController.insert(groupAuthAccess)) {

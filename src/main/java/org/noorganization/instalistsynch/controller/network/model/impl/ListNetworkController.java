@@ -2,7 +2,9 @@ package org.noorganization.instalistsynch.controller.network.model.impl;
 
 import org.noorganization.instalist.comm.message.ListInfo;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
 import org.noorganization.instalistsynch.controller.handler.AuthorizedCallbackHandler;
+import org.noorganization.instalistsynch.controller.handler.AuthorizedInsertCallbackHandler;
 import org.noorganization.instalistsynch.controller.network.model.IListNetworkController;
 import org.noorganization.instalistsynch.network.api.authorized.IListApiService;
 import org.noorganization.instalistsynch.utils.ApiUtils;
@@ -42,9 +44,9 @@ public class ListNetworkController implements IListNetworkController {
     }
 
     @Override
-    public void createList(IAuthorizedCallbackCompleted<Void> _callback, int _groupId, ListInfo _listInfo, String _authToken) {
+    public void createList(IAuthorizedInsertCallbackCompleted<Void> _callback, int _groupId, ListInfo _listInfo, String _authToken) {
         Call<Void> call = ApiUtils.getInstance().getAuthorizedApiService(IListApiService.class, _authToken).createShoppingList(_groupId, _listInfo);
-        call.enqueue(new AuthorizedCallbackHandler<Void>(_groupId, _callback, call));
+        call.enqueue(new AuthorizedInsertCallbackHandler<Void>(_groupId, _callback, call));
     }
 
     @Override

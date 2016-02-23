@@ -31,7 +31,7 @@ public class UnauthorizedCallbackHandler<T> implements Callback<T> {
     }
 
     @Override
-    public void onResponse(Response<T> response) {
+    public void onResponse(Call<T> _call, Response<T> response) {
         if (!NetworkUtils.isSuccessful(response)) {
             mICallbackCompleted.onError(new Throwable("Other invalid network request: response code: " + String.valueOf(response.code())));
             return;
@@ -41,7 +41,7 @@ public class UnauthorizedCallbackHandler<T> implements Callback<T> {
     }
 
     @Override
-    public void onFailure(Throwable t) {
+    public void onFailure(Call<T> _call, Throwable t) {
         if (mRetries > MAX_RETRIES) {
             ++mRetries;
             mCall.clone().enqueue(this);

@@ -2,6 +2,7 @@ package org.noorganization.instalistsynch.controller.network.model;
 
 import org.noorganization.instalist.comm.message.ListInfo;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
 
 import java.util.List;
 
@@ -33,13 +34,12 @@ public interface IListNetworkController {
 
     /**
      * Create a list on the server with the given params.
-     *
-     * @param _callback  the callback where the result should be proceed.
+     *  @param _callback  the callback where the result should be proceed.
      * @param _groupId   the groupid where the list should be created in.
      * @param _listInfo  the listinfo of the list to create it on the server.
      * @param _authToken the auth token for the specified group.
      */
-    void createList(IAuthorizedCallbackCompleted<Void> _callback, int _groupId, ListInfo _listInfo, String _authToken);
+    void createList(IAuthorizedInsertCallbackCompleted<Void> _callback, int _groupId, ListInfo _listInfo, String _authToken);
 
     /**
      * Update the given list on the server.

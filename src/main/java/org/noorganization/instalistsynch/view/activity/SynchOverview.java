@@ -20,9 +20,11 @@ import android.widget.Toast;
 
 import org.noorganization.instalistsynch.R;
 import org.noorganization.instalistsynch.controller.local.IGroupManagerController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupMemberDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.local.impl.DefaultManagerFactory;
+import org.noorganization.instalistsynch.controller.synch.SynchManager;
 import org.noorganization.instalistsynch.events.CreateGroupErrorEvent;
 import org.noorganization.instalistsynch.events.CreateGroupNetworkExceptionMessageEvent;
 import org.noorganization.instalistsynch.events.ErrorMessageEvent;
@@ -58,41 +60,55 @@ public class SynchOverview extends AppCompatActivity {
      * Name of the device for inserted tmp group id.
      */
     private EditText mDeviceName;
-    private Button mLoginButton;
-    private Button mJoinGroupButton;
+    private Button   mLoginButton;
+    private Button   mJoinGroupButton;
+    private Button   mSynchButton;
 
-    private Context mContext;
+    private Context                 mContext;
     private ArrayAdapter<GroupAuth> mAdapter;
 
-    private ExpandableListView mExpandableListView;
+    private ExpandableListView        mExpandableListView;
     private List<GroupExpandableList> mGroupExpandableLists;
 
     private SimpleCursorTreeAdapter mSimpleCursorTreeAdapter;
     private IGroupManagerController mGroupManagerController;
 
+    private boolean mTempSynchFlag;
 
     @Override
     public boolean onContextItemSelected(MenuItem _item) {
-        ExpandableListView.ExpandableListContextMenuInfo menuInfo = (ExpandableListView.ExpandableListContextMenuInfo) _item.getMenuInfo();
+        ExpandableListView.ExpandableListContextMenuInfo menuInfo =
+                (ExpandableListView.ExpandableListContextMenuInfo) _item.getMenuInfo();
 
         int groupPos = ExpandableListView.getPackedPositionGroup(menuInfo.packedPosition);
         int childPos = ExpandableListView.getPackedPositionChild(menuInfo.packedPosition);
 
         switch (_item.getItemId()) {
             case R.id.menu_item_action_authorize:
-                Cursor groupMember = (Cursor) mExpandableListView.getExpandableListAdapter().getChild(groupPos, childPos);
+                Cursor groupMember = (Cursor) mExpandableListView.getExpandableListAdapter()
+                        .getChild(groupPos, childPos);
                 Log.i(LOG_TAG, "onContextItemSelected: menu_item_action_authorize");
-                mGroupManagerController.authorizeGroupMember(groupMember.getInt(groupMember.getColumnIndex(GroupMember.COLUMN.GROUP_ID)), groupMember.getInt(groupMember.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
+                mGroupManagerController.authorizeGroupMember(groupMember
+                                .getInt(groupMember.getColumnIndex(GroupMember.COLUMN.GROUP_ID)),
+                        groupMember
+                                .getInt(groupMember.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
                 break;
             case R.id.menu_item_action_remove:
-                groupMember = (Cursor) mExpandableListView.getExpandableListAdapter().getChild(groupPos, childPos);
+                groupMember = (Cursor) mExpandableListView.getExpandableListAdapter()
+                        .getChild(groupPos, childPos);
                 Log.i(LOG_TAG, "onContextItemSelected: menu_item_action_remove");
-                mGroupManagerController.deleteMemberOfGroup(groupMember.getInt(groupMember.getColumnIndex(GroupMember.COLUMN.GROUP_ID)), groupMember.getInt(groupMember.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
+                mGroupManagerController.deleteMemberOfGroup(groupMember
+                                .getInt(groupMember.getColumnIndex(GroupMember.COLUMN.GROUP_ID)),
+                        groupMember
+                                .getInt(groupMember.getColumnIndex(GroupMember.COLUMN.DEVICE_ID)));
                 break;
             case R.id.menu_item_action_request_group_access_token:
-                groupMember = (Cursor) mExpandableListView.getExpandableListAdapter().getGroup(groupPos);
-                Log.i(LOG_TAG, "onContextItemSelected: menu_item_action_request_group_access_token");
-                mGroupManagerController.requestGroupAccessToken(groupMember.getInt(groupMember.getColumnIndex(GroupAuthAccess.COLUMN.GROUP_ID)));
+                groupMember =
+                        (Cursor) mExpandableListView.getExpandableListAdapter().getGroup(groupPos);
+                Log.i(LOG_TAG,
+                        "onContextItemSelected: menu_item_action_request_group_access_token");
+                mGroupManagerController.requestGroupAccessToken(groupMember
+                        .getInt(groupMember.getColumnIndex(GroupAuthAccess.COLUMN.GROUP_ID)));
                 break;
         }
         return super.onContextItemSelected(_item);
@@ -104,6 +120,7 @@ public class SynchOverview extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mTempSynchFlag = false;
         setContentView(org.noorganization.instalistsynch.R.layout.activity_synch_overview);
 
         DefaultManagerFactory.getAuthManagerController().loadAllSessions();
@@ -121,28 +138,36 @@ public class SynchOverview extends AppCompatActivity {
 
         mLoginButton = (Button) this.findViewById(R.id.login_submit);
         mJoinGroupButton = (Button) this.findViewById(R.id.join_group);
+        mSynchButton = (Button) this.findViewById(R.id.synchButton);
 
         mGroupManagerController = DefaultManagerFactory.getGroupManagerController();
-        mGroupMemberDbController = LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
-        Cursor authAccessCursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSortMode.ASC);
+        mGroupMemberDbController =
+                LocalSqliteDbControllerFactory.getGroupMemberDbController(mContext);
+        Cursor authAccessCursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext)
+                .getGroupAuthAccessesCursor(eSortMode.ASC);
 
-        mSimpleCursorTreeAdapter = new SimpleCursorTreeAdapter(this, authAccessCursor,
-                android.R.layout.simple_expandable_list_item_1, android.R.layout.simple_expandable_list_item_1,
+        mSimpleCursorTreeAdapter = new SimpleCursorTreeAdapter(this,
+                authAccessCursor,
+                android.R.layout.simple_expandable_list_item_1,
+                android.R.layout.simple_expandable_list_item_1,
                 // group
-                new String[]{GroupAuthAccess.COLUMN.GROUP_ID}, new int[]{android.R.id.text1},
+                new String[]{GroupAuthAccess.COLUMN.GROUP_ID},
+                new int[]{android.R.id.text1},
                 //child
-                android.R.layout.simple_expandable_list_item_2, android.R.layout.simple_expandable_list_item_2,
-                new String[]{GroupMember.COLUMN.NAME, GroupMember.COLUMN.AUTHORIZED}, new int[]{android.R.id.text1, android.R.id.text2}
+                android.R.layout.simple_expandable_list_item_2,
+                android.R.layout.simple_expandable_list_item_2,
+                new String[]{GroupMember.COLUMN.NAME, GroupMember.COLUMN.AUTHORIZED},
+                new int[]{android.R.id.text1, android.R.id.text2}
         ) {
             @Override
             protected Cursor getChildrenCursor(Cursor groupCursor) {
-                int groupId = groupCursor.getInt(groupCursor.getColumnIndex(GroupAuthAccess.COLUMN.GROUP_ID));
+                int groupId = groupCursor
+                        .getInt(groupCursor.getColumnIndex(GroupAuthAccess.COLUMN.GROUP_ID));
                 return mGroupMemberDbController.getCursorByGroup(groupId);
             }
         };
 
         mExpandableListView.setAdapter(mSimpleCursorTreeAdapter);
-
 
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,8 +184,8 @@ public class SynchOverview extends AppCompatActivity {
         mJoinGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean error = false;
-                String deviceName = mDeviceName.getText().toString();
+                boolean error      = false;
+                String  deviceName = mDeviceName.getText().toString();
                 if (deviceName.length() == 0) {
                     mDeviceName.setError("Not set");
                 }
@@ -168,15 +193,36 @@ public class SynchOverview extends AppCompatActivity {
                 if (deviceName.length() == 0) {
                     mTmpGroupId.setError("Not set");
                 }
-                if (error)
+                if (error) {
                     return;
+                }
+            }
+        });
+
+        mSynchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IGroupAuthDbController groupAuthDbController =
+                        LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
+                List<GroupAuth> groups =
+                        groupAuthDbController.getRegisteredGroups();
+                SynchManager synchManager = new SynchManager();
+                for (GroupAuth group : groups) {
+                    if (group.isLocal() && !mTempSynchFlag) {
+                        synchManager.index(group.getGroupId());
+                        mTempSynchFlag = true;
+                    }
+                    synchManager.synchronize(group.getGroupId());
+                }
             }
         });
 
         mExpandableListView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
-            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo _menuInfo) {
-                ExpandableListView.ExpandableListContextMenuInfo menuInfo = (ExpandableListView.ExpandableListContextMenuInfo) _menuInfo;
+            public void onCreateContextMenu(ContextMenu menu, View v,
+                    ContextMenu.ContextMenuInfo _menuInfo) {
+                ExpandableListView.ExpandableListContextMenuInfo menuInfo =
+                        (ExpandableListView.ExpandableListContextMenuInfo) _menuInfo;
 
                 int groupPos = ExpandableListView.getPackedPositionGroup(menuInfo.packedPosition);
                 int childPos = ExpandableListView.getPackedPositionChild(menuInfo.packedPosition);
@@ -191,10 +237,13 @@ public class SynchOverview extends AppCompatActivity {
                     Cursor cursor = mSimpleCursorTreeAdapter.getChild(groupPos, childPos);
 
                     if (cursor.getCount() > 1) {
-                        boolean authorized = cursor.getInt(cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED)) == 1;
+                        boolean authorized =
+                                cursor.getInt(cursor.getColumnIndex(GroupMember.COLUMN.AUTHORIZED))
+                                        == 1;
                         inflater.inflate(R.menu.action_menu_child, menu);
-                        if (authorized)
+                        if (authorized) {
                             menu.removeItem(R.id.menu_item_action_authorize);
+                        }
                     }
                 }
             }
@@ -224,12 +273,14 @@ public class SynchOverview extends AppCompatActivity {
      * @param _msg the message with the info of the updated group.
      */
     public void onEvent(GroupMemberUpdateMessageEvent _msg) {
-        Cursor cursor = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext).getRegisteredGroupsCursor();
+        Cursor cursor = LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext)
+                .getRegisteredGroupsCursor();
         mSimpleCursorTreeAdapter.changeCursor(cursor);
     }
 
     public void onEvent(GroupJoinedMessageEvent _msg) {
-        Cursor cursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext).getGroupAuthAccessesCursor(eSortMode.ASC);
+        Cursor cursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext)
+                .getGroupAuthAccessesCursor(eSortMode.ASC);
         // also closes the old cursor.
         mSimpleCursorTreeAdapter.changeCursor(cursor);
     }
@@ -250,7 +301,9 @@ public class SynchOverview extends AppCompatActivity {
     }
 
     public void onEvent(CreateGroupNetworkExceptionMessageEvent _msg) {
-        Toast.makeText(mContext, _msg.mDeviceName + " attempts: " + _msg.mAttempt, Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext,
+                _msg.mDeviceName + " attempts: " + _msg.mAttempt,
+                Toast.LENGTH_SHORT).show();
 
     }
 
