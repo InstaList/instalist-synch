@@ -16,6 +16,8 @@ public interface ITask {
          * The integrity in the data holding is somewhat corrupted.
          */
         public final static int INTEGRITY_ERROR = 5;
+        public final static int UNAUTHORIZED = 6;
+
     }
 
     public static class ResolveCodes {

@@ -1,7 +1,9 @@
 package org.noorganization.instalistsynch.controller.network.model;
 
+import org.noorganization.instalist.comm.message.CategoryInfo;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
+import org.noorganization.instalistsynch.controller.synch.impl.CategorySynch;
 
 import java.util.List;
 
@@ -66,5 +68,6 @@ public interface INetworkController<T> {
      */
     void deleteItem(IAuthorizedCallbackCompleted<Void> _callback, int _groupId,
             String _uuid, String _authToken);
+
 
 }

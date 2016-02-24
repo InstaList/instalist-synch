@@ -13,6 +13,7 @@ public class ModelMapping {
     public String mClientSideUUID;
     public Date mLastServerChanged;
     public Date mLastClientChange;
+    public boolean mDeleted;
 
     public final static class COLUMN {
         public final static String ID = "uuid";
@@ -21,8 +22,10 @@ public class ModelMapping {
         public final static String CLIENT_SIDE_UUID = "client_side_uuid";
         public final static String LAST_SERVER_CHANGE = "last_server_change";
         public final static String LAST_CLIENT_CHANGE = "last_client_change";
+        public final static String DELETED = "deleted";
 
-        public final static String[] ALL_COLUMNS = {ID, GROUP_ID, SERVER_SIDE_UUID, CLIENT_SIDE_UUID, LAST_SERVER_CHANGE, LAST_CLIENT_CHANGE};
+        public final static String[] ALL_COLUMNS = {ID, GROUP_ID, SERVER_SIDE_UUID,
+                CLIENT_SIDE_UUID, LAST_SERVER_CHANGE, LAST_CLIENT_CHANGE, DELETED};
     }
 
     public static final String getDbCreateString(eModelMappingTableNames _tableName) {
@@ -32,7 +35,8 @@ public class ModelMapping {
                 COLUMN.SERVER_SIDE_UUID + " TEXT," +
                 COLUMN.CLIENT_SIDE_UUID + " TEXT," +
                 COLUMN.LAST_SERVER_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'," +
-                COLUMN.LAST_CLIENT_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00'"
+                COLUMN.LAST_CLIENT_CHANGE + " TEXT NOT NULL default '2000-01-01T00:01:00+01:00', " +
+                COLUMN.DELETED + " INTEGER NOT NULL default 0 "
                 + ")";
     }
 
@@ -45,14 +49,16 @@ public class ModelMapping {
      * @param clientSideUUID    the uuid on client side.
      * @param lastServerChanged the date when the server has made the last change.
      * @param lastClientChange  the date when the client has made the last change.
+     * @param _deleted          true if this mapping was deleted, else false.
      */
-    public ModelMapping(String UUID, int groupId, String serverSideUUID, String clientSideUUID, Date lastServerChanged, Date lastClientChange) {
+    public ModelMapping(String UUID, int groupId, String serverSideUUID, String clientSideUUID, Date lastServerChanged, Date lastClientChange, boolean _deleted) {
         mUUID = UUID;
         mGroupId = groupId;
         mServerSideUUID = serverSideUUID;
         mClientSideUUID = clientSideUUID;
         mLastServerChanged = lastServerChanged;
         mLastClientChange = lastClientChange;
+        mDeleted = false;
     }
 
     public String getUUID() {
@@ -97,5 +103,13 @@ public class ModelMapping {
 
     public void setLastClientChange(Date lastClientChange) {
         mLastClientChange = lastClientChange;
+    }
+
+    public boolean isDeleted() {
+        return mDeleted;
+    }
+
+    public void setDeleted(boolean _deleted) {
+        mDeleted = _deleted;
     }
 }

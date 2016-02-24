@@ -68,7 +68,7 @@ public class ListInsertTask implements ITask {
         }
 
         // insert this into the database
-        mListModelMappingDbController.insert(new ModelMapping(null, mGroupId, mListInfo.getUUID(), list.mUUID, lastServerChange, lastServerChange));
+        mListModelMappingDbController.insert(new ModelMapping(null, mGroupId, mListInfo.getUUID(), list.mUUID, lastServerChange, lastServerChange, false));
         return ReturnCodes.SUCCESS;
     }
 

@@ -39,9 +39,34 @@ public class GroupAuthDbController implements IGroupAuthDbController {
     }
 
     @Override
-    public List<GroupAuth> getRegisteredGroups() {
+    public GroupAuth getLocalGroup() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS,
+                GroupAuth.COLUMN.IS_LOCAL + " = ? ", new String[]{
+                        String.valueOf(1)}, null, null, null);
+
+        if (authCursor.getCount() == 0) {
+            authCursor.close();
+            return null;
+        }
+
+        authCursor.moveToFirst();
+
+        int    groupId    = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
+        int    deviceId   = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
+        String secret     = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
+        String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
+        boolean isLocal =
+                authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
+        // TODO some decryption
+        authCursor.close();
+        return new GroupAuth(groupId, deviceId, secret, deviceName, isLocal);
+    }
+
+    @Override
+    public List<GroupAuth> getRegisteredGroups() {
+        SQLiteDatabase  db         = mDbHelper.getReadableDatabase();
+        Cursor          authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
         List<GroupAuth> groupAuths = new ArrayList<>(authCursor.getCount());
         if (!authCursor.moveToFirst()) {
             authCursor.close();
@@ -53,36 +78,41 @@ public class GroupAuthDbController implements IGroupAuthDbController {
             int deviceId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
             String secret = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
             String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
-            boolean isLocal = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
+            boolean isLocal =
+                    authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
             // TODO some decryption
             groupAuths.add(new GroupAuth(groupId, deviceId, secret, deviceName, isLocal));
-        } while (authCursor.moveToNext());
+        }
+        while (authCursor.moveToNext());
         authCursor.close();
         return groupAuths;
     }
 
     @Override
     public Cursor getRegisteredGroupsCursor() {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
+        SQLiteDatabase db         = mDbHelper.getReadableDatabase();
+        Cursor         authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, null, null, null, null, null);
         return authCursor;
     }
 
     @Override
     public GroupAuth findById(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.GROUP_ID + " = ? ", new String[]{String.valueOf(_groupId)}, null, null, null);
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS,
+                GroupAuth.COLUMN.GROUP_ID + " = ? ", new String[]{
+                        String.valueOf(_groupId)}, null, null, null);
 
         if (!authCursor.moveToFirst()) {
             authCursor.close();
             return null;
         }
 
-        int groupId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
-        int deviceId = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
-        String secret = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
+        int    groupId    = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.GROUP_ID));
+        int    deviceId   = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_ID));
+        String secret     = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.SECRET));
         String deviceName = authCursor.getString(authCursor.getColumnIndex(GroupAuth.COLUMN.DEVICE_NAME));
-        boolean isLocal = authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
+        boolean isLocal =
+                authCursor.getInt(authCursor.getColumnIndex(GroupAuth.COLUMN.IS_LOCAL)) == 1;
         // TODO some decryption
         GroupAuth groupAuth = new GroupAuth(groupId, deviceId, secret, deviceName, isLocal);
 
@@ -92,11 +122,12 @@ public class GroupAuthDbController implements IGroupAuthDbController {
 
     @Override
     public boolean insertRegisteredGroup(GroupAuth _groupAuth) {
-        if (!hasUniqueId(_groupAuth.getGroupId()))
+        if (!hasUniqueId(_groupAuth.getGroupId())) {
             return false;
+        }
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        ContentValues cv = new ContentValues(5);
+        ContentValues  cv = new ContentValues(5);
         cv.put(GroupAuth.COLUMN.GROUP_ID, _groupAuth.getGroupId());
         cv.put(GroupAuth.COLUMN.DEVICE_ID, _groupAuth.getDeviceId());
         // TODO add some encryption
@@ -109,13 +140,16 @@ public class GroupAuthDbController implements IGroupAuthDbController {
     @Override
     public int removeRegisteredGroup(int _groupId) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        return db.delete(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)});
+        return db.delete(GroupAuth.TABLE_NAME,
+                GroupAuth.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)});
     }
 
     @Override
     public boolean hasUniqueId(int _groupId) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.GROUP_ID + " = ?", new String[]{String.valueOf(_groupId)}, null, null, null);
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS,
+                GroupAuth.COLUMN.GROUP_ID + " = ?", new String[]{
+                        String.valueOf(_groupId)}, null, null, null);
         boolean ret = authCursor.getCount() == 0;
         authCursor.close();
         return ret;
@@ -124,7 +158,8 @@ public class GroupAuthDbController implements IGroupAuthDbController {
     @Override
     public boolean hasOwnLocalGroup() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS, GroupAuth.COLUMN.IS_LOCAL + " = ?", new String[]{"1"}, null, null, null);
+        Cursor authCursor = db.query(GroupAuth.TABLE_NAME, GroupAuth.COLUMN.ALL_COLUMNS,
+                GroupAuth.COLUMN.IS_LOCAL + " = ?", new String[]{"1"}, null, null, null);
         boolean ret = authCursor.getCount() >= 1;
         authCursor.close();
         return ret;

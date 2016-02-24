@@ -13,6 +13,13 @@ import java.util.List;
 public interface IGroupAuthDbController {
 
     /**
+     * Get the local group.
+     *
+     * @return the local group or null if none exists.
+     */
+    GroupAuth getLocalGroup();
+
+    /**
      * Get all registered groups.
      *
      * @return a List of all GroupAuth objects or an empty list.

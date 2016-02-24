@@ -58,13 +58,15 @@ public class SynchOverview extends AppCompatActivity {
      * Name of the device for inserted tmp group id.
      */
     private EditText mDeviceName;
-    private Button   mLoginButton;
-    private Button   mJoinGroupButton;
-    private Button   mSynchButton;
+    private EditText mGroupId;
 
-    private Context                 mContext;
+    private Button mLoginButton;
+    private Button mJoinGroupButton;
+    private Button mSynchButton;
 
-    private ExpandableListView        mExpandableListView;
+    private Context mContext;
+
+    private ExpandableListView mExpandableListView;
 
     private SimpleCursorTreeAdapter mSimpleCursorTreeAdapter;
     private IGroupManagerController mGroupManagerController;
@@ -131,6 +133,7 @@ public class SynchOverview extends AppCompatActivity {
         mDeviceNameInput = (EditText) this.findViewById(R.id.login_username_edit_text);
         mTmpGroupId = (EditText) this.findViewById(R.id.tmp_group_id);
         mDeviceName = (EditText) this.findViewById(R.id.device_name);
+        mGroupId = (EditText) this.findViewById(R.id.groupId);
 
         mLoginButton = (Button) this.findViewById(R.id.login_submit);
         mJoinGroupButton = (Button) this.findViewById(R.id.join_group);
@@ -142,6 +145,8 @@ public class SynchOverview extends AppCompatActivity {
         Cursor authAccessCursor = LocalSqliteDbControllerFactory.getAuthAccessDbController(mContext)
                 .getGroupAuthAccessesCursor(eSortMode.ASC);
 
+
+        mSynchManager = new SynchManager();
         mSimpleCursorTreeAdapter = new SimpleCursorTreeAdapter(this,
                 authAccessCursor,
                 android.R.layout.simple_expandable_list_item_1,
@@ -183,15 +188,24 @@ public class SynchOverview extends AppCompatActivity {
                 boolean error      = false;
                 String  deviceName = mDeviceName.getText().toString();
                 if (deviceName.length() == 0) {
+                    error = true;
                     mDeviceName.setError("Not set");
                 }
                 String tmpGroupId = mTmpGroupId.getText().toString();
-                if (deviceName.length() == 0) {
+                if (tmpGroupId.length() == 0) {
+                    error = true;
                     mTmpGroupId.setError("Not set");
+                }
+                String groupId = mGroupId.getText().toString();
+                if (groupId.length() == 0) {
+                    error = true;
+                    mGroupId.setError("Not set");
                 }
                 if (error) {
                     return;
                 }
+                int groupIdInt = Integer.parseInt(groupId);
+                mGroupManagerController.joinGroup(tmpGroupId, deviceName, false, groupIdInt);
             }
         });
 
@@ -202,13 +216,13 @@ public class SynchOverview extends AppCompatActivity {
                         LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
                 List<GroupAuth> groups =
                         groupAuthDbController.getRegisteredGroups();
-                SynchManager synchManager = new SynchManager();
+
                 for (GroupAuth group : groups) {
                     if (group.isLocal() && !mTempSynchFlag) {
-                        synchManager.index(group.getGroupId());
+                        mSynchManager.init(group.getGroupId());
                         mTempSynchFlag = true;
                     }
-                    synchManager.synchronize(group.getGroupId());
+                    mSynchManager.synchronize(group.getGroupId());
                 }
             }
         });
@@ -245,6 +259,8 @@ public class SynchOverview extends AppCompatActivity {
             }
         });
     }
+
+    private SynchManager mSynchManager;
 
 
     @Override

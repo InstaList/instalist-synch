@@ -1,72 +1,453 @@
 package org.noorganization.instalistsynch.controller.synch.impl;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.util.Log;
 
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
+
+import org.noorganization.instalist.comm.message.CategoryInfo;
+import org.noorganization.instalist.enums.eActionType;
+import org.noorganization.instalist.enums.eModelType;
 import org.noorganization.instalist.model.Category;
+import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.presenter.ICategoryController;
 import org.noorganization.instalist.presenter.implementation.ControllerFactory;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
+import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
+import org.noorganization.instalistsynch.controller.local.dba.IClientLogDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
+import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
+import org.noorganization.instalistsynch.controller.local.dba.ITaskErrorLogDbController;
+import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
+import org.noorganization.instalistsynch.controller.local.dba.impl.TaskErrorLogDbController;
 import org.noorganization.instalistsynch.controller.network.ISessionController;
 import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
+import org.noorganization.instalistsynch.controller.network.model.INetworkController;
+import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.ISynch;
+import org.noorganization.instalistsynch.controller.synch.task.ITask;
+import org.noorganization.instalistsynch.model.GroupAccess;
+import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.ModelMapping;
+import org.noorganization.instalistsynch.model.TaskErrorLog;
+import org.noorganization.instalistsynch.utils.Constants;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
+import java.text.ParsePosition;
 import java.util.Date;
 import java.util.List;
 
 /**
- * The synchronization for the cateogries.
+ * The synchronization for the categories.
  * Created by Desnoo on 24.02.2016.
  */
 public class CategorySynch implements ISynch {
+    private static final String TAG = "CategorySynch";
 
-    private ISessionController        mSessionController;
-    private ICategoryController       mCategoryController;
+    private ISessionController mSessionController;
+    private ICategoryController mCategoryController;
     private IModelMappingDbController mCategoryModelMappingController;
+    private IClientLogDbController mClientLogDbController;
+    private IGroupAuthDbController mGroupAuthDbController;
+    private INetworkController<CategoryInfo> mCategoryInfoNetworkController;
+    private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    public CategorySynch() {
+    private eModelType mModelType;
+
+
+    public CategorySynch(eModelType _type) {
+        mModelType = _type;
+
         Context context = GlobalObjects.getInstance().getApplicationContext();
         mSessionController = InMemorySessionController.getInstance();
         mCategoryController = ControllerFactory.getCategoryController(context);
         mCategoryModelMappingController =
                 ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
+        mClientLogDbController = LocalSqliteDbControllerFactory.getClientLogController(context);
+        mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(context);
+        mCategoryInfoNetworkController = RemoteModelAccessControllerFactory.getInstance().getCategoryNetworkController();
+        mTaskErrorLogDbController = TaskErrorLogDbController.getInstance(context);
     }
 
     @Override
     public void indexLocalEntries(int _groupId) {
+        List<ModelMapping> modelMappings = mCategoryModelMappingController.get(null, null);
+        if (modelMappings.size() > 0) {
+            return;
+        }
+
         List<Category> categoryList = mCategoryController.getAllCategories();
         ModelMapping   categoryMapping;
 
         for (Category category : categoryList) {
             categoryMapping =
-                    new ModelMapping(null, _groupId, null, category.mUUID, null, new Date());
+                    new ModelMapping(null, _groupId, null, category.mUUID, new Date(Constants.INITIAL_DATE), new Date(), false);
             mCategoryModelMappingController.insert(categoryMapping);
         }
     }
 
     @Override
-    public void synchronizeLocalToNetwork(int _groupId, String _lastUpdate) {
-        String authToken = mSessionController.getToken(_groupId);
-        if (authToken == null) {
-            // todo do some caching of this action
+    public void indexLocal(Date _lastIndexTime, int _groupId) {
+        String lastIndexTime = ISO8601Utils.format(_lastIndexTime);//.concat("+0000");
+        boolean   isLocal   = false;
+        GroupAuth groupAuth = mGroupAuthDbController.getLocalGroup();
+        if (groupAuth != null) {
+            isLocal = groupAuth.getGroupId() == _groupId;
+        }
+        Cursor categoryLogCursor =
+                mClientLogDbController.getLogsSince(lastIndexTime, eModelType.CATEGORY);
+        if (categoryLogCursor.getCount() == 0) {
+            categoryLogCursor.close();
             return;
+        }
+
+        try {
+            while (categoryLogCursor.moveToNext()) {
+                int actionId = categoryLogCursor.getInt(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
+                eActionType actionType = eActionType.getTypeById(actionId);
+                List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
+                        ModelMapping.COLUMN.GROUP_ID + " = ? " +
+                                ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?", new String[]{
+                                String.valueOf(_groupId),
+                                categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID))});
+                ModelMapping modelMapping =
+                        modelMappingList.size() == 0 ? null : modelMappingList.get(0);
+
+                switch (actionType) {
+                    case INSERT:
+                        // skip insertion because this should be decided by the user
+                        if (!isLocal) {
+                            continue;
+                        }
+
+                        String clientUuid = categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
+                        Date clientDate = ISO8601Utils.parse(categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)), new ParsePosition(0));
+                        modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
+                        mCategoryModelMappingController.insert(modelMapping);
+                        break;
+                    case UPDATE:
+                        if (modelMapping == null) {
+                            Log.i(TAG, "indexLocal: the model is null but shouldn't be");
+                            continue;
+                        }
+                        clientDate = ISO8601Utils.parse(categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)), new ParsePosition(0));
+                        modelMapping.setLastClientChange(clientDate);
+                        mCategoryModelMappingController.update(modelMapping);
+                        break;
+                    case DELETE:
+                        if (modelMapping == null) {
+                            Log.i(TAG, "indexLocal: the model is null but shouldn't be");
+                            continue;
+                        }
+                        modelMapping.setDeleted(true);
+                        mCategoryModelMappingController.update(modelMapping);
+                        break;
+                    default:
+                }
+
+            }
+        } catch (Exception e) {
+            categoryLogCursor.close();
         }
     }
 
     @Override
-    public void refreshLocalMapping(int _groupId, Date _sinceTime) {
-
+    public void addGroupToMapping(int _groupId, String _clientUuid) {
+        Date lastUpdate = mClientLogDbController.getLeastRecentUpdateTimeForUuid(_clientUuid);
+        if (lastUpdate == null) {
+            return;
+        }
+        ModelMapping modelMapping = new ModelMapping(null, _groupId, null, _clientUuid, new Date(Constants.INITIAL_DATE), lastUpdate, false);
+        mCategoryModelMappingController.insert(modelMapping);
     }
 
     @Override
-    public void synchGroupFromNetwork(int _groupId, Date _sinceTime) {
+    public void removeGroupFromMapping(int _groupId, String _clientUuid) {
+        List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
+                ModelMapping.COLUMN.GROUP_ID
+                        + " = ? AND " + ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?",
+                new String[]{String.valueOf(_groupId), _clientUuid});
+        if (modelMappingList.size() == 0) {
+            return;
+        }
+        mCategoryModelMappingController.delete(modelMappingList.get(0));
+    }
 
+    @Override
+    public void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate) {
+        String lastUpdateString = ISO8601Utils.format(_lastUpdate);
+        String authToken        = mSessionController.getToken(_groupId);
+
+        if (authToken == null) {
+            // todo do some caching of this action
+            return;
+        }
+
+        List<ModelMapping> categoryMappingList = mCategoryModelMappingController.get(
+                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " > ? ", new String[]{lastUpdateString});
+        for (ModelMapping categoryMapping : categoryMappingList) {
+            if (categoryMapping.isDeleted()) {
+                // delete the item
+                mCategoryInfoNetworkController.deleteItem(new DeleteResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryMapping.getServerSideUUID(), authToken);
+            } else if (categoryMapping.getServerSideUUID() == null) {
+                // insert new
+                CategoryInfo categoryInfo = new CategoryInfo();
+                Category category = mCategoryController.getCategoryByID(categoryMapping.getClientSideUUID());
+                if (category == null) {
+                    continue;
+                }
+                String uuid = mCategoryModelMappingController.generateUuid();
+                categoryInfo.setUUID(uuid);
+                categoryInfo.setName(category.mName);
+                categoryInfo.setLastChanged(categoryMapping.getLastClientChange());
+                categoryInfo.setDeleted(false);
+                mCategoryInfoNetworkController.createItem(new InsertResponse(categoryMapping, uuid), _groupId, categoryInfo, authToken);
+            } else {
+                // update existing
+                CategoryInfo categoryInfo = new CategoryInfo();
+                Category category = mCategoryController.getCategoryByID(categoryMapping.getClientSideUUID());
+                if (category == null) {
+                    continue;
+                }
+                String uuid = mCategoryModelMappingController.generateUuid();
+                categoryInfo.setUUID(uuid);
+                categoryInfo.setName(category.mName);
+                categoryInfo.setLastChanged(categoryMapping.getLastClientChange());
+                categoryInfo.setDeleted(false);
+                mCategoryInfoNetworkController.updateItem(new UpdateResponse(categoryMapping, uuid), _groupId, categoryInfo.getUUID(), categoryInfo, authToken);
+            }
+        }
+    }
+
+
+    @Override
+    public void synchNetworkToLocal(int _groupId, Date _sinceTime) {
+        String authToken = mSessionController.getToken(_groupId);
+        if (authToken == null) {
+            return;
+        }
+        mCategoryInfoNetworkController.getList(new GetListResponse(_groupId), _groupId, ISO8601Utils.format(_sinceTime).concat("+0000"), authToken);
     }
 
     @Override
     public void resolveConflict(int _conflictId, int _resolveAction) {
+        TaskErrorLog log = mTaskErrorLogDbController.findById(_conflictId);
+        if (log == null) {
+            return;
+        }
+        String authToken = mSessionController.getToken(log.getGroupId());
+        if (authToken == null) {
+            return;
+        }
 
+        mCategoryInfoNetworkController.getItem(new GetItemConflictResolveResponse(_resolveAction, _conflictId, log.getGroupId()), log.getGroupId(), log.getUUID(), authToken);
+    }
+
+    private class DeleteResponse implements IAuthorizedCallbackCompleted<Void> {
+
+        private String mServerSideUuid;
+        private ModelMapping mModelMapping;
+
+        public DeleteResponse(ModelMapping _modelMapping, String _serverSideUuid) {
+            mModelMapping = _modelMapping;
+            mServerSideUuid = _serverSideUuid;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            mCategoryModelMappingController.delete(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+        }
+    }
+
+    private class InsertResponse implements IAuthorizedInsertCallbackCompleted<Void> {
+
+        private String mServerSideUuid;
+        private ModelMapping mModelMapping;
+
+        public InsertResponse(ModelMapping _modelMapping, String _serverSideUuid) {
+            mModelMapping = _modelMapping;
+            mServerSideUuid = _serverSideUuid;
+        }
+
+        @Override
+        public void onConflict() {
+            // todo
+        }
+
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            mModelMapping.setLastServerChanged(new Date());
+            mModelMapping.setServerSideUUID(mServerSideUuid);
+            mCategoryModelMappingController.update(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+        }
+    }
+
+    private class UpdateResponse implements IAuthorizedCallbackCompleted<Void> {
+
+        private String mServerSideUuid;
+        private ModelMapping mModelMapping;
+
+        public UpdateResponse(ModelMapping _modelMapping, String _serverSideUuid) {
+            mModelMapping = _modelMapping;
+            mServerSideUuid = _serverSideUuid;
+        }
+
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+        }
+
+        @Override
+        public void onCompleted(Void _next) {
+            mCategoryModelMappingController.update(mModelMapping);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+        }
+    }
+
+    private class GetListResponse implements IAuthorizedCallbackCompleted<List<CategoryInfo>> {
+
+        private int mGroupId;
+
+        public GetListResponse(int _groupId) {
+            mGroupId = _groupId;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+
+        }
+
+        @Override
+        public void onCompleted(List<CategoryInfo> _next) {
+            for (CategoryInfo categoryInfo : _next) {
+                List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
+                        ModelMapping.COLUMN.GROUP_ID + " = ? AND "
+                                + ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?",
+                        new String[]{String.valueOf(mGroupId), categoryInfo.getUUID()});
+
+                if (modelMappingList.size() == 0) {
+                    // new entry
+                    Category newCategory = mCategoryController.createCategory(categoryInfo.getName());
+                    if (newCategory == null) {
+                        // TODO some error happened
+                        continue;
+                    }
+                    ModelMapping modelMapping = new ModelMapping(null, mGroupId, categoryInfo.getUUID(),
+                            newCategory.mUUID, categoryInfo.getLastChanged(), categoryInfo.getLastChanged(), false);
+                    mCategoryModelMappingController.insert(modelMapping);
+                } else {
+                    // entry exists local
+                    ModelMapping modelMapping = modelMappingList.get(0);
+                    Category category = mCategoryController.getCategoryByID(modelMapping.getClientSideUUID());
+
+                    if (categoryInfo.getDeleted()) {
+                        // was deleted on server side
+                        mCategoryController.removeCategory(category);
+                        mCategoryModelMappingController.delete(modelMapping);
+                        continue;
+                    }
+
+                    // else there was an update!
+                    if (modelMapping.getLastClientChange().after(categoryInfo.getLastChanged())) {
+                        // use server side or client side, let the user decide
+                        mTaskErrorLogDbController.insert(categoryInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                    }
+
+                    Category renamedCategory = mCategoryController.renameCategory(category, categoryInfo.getName());
+                    modelMapping.setLastServerChanged(categoryInfo.getLastChanged());
+
+                    if (!renamedCategory.equals(category)) {
+                        // todo give it another name?
+                        continue;
+                    }
+                    mCategoryModelMappingController.update(modelMapping);
+                }
+            }
+            IGroupAuthAccessDbController groupAuthAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance().getApplicationContext());
+            GroupAccess                  access                      = groupAuthAccessDbController.getGroupAuthAccess(mGroupId);
+            access.setLastUpdateFromServer(new Date());
+            groupAuthAccessDbController.update(access);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+
+        }
+    }
+
+    private class GetItemConflictResolveResponse implements IAuthorizedCallbackCompleted<CategoryInfo> {
+        private int mResolveAction;
+        private int mCaseId;
+        private int mGroupId;
+
+        public GetItemConflictResolveResponse(int _resolveAction, int _caseId, int _groupId) {
+            mResolveAction = _resolveAction;
+            mCaseId = _caseId;
+            mGroupId = _groupId;
+        }
+
+        @Override
+        public void onUnauthorized(int _groupId) {
+
+        }
+
+        @Override
+        public void onCompleted(CategoryInfo _next) {
+            if (mResolveAction == ITask.ResolveCodes.RESOLVE_USE_CLIENT_SIDE) {
+                // use client side
+                // no further action needed?
+            } else {
+                // use server side
+                List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
+                        ModelMapping.COLUMN.GROUP_ID + " = ? "
+                                + ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?",
+                        new String[]{String.valueOf(mGroupId), _next.getUUID()});
+                if (modelMappingList.size() == 0) {
+                    return;
+                }
+
+                ModelMapping modelMapping = modelMappingList.get(0);
+
+                Category category = mCategoryController.getCategoryByID(modelMapping.getClientSideUUID());
+
+                Category renamedCategory = mCategoryController.renameCategory(category, _next.getName());
+                modelMapping.setLastServerChanged(_next.getLastChanged());
+
+                if (!renamedCategory.equals(category)) {
+                    // todo give it another name?
+                    return;
+                }
+                mCategoryModelMappingController.update(modelMapping);
+            }
+            mTaskErrorLogDbController.remove(mCaseId);
+        }
+
+        @Override
+        public void onError(Throwable _e) {
+
+        }
     }
 }

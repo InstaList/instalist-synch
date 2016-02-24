@@ -54,8 +54,8 @@ import de.greenrobot.event.EventBus;
  * Synchronization of the list.
  * Created by Desnoo on 14.02.2016.
  */
-public class ListSynch implements ISynch {
-    private static final String TAG = "ListSynch";
+public class ListSynch /*implements ISynch*/ {
+    /*private static final String TAG = "ListSynch";
     private ContentResolver mResolver;
 
     private ITaskErrorLogDbController    mTaskErrorLogDbController;
@@ -92,7 +92,7 @@ public class ListSynch implements ISynch {
                     null,
                     shoppingList.mUUID,
                     new Date(Constants.INITIAL_DATE),
-                    currentClientDate);
+                    currentClientDate, false);
             mModelMappingDbController.insert(listMapping);
         }
     }
@@ -144,7 +144,7 @@ public class ListSynch implements ISynch {
                                     null,
                                     clientUuid,
                                     new Date(Constants.INITIAL_DATE),
-                                    clientChangeDate));
+                                    clientChangeDate, false));
                         }
                         break;
                     }
@@ -187,17 +187,16 @@ public class ListSynch implements ISynch {
                 null,
                 _clientMapping,
                 new Date(Constants.INITIAL_DATE),
-                new Date()));
+                new Date(), false));
     }
 
     /**
      * Submits the local results to the server.
-     *
-     * @param _groupId    the id of the group, to which the results should be synched.
+     *  @param _groupId    the id of the group, to which the results should be synched.
      * @param _lastUpdate the date when the client last sent the local changes.
      */
-    @Override
-    public void synchronizeLocalToNetwork(int _groupId, String _lastUpdate) {
+    /*@Override
+    public void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate) {
 
         String authToken = mSessioncontroller.getToken(_groupId);
         if (authToken == null) {
@@ -271,7 +270,7 @@ public class ListSynch implements ISynch {
 
 
     @Override
-    public void synchGroupFromNetwork(int _groupId, Date _sinceTime) {
+    public void synchNetworkToLocal(int _groupId, Date _sinceTime) {
         GroupAccess access =
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance()
                         .getApplicationContext())
@@ -279,7 +278,7 @@ public class ListSynch implements ISynch {
         // fetch the auth token
         String authToken = mSessioncontroller.getToken(_groupId);
         if (authToken == null) {
-            Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
+            Log.i(TAG, "synchNetworkToLocal: Auth token is not set.");
             EventBus.getDefault()
                     .post(new UnauthorizedErrorMessageEvent(_groupId, -1));
             return;
@@ -309,7 +308,7 @@ public class ListSynch implements ISynch {
         }
         String authToken = mSessioncontroller.getToken(taskErrorLog.getGroupId());
         if (authToken == null) {
-            Log.i(TAG, "synchGroupFromNetwork: Auth token is not set.");
+            Log.i(TAG, "synchNetworkToLocal: Auth token is not set.");
             EventBus.getDefault()
                     .post(new UnauthorizedErrorMessageEvent(taskErrorLog.getGroupId(), -1));
             return;
@@ -556,5 +555,5 @@ public class ListSynch implements ISynch {
             _e.printStackTrace();
             Log.i(TAG, "onError: " + _e.getLocalizedMessage());
         }
-    }
+    }*/
 }

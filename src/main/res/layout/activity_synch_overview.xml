@@ -67,11 +67,11 @@
         android:layout_gravity="right"
         android:background="@color/colorPrimary"
         android:text="@string/abc_join_group"
-        android:layout_below="@+id/device_name"
+        android:layout_below="@+id/groupId"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+        android:layout_alignRight="@+id/text"
+        android:layout_alignEnd="@+id/text"/>
 
     <TextView
         android:id="@+id/text"
@@ -122,4 +122,15 @@
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/testListView"
         android:layout_alignEnd="@+id/testListView"/>
+
+    <EditText
+        android:id="@+id/groupId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/abc_groupId"
+        android:layout_below="@+id/device_name"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:inputType="number"
+        />
 </RelativeLayout>

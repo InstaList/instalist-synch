@@ -16,6 +16,7 @@ import org.noorganization.instalistsynch.controller.local.dba.IClientLogDbContro
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ import java.util.List;
 public class ClientLogDbController implements IClientLogDbController {
 
     private static ClientLogDbController sInstance;
-    private        ContentResolver       mContentResolver;
+    private ContentResolver mContentResolver;
 
     private ClientLogDbController(Context _context) {
         mContentResolver = _context.getContentResolver();
@@ -36,6 +37,31 @@ public class ClientLogDbController implements IClientLogDbController {
             sInstance = new ClientLogDbController(_context);
         }
         return sInstance;
+    }
+
+    @Override
+    public Date getLeastRecentUpdateTimeForUuid(String _clientUuid) {
+        Cursor cursor = mContentResolver.query(
+                Uri.withAppendedPath(InstalistProvider.BASE_CONTENT_URI, "log"),
+                LogInfo.COLUMN.ALL_COLUMNS,
+                LogInfo.COLUMN.ITEM_UUID + " LIKE ? ", new String[]{_clientUuid},
+                LogInfo.COLUMN.ACTION_DATE + " DESC ");
+        if (cursor == null) {
+            return null;
+        }
+        if (cursor.getCount() == 0) {
+            cursor.close();
+            return null;
+        }
+        cursor.moveToFirst();
+
+        String date = cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
+        try {
+            return ISO8601Utils.parse(date, new ParsePosition(0));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -94,7 +120,8 @@ public class ClientLogDbController implements IClientLogDbController {
 
                 list.add(new LogInfo(id, uuid, actionType, modelType,
                         ISO8601Utils.parse(date, new ParsePosition(0))));
-            } while (cursor.moveToNext());
+            }
+            while (cursor.moveToNext());
         } catch (ParseException e) {
             e.printStackTrace();
             return new ArrayList<>();

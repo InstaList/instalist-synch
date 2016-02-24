@@ -20,21 +20,34 @@ public interface ISynch {
 
     /**
      * Submits the local results to the server.
-     *
-     * @param _groupId    the id of the group, to which the results should be synched.
+     *  @param _groupId    the id of the group, to which the results should be synched.
      * @param _lastUpdate the date when the client last sent the local changes.
      */
-    void synchronizeLocalToNetwork(int _groupId, String _lastUpdate);
+    void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate);
+
 
     /**
-     * This is used to refresh the local mapping before each synch process.
-     * It updates all entries in the mapping table.
-     * !Important! it refreshes only the local entries, the server synch process is managed by another function!
-     *
-     * @param _groupId
-     * @param _sinceTime
+     * Indexes each entry since a given time.
+     *  @param _lastIndexTime the last time and indexing was made.
+     * @param _groupId       the id of the group to index.
      */
-    void refreshLocalMapping(int _groupId, Date _sinceTime);
+    void indexLocal(Date _lastIndexTime, int _groupId);
+
+    /**
+     * Adds the item to the given group.
+     *
+     * @param _groupId    the id of the group.
+     * @param _clientUuid the uuid of the client.
+     */
+    void addGroupToMapping(int _groupId, String _clientUuid);
+
+    /**
+     * Remove the group form the specified item ( specified by the uuid).
+     *
+     * @param _groupId    the id of the group.
+     * @param _clientUuid the uuid of the client sides items.
+     */
+    void removeGroupFromMapping(int _groupId, String _clientUuid);
 
     /**
      * Synchronizes the lists for a given group.
@@ -43,7 +56,7 @@ public interface ISynch {
      * @param _groupId   the id of the group to synchronize.
      * @param _sinceTime the time when the data was last synched.
      */
-    void synchGroupFromNetwork(int _groupId, Date _sinceTime);
+    void synchNetworkToLocal(int _groupId, Date _sinceTime);
 
     /**
      * Resolve the conflict with the given conflict id.

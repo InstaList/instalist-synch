@@ -6,6 +6,7 @@ import org.noorganization.instalist.enums.eActionType;
 import org.noorganization.instalist.enums.eModelType;
 import org.noorganization.instalist.model.LogInfo;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,4 +42,13 @@ public interface IClientLogDbController {
      */
     List<LogInfo> getElementByUuid(String _uuid, eActionType _actionType, eModelType _modelType,
             String _date);
+
+
+    /**
+     * Get the least recent update time of the client uuid.
+     *
+     * @param _clientUuid the uuid of the item to find.
+     * @return the last update time of this element or null if the element is not existing or some error happened.
+     */
+    Date getLeastRecentUpdateTimeForUuid(String _clientUuid);
 }
