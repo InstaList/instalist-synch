@@ -196,7 +196,7 @@ public class ListSynch /*implements ISynch*/ {
      * @param _lastUpdate the date when the client last sent the local changes.
      */
     /*@Override
-    public void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate) {
+    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
 
         String authToken = mSessioncontroller.getToken(_groupId);
         if (authToken == null) {

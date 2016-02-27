@@ -45,6 +45,6 @@ dependencies {
 
     compile 'org.jetbrains:annotations:13.0'
 
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.1'
 }

@@ -14,6 +14,7 @@ import org.noorganization.instalistsynch.model.eSortMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * The implementation of {@link IGroupAuthAccessDbController} that manages the access to the sqlite database.
@@ -56,9 +57,9 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         ContentValues cv = new ContentValues(4);
         cv.put(GroupAccess.COLUMN.GROUP_ID, _groupAccess.getGroupId());
         cv.put(GroupAccess.COLUMN.TOKEN, _groupAccess.getToken() == null? "" : _groupAccess.getToken());
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(_groupAccess.getLastUpdateFromServer()));
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(_groupAccess.getLastUpdateFromClient()));
-        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAccess.getLastTokenRequest()));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(_groupAccess.getLastUpdateFromServer(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(_groupAccess.getLastUpdateFromClient(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAccess.getLastTokenRequest(), false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(GroupAccess.COLUMN.SYNCHRONIZE, _groupAccess.isSynchronize());
         cv.put(GroupAccess.COLUMN.INTERRUPTED, _groupAccess.wasInterrupted());
 
@@ -135,9 +136,9 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         ContentValues cv = new ContentValues(4);
         cv.put(GroupAccess.COLUMN.GROUP_ID, _groupAccess.getGroupId());
         cv.put(GroupAccess.COLUMN.TOKEN, _groupAccess.getToken());
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(_groupAccess.getLastUpdateFromServer()));
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(_groupAccess.getLastUpdateFromClient()));
-        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAccess.getLastTokenRequest()));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(_groupAccess.getLastUpdateFromServer(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(_groupAccess.getLastUpdateFromClient(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(_groupAccess.getLastTokenRequest(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(GroupAccess.COLUMN.SYNCHRONIZE, _groupAccess.isSynchronize());
         cv.put(GroupAccess.COLUMN.INTERRUPTED, _groupAccess.wasInterrupted());
 
@@ -162,9 +163,9 @@ public class SqliteGroupAuthAccessDbController implements IGroupAuthAccessDbCont
         ContentValues cv = new ContentValues(6);
         cv.put(GroupAccess.COLUMN.GROUP_ID, groupAccess.getGroupId());
         cv.put(GroupAccess.COLUMN.TOKEN, groupAccess.getToken());
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(groupAccess.getLastUpdateFromServer()));
-        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(groupAccess.getLastUpdateFromClient()));
-        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(groupAccess.getLastTokenRequest()));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_SERVER, ISO8601Utils.format(groupAccess.getLastUpdateFromServer(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_UPDATE_FROM_CLIENT, ISO8601Utils.format(groupAccess.getLastUpdateFromClient(),false, TimeZone.getTimeZone("GMT+0000")));
+        cv.put(GroupAccess.COLUMN.LAST_TOKEN_REQUEST, ISO8601Utils.format(groupAccess.getLastTokenRequest(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(GroupAccess.COLUMN.SYNCHRONIZE, groupAccess.isSynchronize());
         cv.put(GroupAccess.COLUMN.INTERRUPTED, groupAccess.wasInterrupted());
 

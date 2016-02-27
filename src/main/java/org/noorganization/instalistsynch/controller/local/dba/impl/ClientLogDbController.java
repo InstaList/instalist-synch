@@ -79,7 +79,7 @@ public class ClientLogDbController implements IClientLogDbController {
                 LogInfo.COLUMN.ALL_COLUMNS,
                 LogInfo.COLUMN.MODEL + " = ? AND " + LogInfo.COLUMN.ACTION_DATE + " >=  ? ",
                 new String[]{String.valueOf(_modelType.ordinal()), _date},
-                LogInfo.COLUMN.ACTION_DATE + " DESC ");
+                LogInfo.COLUMN.ACTION_DATE + " ASC ");
     }
 
     @Override
@@ -114,9 +114,7 @@ public class ClientLogDbController implements IClientLogDbController {
                 eActionType actionType = eActionType.getTypeById(action);
                 int model = cursor.getInt(cursor.getColumnIndex(LogInfo.COLUMN.MODEL));
                 eModelType modelType = eModelType.getTypeId(model);
-                String date =
-                        cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)).concat(
-                                "+00:00");
+                String date = cursor.getString(cursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
 
                 list.add(new LogInfo(id, uuid, actionType, modelType,
                         ISO8601Utils.parse(date, new ParsePosition(0))));

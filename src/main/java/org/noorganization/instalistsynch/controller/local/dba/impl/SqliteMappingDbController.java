@@ -17,6 +17,7 @@ import org.noorganization.instalistsynch.model.eModelMappingTableNames;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Sqlite db access controller for ShoppingListModel Mapping
@@ -58,9 +59,9 @@ public class SqliteMappingDbController implements IModelMappingDbController {
         cv.put(ModelMapping.COLUMN.CLIENT_SIDE_UUID, _element.getClientSideUUID());
         cv.put(ModelMapping.COLUMN.SERVER_SIDE_UUID, _element.getServerSideUUID());
         cv.put(ModelMapping.COLUMN.LAST_CLIENT_CHANGE,
-                ISO8601Utils.format(_element.getLastClientChange()));
+                ISO8601Utils.format(_element.getLastClientChange(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(ModelMapping.COLUMN.LAST_SERVER_CHANGE,
-                ISO8601Utils.format(_element.getLastServerChanged()));
+                ISO8601Utils.format(_element.getLastServerChanged(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(ModelMapping.COLUMN.DELETED, _element.isDeleted());
         long rowId = db.insert(mTableName, null, cv);
         if (rowId == -1) {
@@ -83,15 +84,15 @@ public class SqliteMappingDbController implements IModelMappingDbController {
         cv.put(ModelMapping.COLUMN.CLIENT_SIDE_UUID, _element.getClientSideUUID());
         cv.put(ModelMapping.COLUMN.SERVER_SIDE_UUID, _element.getServerSideUUID());
         cv.put(ModelMapping.COLUMN.LAST_CLIENT_CHANGE,
-                ISO8601Utils.format(_element.getLastClientChange()));
+                ISO8601Utils.format(_element.getLastClientChange(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(ModelMapping.COLUMN.LAST_SERVER_CHANGE,
-                ISO8601Utils.format(_element.getLastServerChanged()));
+                ISO8601Utils.format(_element.getLastServerChanged(),false, TimeZone.getTimeZone("GMT+0000")));
         cv.put(ModelMapping.COLUMN.DELETED, _element.isDeleted());
 
         long updatedRows = db.update(mTableName,
                 cv,
-                GroupAccess.COLUMN.GROUP_ID + " LIKE ?",
-                new String[]{_element.getUUID()});
+                ModelMapping.COLUMN.ID + " LIKE ?",
+                new String[]{_element.mUUID});
         if (updatedRows <= 0) {
             return false;
         }
@@ -100,13 +101,12 @@ public class SqliteMappingDbController implements IModelMappingDbController {
 
     @Override
     public boolean delete(ModelMapping _element) {
-        if (hasIdInDatabase(_element.getUUID())) {
+        if (!hasIdInDatabase(_element.getUUID())) {
             return false;
         }
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.delete(mTableName, ModelMapping.COLUMN.ID + " LIKE ?", new String[]{_element.getUUID()});
-        return false;
+        return db.delete(mTableName, ModelMapping.COLUMN.ID + " LIKE ?", new String[]{_element.getUUID()}) > 0;
     }
 
     @Override
@@ -168,7 +168,7 @@ public class SqliteMappingDbController implements IModelMappingDbController {
                 null,
                 null,
                 null);
-        boolean ret = modelMappingCursor.getCount() == 0;
+        boolean ret = modelMappingCursor.getCount() > 0;
         modelMappingCursor.close();
         return ret;
     }

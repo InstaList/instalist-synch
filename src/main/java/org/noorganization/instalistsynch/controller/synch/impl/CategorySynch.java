@@ -29,6 +29,7 @@ import org.noorganization.instalistsynch.controller.network.model.INetworkContro
 import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.ISynch;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
+import org.noorganization.instalistsynch.events.CategorySynchFromNetworkFinished;
 import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.ModelMapping;
@@ -39,6 +40,9 @@ import org.noorganization.instalistsynch.utils.GlobalObjects;
 import java.text.ParsePosition;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * The synchronization for the categories.
@@ -56,9 +60,24 @@ public class CategorySynch implements ISynch {
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
     private eModelType mModelType;
-
+    private EventBus mEventBus;
 
     public CategorySynch(eModelType _type) {
+        mModelType = _type;
+
+        Context context = GlobalObjects.getInstance().getApplicationContext();
+        mSessionController = InMemorySessionController.getInstance();
+        mCategoryController = ControllerFactory.getCategoryController(context);
+        mCategoryModelMappingController =
+                ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
+        mClientLogDbController = LocalSqliteDbControllerFactory.getClientLogController(context);
+        mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(context);
+        mCategoryInfoNetworkController = RemoteModelAccessControllerFactory.getInstance().getCategoryNetworkController();
+        mTaskErrorLogDbController = TaskErrorLogDbController.getInstance(context);
+        mEventBus = EventBus.getDefault();
+    }
+
+    public CategorySynch(eModelType _type, IModelMappingDbController _modelMappingDbController) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -90,10 +109,10 @@ public class CategorySynch implements ISynch {
     }
 
     @Override
-    public void indexLocal(Date _lastIndexTime, int _groupId) {
-        String lastIndexTime = ISO8601Utils.format(_lastIndexTime);//.concat("+0000");
-        boolean   isLocal   = false;
-        GroupAuth groupAuth = mGroupAuthDbController.getLocalGroup();
+    public void indexLocal(int _groupId, Date _lastIndexTime) {
+        String    lastIndexTime = ISO8601Utils.format(_lastIndexTime,false, TimeZone.getTimeZone("GMT+0000"));//.concat("+0000");
+        boolean   isLocal       = false;
+        GroupAuth groupAuth     = mGroupAuthDbController.getLocalGroup();
         if (groupAuth != null) {
             isLocal = groupAuth.getGroupId() == _groupId;
         }
@@ -106,10 +125,12 @@ public class CategorySynch implements ISynch {
 
         try {
             while (categoryLogCursor.moveToNext()) {
+                // fetch the action type
                 int actionId = categoryLogCursor.getInt(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
                 eActionType actionType = eActionType.getTypeById(actionId);
+
                 List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
-                        ModelMapping.COLUMN.GROUP_ID + " = ? " +
+                        ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
                                 ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?", new String[]{
                                 String.valueOf(_groupId),
                                 categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID))});
@@ -118,8 +139,9 @@ public class CategorySynch implements ISynch {
 
                 switch (actionType) {
                     case INSERT:
-                        // skip insertion because this should be decided by the user
-                        if (!isLocal) {
+                        // skip insertion because this should be decided by the user if the non local groups should have access to the category
+                        // and also skip if a mapping for this case already exists!
+                        if (!isLocal || modelMapping != null) {
                             continue;
                         }
 
@@ -133,7 +155,8 @@ public class CategorySynch implements ISynch {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
                         }
-                        clientDate = ISO8601Utils.parse(categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)), new ParsePosition(0));
+                        String timeString = categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
+                        clientDate = ISO8601Utils.parse(timeString, new ParsePosition(0));
                         modelMapping.setLastClientChange(clientDate);
                         mCategoryModelMappingController.update(modelMapping);
                         break;
@@ -177,8 +200,8 @@ public class CategorySynch implements ISynch {
     }
 
     @Override
-    public void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate) {
-        String lastUpdateString = ISO8601Utils.format(_lastUpdate);
+    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
+        String lastUpdateString = ISO8601Utils.format(_lastUpdate,false, TimeZone.getTimeZone("GMT+0000"));
         String authToken        = mSessionController.getToken(_groupId);
 
         if (authToken == null) {
@@ -187,7 +210,7 @@ public class CategorySynch implements ISynch {
         }
 
         List<ModelMapping> categoryMappingList = mCategoryModelMappingController.get(
-                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " > ? ", new String[]{lastUpdateString});
+                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
         for (ModelMapping categoryMapping : categoryMappingList) {
             if (categoryMapping.isDeleted()) {
                 // delete the item
@@ -212,12 +235,11 @@ public class CategorySynch implements ISynch {
                 if (category == null) {
                     continue;
                 }
-                String uuid = mCategoryModelMappingController.generateUuid();
-                categoryInfo.setUUID(uuid);
+                categoryInfo.setUUID(categoryMapping.getServerSideUUID());
                 categoryInfo.setName(category.mName);
                 categoryInfo.setLastChanged(categoryMapping.getLastClientChange());
                 categoryInfo.setDeleted(false);
-                mCategoryInfoNetworkController.updateItem(new UpdateResponse(categoryMapping, uuid), _groupId, categoryInfo.getUUID(), categoryInfo, authToken);
+                mCategoryInfoNetworkController.updateItem(new UpdateResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryInfo.getUUID(), categoryInfo, authToken);
             }
         }
     }
@@ -229,7 +251,7 @@ public class CategorySynch implements ISynch {
         if (authToken == null) {
             return;
         }
-        mCategoryInfoNetworkController.getList(new GetListResponse(_groupId), _groupId, ISO8601Utils.format(_sinceTime).concat("+0000"), authToken);
+        mCategoryInfoNetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime,false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
     }
 
     @Override
@@ -330,14 +352,16 @@ public class CategorySynch implements ISynch {
     private class GetListResponse implements IAuthorizedCallbackCompleted<List<CategoryInfo>> {
 
         private int mGroupId;
+        private Date mLastUpdateDate;
 
-        public GetListResponse(int _groupId) {
+        public GetListResponse(int _groupId, Date _lastUpdateDate) {
             mGroupId = _groupId;
+            mLastUpdateDate = _lastUpdateDate;
         }
 
         @Override
         public void onUnauthorized(int _groupId) {
-
+            EventBus.getDefault().post(new CategorySynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
@@ -374,6 +398,7 @@ public class CategorySynch implements ISynch {
                     if (modelMapping.getLastClientChange().after(categoryInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
                         mTaskErrorLogDbController.insert(categoryInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        continue;
                     }
 
                     Category renamedCategory = mCategoryController.renameCategory(category, categoryInfo.getName());
@@ -390,11 +415,12 @@ public class CategorySynch implements ISynch {
             GroupAccess                  access                      = groupAuthAccessDbController.getGroupAuthAccess(mGroupId);
             access.setLastUpdateFromServer(new Date());
             groupAuthAccessDbController.update(access);
+            EventBus.getDefault().post(new CategorySynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
         public void onError(Throwable _e) {
-
+            EventBus.getDefault().post(new CategorySynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
     }
 

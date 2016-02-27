@@ -94,8 +94,8 @@
     <orderEntry type="library" exported="" name="retrofit-2.0.0-beta4" level="project" />
     <orderEntry type="library" exported="" name="okhttp-3.0.1" level="project" />
     <orderEntry type="library" exported="" name="annotations-13.0" level="project" />
-    <orderEntry type="library" exported="" name="jackson-databind-2.7.1" level="project" />
     <orderEntry type="library" exported="" name="jackson-mapper-asl-1.9.7" level="project" />
+    <orderEntry type="library" exported="" name="jackson-databind-2.7.1-1" level="project" />
     <orderEntry type="library" exported="" name="design-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-asl-1.9.7" level="project" />

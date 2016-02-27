@@ -1,8 +1,12 @@
 package org.noorganization.instalistsynch.view.activity;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -37,7 +41,9 @@ import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.eSortMode;
+import org.noorganization.instalistsynch.service.SyncService;
 
+import java.sql.Connection;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -72,6 +78,31 @@ public class SynchOverview extends AppCompatActivity {
     private IGroupManagerController mGroupManagerController;
 
     private boolean mTempSynchFlag;
+    private SyncService mSyncService;
+    private boolean mBound;
+    private SynchManager mSynchManager;
+
+    /**
+     * Defines callbacks for service binding, passed to bindService()
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            SyncService.LocalBinder binder = (SyncService.LocalBinder) service;
+            mSyncService = binder.getService();
+            mSynchManager = mSyncService.getSynchManager();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
 
     @Override
     public boolean onContextItemSelected(MenuItem _item) {
@@ -119,6 +150,7 @@ public class SynchOverview extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTempSynchFlag = false;
+
         setContentView(org.noorganization.instalistsynch.R.layout.activity_synch_overview);
 
         DefaultManagerFactory.getAuthManagerController().loadAllSessions();
@@ -260,8 +292,6 @@ public class SynchOverview extends AppCompatActivity {
         });
     }
 
-    private SynchManager mSynchManager;
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -277,6 +307,23 @@ public class SynchOverview extends AppCompatActivity {
                 mGroupManagerController.refreshGroupMember();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent serviceIntent = new Intent(this, SyncService.class);
+        bindService(serviceIntent, mConnection, Context.BIND_ABOVE_CLIENT);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // unbind the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
     }
 
     /**

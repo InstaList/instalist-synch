@@ -27,7 +27,7 @@ public interface IClientLogDbController {
      *
      * @param _date      the date since when to check changes.
      * @param _modelType the type of the model.
-     * @return a cursor pointing to the logs.
+     * @return a cursor pointing to the logs that are sorted ascending.
      */
     Cursor getLogsSince(String _date, eModelType _modelType);
 

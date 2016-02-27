@@ -23,15 +23,15 @@ public interface ISynch {
      *  @param _groupId    the id of the group, to which the results should be synched.
      * @param _lastUpdate the date when the client last sent the local changes.
      */
-    void synchronizeLocalToNetwork(int _groupId, Date _lastUpdate);
+    void synchLocalToNetwork(int _groupId, Date _lastUpdate);
 
 
     /**
      * Indexes each entry since a given time.
-     *  @param _lastIndexTime the last time and indexing was made.
      * @param _groupId       the id of the group to index.
+     * @param _lastIndexTime the last time and indexing was made.
      */
-    void indexLocal(Date _lastIndexTime, int _groupId);
+    void indexLocal(int _groupId, Date _lastIndexTime);
 
     /**
      * Adds the item to the given group.
