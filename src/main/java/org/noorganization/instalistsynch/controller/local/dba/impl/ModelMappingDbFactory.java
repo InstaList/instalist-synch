@@ -50,6 +50,7 @@ public class ModelMappingDbFactory {
 
     /**
      * Get the category mapping controller.
+     *
      * @return the category mapping controller.
      */
     public IModelMappingDbController getSqliteCategoryMappingDbController() {
@@ -67,6 +68,7 @@ public class ModelMappingDbFactory {
 
     /**
      * Get the product mapping controller.
+     *
      * @return the producht mappig controller.
      */
     public IModelMappingDbController getSqliteProductMappingController() {
@@ -84,6 +86,7 @@ public class ModelMappingDbFactory {
 
     /**
      * Get the unit mapping controller.
+     *
      * @return the unit mapping controller.
      */
     public IModelMappingDbController getSqliteUnitMappingController() {
@@ -97,5 +100,27 @@ public class ModelMappingDbFactory {
             }
         }
         return (IModelMappingDbController) mModelDbMap.get(eModelType.UNIT.ordinal());
+    }
+
+    /***
+     * Get the mapping controller for the tags.
+     *
+     * @return the tag mapping controller.
+     */
+    public IModelMappingDbController getSqliteTagMappingController() {
+        return getMappingController(eModelType.TAG, eModelMappingTableNames.TAG);
+    }
+
+    private IModelMappingDbController getMappingController(eModelType _modelType, eModelMappingTableNames _modelTableNames) {
+        if (mModelDbMap.get(_modelType.ordinal()) == null) {
+            try {
+                mModelDbMap.put(_modelType.ordinal(), new SqliteMappingDbController(_modelTableNames,
+                        GlobalObjects.getInstance().getApplicationContext()));
+            } catch (SqliteMappingDbControllerException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return (IModelMappingDbController) mModelDbMap.get(_modelType.ordinal());
     }
 }
