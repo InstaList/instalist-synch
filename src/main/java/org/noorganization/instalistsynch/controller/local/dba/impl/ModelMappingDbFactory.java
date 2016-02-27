@@ -48,6 +48,10 @@ public class ModelMappingDbFactory {
         return (IModelMappingDbController) mModelDbMap.get(eModelType.LIST.ordinal());
     }
 
+    /**
+     * Get the category mapping controller.
+     * @return the category mapping controller.
+     */
     public IModelMappingDbController getSqliteCategoryMappingDbController() {
         if (mModelDbMap.get(eModelType.CATEGORY.ordinal()) == null) {
             try {
@@ -59,5 +63,39 @@ public class ModelMappingDbFactory {
             }
         }
         return (IModelMappingDbController) mModelDbMap.get(eModelType.CATEGORY.ordinal());
+    }
+
+    /**
+     * Get the product mapping controller.
+     * @return the producht mappig controller.
+     */
+    public IModelMappingDbController getSqliteProductMappingController() {
+        if (mModelDbMap.get(eModelType.PRODUCT.ordinal()) == null) {
+            try {
+                mModelDbMap.put(eModelType.PRODUCT.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.PRODUCT,
+                        GlobalObjects.getInstance().getApplicationContext()));
+            } catch (SqliteMappingDbControllerException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return (IModelMappingDbController) mModelDbMap.get(eModelType.PRODUCT.ordinal());
+    }
+
+    /**
+     * Get the unit mapping controller.
+     * @return the unit mapping controller.
+     */
+    public IModelMappingDbController getSqliteUnitMappingController() {
+        if (mModelDbMap.get(eModelType.UNIT.ordinal()) == null) {
+            try {
+                mModelDbMap.put(eModelType.UNIT.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.UNIT,
+                        GlobalObjects.getInstance().getApplicationContext()));
+            } catch (SqliteMappingDbControllerException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return (IModelMappingDbController) mModelDbMap.get(eModelType.UNIT.ordinal());
     }
 }

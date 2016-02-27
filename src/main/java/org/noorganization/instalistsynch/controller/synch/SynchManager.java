@@ -5,8 +5,10 @@ import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDb
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.impl.CategorySynch;
 import org.noorganization.instalistsynch.controller.synch.impl.ListSynch;
+import org.noorganization.instalistsynch.controller.synch.impl.ProductSynch;
 import org.noorganization.instalistsynch.events.CategorySynchFromNetworkFinished;
 import org.noorganization.instalistsynch.events.ListSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.ProductSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -21,18 +23,20 @@ import de.greenrobot.event.EventBus;
 public class SynchManager {
     private ISynch mCategorySynch;
     private ISynch mListSynch;
+    private ISynch mProductSynch;
 
     public SynchManager() {
         EventBus.getDefault().register(this);
         mCategorySynch = new CategorySynch(eModelType.CATEGORY);
-
+        mListSynch = new ListSynch(eModelType.LIST);
+        mProductSynch = new ProductSynch(eModelType.PRODUCT);
     }
 
     public void init(int _groupId) {
-        mCategorySynch = new CategorySynch(eModelType.CATEGORY);
-        mListSynch = new ListSynch(eModelType.LIST);
+
         mCategorySynch.indexLocalEntries(_groupId);
         mListSynch.indexLocalEntries(_groupId);
+        mProductSynch.indexLocalEntries(_groupId);
     }
 
     public void synchronize(int _groupId) {
@@ -59,8 +63,8 @@ public class SynchManager {
                 LocalSqliteDbControllerFactory.getAuthAccessDbController(
                         GlobalObjects.getInstance()
                                 .getApplicationContext());
-        GroupAccess groupAccess      = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
-        Date        lastServerUpdate = groupAccess.getLastUpdateFromServer();
+        GroupAccess groupAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
+        Date lastServerUpdate = groupAccess.getLastUpdateFromServer();
 
         mCategorySynch.indexLocal(_groupId, lastServerUpdate);
         mCategorySynch.synchNetworkToLocal(_groupId, lastServerUpdate);
@@ -76,6 +80,10 @@ public class SynchManager {
         mListSynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
     }
 
+    private void synchProduct(int _groupId, Date _lastServerUpdate) {
+
+    }
+
     public void onEvent(CategorySynchFromNetworkFinished _msg) {
         mCategorySynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
         synchList(_msg.getGroupId(), _msg.getLastUpdateDate());
@@ -83,5 +91,11 @@ public class SynchManager {
 
     public void onEvent(ListSynchFromNetworkFinished _msg) {
         mListSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        // todo in here call first unit synch
+        synchProduct(_msg.getGroupId(), _msg.getLastUpdateDate());
+    }
+
+    public void onEvent(ProductSynchFromNetworkFinished _msg) {
+        mProductSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
     }
 }

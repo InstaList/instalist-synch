@@ -166,6 +166,9 @@ public class CategorySynch implements ISynch {
                             continue;
                         }
                         modelMapping.setDeleted(true);
+                        timeString = categoryLogCursor.getString(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
+                        clientDate = ISO8601Utils.parse(timeString, new ParsePosition(0));
+                        modelMapping.setLastClientChange(clientDate);
                         mCategoryModelMappingController.update(modelMapping);
                         break;
                     default:
@@ -233,6 +236,9 @@ public class CategorySynch implements ISynch {
                 CategoryInfo categoryInfo = new CategoryInfo();
                 Category category = mCategoryController.getCategoryByID(categoryMapping.getClientSideUUID());
                 if (category == null) {
+                    // probably the category was deleted
+                    // delete the item
+                    mCategoryInfoNetworkController.deleteItem(new DeleteResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryMapping.getServerSideUUID(), authToken);
                     continue;
                 }
                 categoryInfo.setUUID(categoryMapping.getServerSideUUID());
@@ -403,11 +409,11 @@ public class CategorySynch implements ISynch {
 
                     Category renamedCategory = mCategoryController.renameCategory(category, categoryInfo.getName());
                     modelMapping.setLastServerChanged(categoryInfo.getLastChanged());
-
+                    /*
                     if (!renamedCategory.equals(category)) {
                         // todo give it another name?
                         continue;
-                    }
+                    }*/
                     mCategoryModelMappingController.update(modelMapping);
                 }
             }

@@ -53,6 +53,7 @@ import de.greenrobot.event.EventBus;
 /**
  * Synchronization of the list.
  * Created by Desnoo on 14.02.2016.
+ * @deprecated approach that could be used in future when it has a better design
  */
 public class ListSynchObsolete /*implements ISynch*/ {
     /*private static final String TAG = "ListSynchObsolete";

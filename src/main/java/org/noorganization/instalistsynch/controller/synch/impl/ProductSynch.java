@@ -6,14 +6,14 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
-import org.noorganization.instalist.comm.message.ListInfo;
+import org.noorganization.instalist.comm.message.ProductInfo;
 import org.noorganization.instalist.enums.eActionType;
 import org.noorganization.instalist.enums.eModelType;
-import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.LogInfo;
-import org.noorganization.instalist.model.ShoppingList;
-import org.noorganization.instalist.presenter.ICategoryController;
-import org.noorganization.instalist.presenter.IListController;
+import org.noorganization.instalist.model.Product;
+import org.noorganization.instalist.model.Unit;
+import org.noorganization.instalist.presenter.IProductController;
+import org.noorganization.instalist.presenter.IUnitController;
 import org.noorganization.instalist.presenter.implementation.ControllerFactory;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
@@ -30,7 +30,7 @@ import org.noorganization.instalistsynch.controller.network.model.INetworkContro
 import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.ISynch;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
-import org.noorganization.instalistsynch.events.ListSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.ProductSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
@@ -48,52 +48,51 @@ import de.greenrobot.event.EventBus;
  * Synchronization of all lists.
  * Created by Desnoo on 27.02.2016.
  */
-public class ListSynch implements ISynch {
-    private static final String TAG = "ListSynch";
+public class ProductSynch implements ISynch {
+    private static final String TAG = "ProductSynch";
 
     private ISessionController mSessionController;
-    private IListController mListController;
-    private IModelMappingDbController mListModelMappingController;
-    private IModelMappingDbController mCategoryModelMappingController;
+    private IProductController mProductController;
+    private IModelMappingDbController mProductModelMapping;
 
     private IClientLogDbController mClientLogDbController;
     private IGroupAuthDbController mGroupAuthDbController;
-    private INetworkController<ListInfo> mListInfoNetworkController;
+    private INetworkController<ProductInfo> mProductetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
     private eModelType mModelType;
     private EventBus mEventBus;
 
-    public ListSynch(eModelType _type) {
+    public ProductSynch(eModelType _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
         mSessionController = InMemorySessionController.getInstance();
-        mListController = ControllerFactory.getListController(context);
-        mListModelMappingController =
+        mProductController = ControllerFactory.getProductController(context);
+        mProductModelMapping =
                 ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
-        mCategoryModelMappingController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
+
         mClientLogDbController = LocalSqliteDbControllerFactory.getClientLogController(context);
         mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(context);
-        mListInfoNetworkController = RemoteModelAccessControllerFactory.getInstance().getListNetworkController();
+        mProductetworkController = RemoteModelAccessControllerFactory.getInstance().getProductNetworkController();
         mTaskErrorLogDbController = TaskErrorLogDbController.getInstance(context);
         mEventBus = EventBus.getDefault();
     }
 
     @Override
     public void indexLocalEntries(int _groupId) {
-        List<ModelMapping> modelMappings = mListModelMappingController.get(null, null);
+        List<ModelMapping> modelMappings = mProductModelMapping.get(null, null);
         if (modelMappings.size() > 0) {
             return;
         }
 
-        List<ShoppingList> listList = mListController.getAllLists();
+        List<Product> productList = mProductController.listAll();
         ModelMapping modelMapping;
 
-        for (ShoppingList list : listList) {
+        for (Product product : productList) {
             modelMapping =
-                    new ModelMapping(null, _groupId, null, list.mUUID, new Date(Constants.INITIAL_DATE), new Date(), false);
-            mListModelMappingController.insert(modelMapping);
+                    new ModelMapping(null, _groupId, null, product.mUUID, new Date(Constants.INITIAL_DATE), new Date(), false);
+            mProductModelMapping.insert(modelMapping);
         }
     }
 
@@ -118,7 +117,7 @@ public class ListSynch implements ISynch {
                 int actionId = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
                 eActionType actionType = eActionType.getTypeById(actionId);
 
-                List<ModelMapping> modelMappingList = mListModelMappingController.get(
+                List<ModelMapping> modelMappingList = mProductModelMapping.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
                                 ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?", new String[]{
                                 String.valueOf(_groupId),
@@ -137,7 +136,7 @@ public class ListSynch implements ISynch {
                         String clientUuid = logCursor.getString(logCursor.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
                         Date clientDate = ISO8601Utils.parse(logCursor.getString(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE)), new ParsePosition(0));
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
-                        mListModelMappingController.insert(modelMapping);
+                        mProductModelMapping.insert(modelMapping);
                         break;
                     case UPDATE:
                         if (modelMapping == null) {
@@ -147,7 +146,7 @@ public class ListSynch implements ISynch {
                         String timeString = logCursor.getString(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
                         clientDate = ISO8601Utils.parse(timeString, new ParsePosition(0));
                         modelMapping.setLastClientChange(clientDate);
-                        mListModelMappingController.update(modelMapping);
+                        mProductModelMapping.update(modelMapping);
                         break;
                     case DELETE:
                         if (modelMapping == null) {
@@ -158,7 +157,7 @@ public class ListSynch implements ISynch {
                         timeString = logCursor.getString(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION_DATE));
                         clientDate = ISO8601Utils.parse(timeString, new ParsePosition(0));
                         modelMapping.setLastClientChange(clientDate);
-                        mListModelMappingController.update(modelMapping);
+                        mProductModelMapping.update(modelMapping);
                         break;
                     default:
                 }
@@ -176,19 +175,19 @@ public class ListSynch implements ISynch {
             return;
         }
         ModelMapping modelMapping = new ModelMapping(null, _groupId, null, _clientUuid, new Date(Constants.INITIAL_DATE), lastUpdate, false);
-        mListModelMappingController.insert(modelMapping);
+        mProductModelMapping.insert(modelMapping);
     }
 
     @Override
     public void removeGroupFromMapping(int _groupId, String _clientUuid) {
-        List<ModelMapping> modelMappingList = mListModelMappingController.get(
+        List<ModelMapping> modelMappingList = mProductModelMapping.get(
                 ModelMapping.COLUMN.GROUP_ID
                         + " = ? AND " + ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ?",
                 new String[]{String.valueOf(_groupId), _clientUuid});
         if (modelMappingList.size() == 0) {
             return;
         }
-        mListModelMappingController.delete(modelMappingList.get(0));
+        mProductModelMapping.delete(modelMappingList.get(0));
     }
 
     @Override
@@ -201,57 +200,65 @@ public class ListSynch implements ISynch {
             return;
         }
 
-        List<ModelMapping> modelMappingList = mListModelMappingController.get(
+        List<ModelMapping> modelMappingList = mProductModelMapping.get(
                 ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
         for (ModelMapping modelMapping : modelMappingList) {
             if (modelMapping.isDeleted()) {
                 // delete the item
-                mListInfoNetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
+                mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
             } else if (modelMapping.getServerSideUUID() == null) {
                 // insert new
-                ListInfo listInfo = new ListInfo();
-                ShoppingList list = mListController.getListById(modelMapping.getClientSideUUID());
-                if (list == null) {
+                Product product = mProductController.findById(modelMapping.getClientSideUUID());
+                if (product == null) {
                     continue;
                 }
-                String uuid = mListModelMappingController.generateUuid();
-                listInfo.setUUID(uuid);
-                listInfo.setName(list.mName);
-                if (list.mCategory != null) {
-                    List<ModelMapping> cateModelMapping = mCategoryModelMappingController.get(ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?", new String[]{list.mCategory.mUUID, String.valueOf(_groupId)});
-                    if (cateModelMapping.size() == 1) {
-                        ModelMapping categoryMapping = cateModelMapping.get(0);
-                        listInfo.setCategoryUUID(categoryMapping.getServerSideUUID());
-                    }
-                }
-
-                listInfo.setLastChanged(modelMapping.getLastClientChange());
-                listInfo.setDeleted(false);
-                mListInfoNetworkController.createItem(new InsertResponse(modelMapping, uuid), _groupId, listInfo, authToken);
+                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
+                mProductetworkController.createItem(new InsertResponse(modelMapping, productInfo.getUUID()), _groupId, productInfo, authToken);
             } else {
                 // update existing
-                ListInfo listInfo = new ListInfo();
-                ShoppingList list = mListController.getListById(modelMapping.getClientSideUUID());
-                if (list == null) {
+                Product product = mProductController.findById(modelMapping.getClientSideUUID());
+                if (product == null) {
                     // probably the item was deleted
-                    mListInfoNetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
+                    mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
                     continue;
                 }
-                listInfo.setUUID(modelMapping.getServerSideUUID());
-                listInfo.setName(list.mName);
 
-                if (list.mCategory != null) {
-                    List<ModelMapping> cateModelMapping = mCategoryModelMappingController.get(ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?", new String[]{list.mCategory.mUUID, String.valueOf(_groupId)});
-                    if (cateModelMapping.size() == 1) {
-                        ModelMapping categoryMapping = cateModelMapping.get(0);
-                        listInfo.setCategoryUUID(categoryMapping.getServerSideUUID());
-                    }
-                }
-                listInfo.setLastChanged(modelMapping.getLastClientChange());
-                listInfo.setDeleted(false);
-                mListInfoNetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, listInfo.getUUID(), listInfo, authToken);
+                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
+                mProductetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, productInfo.getUUID(), productInfo, authToken);
             }
         }
+    }
+
+    /**
+     * Fill the productInfo object.
+     *
+     * @param _product      the product the product info is based on.
+     * @param _groupId      the id of the group.
+     * @param _modelMapping the model mapping of this model type.
+     * @return the productinfo object filled with the given data.
+     */
+    private ProductInfo getProductInfo(Product _product, int _groupId, ModelMapping _modelMapping) {
+        ProductInfo productInfo = new ProductInfo();
+        String uuid = mProductModelMapping.generateUuid();
+        productInfo.setUUID(uuid);
+        productInfo.setName(_product.mName);
+        productInfo.setStepAmount(_product.mStepAmount);
+        productInfo.setDefaultAmount(_product.mDefaultAmount);
+        productInfo.setRemoveUnit(false);
+
+        if (_product.mUnit != null) {
+            IModelMappingDbController unitModelMappingController = ModelMappingDbFactory.getInstance().getSqliteUnitMappingController();
+            List<ModelMapping> unitModelMappingList = unitModelMappingController.get(ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?",
+                    new String[]{_product.mUnit.mUUID, String.valueOf(_groupId)});
+            if (unitModelMappingList.size() == 1) {
+                ModelMapping unitMapping = unitModelMappingList.get(0);
+                productInfo.setUUID(unitMapping.getServerSideUUID());
+            }
+        }
+        productInfo.setLastChanged(_modelMapping.getLastClientChange());
+        productInfo.setDeleted(false);
+
+        return productInfo;
     }
 
 
@@ -261,7 +268,7 @@ public class ListSynch implements ISynch {
         if (authToken == null) {
             return;
         }
-        mListInfoNetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime, false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
+        mProductetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime, false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
     }
 
     @Override
@@ -275,7 +282,7 @@ public class ListSynch implements ISynch {
             return;
         }
 
-        mListInfoNetworkController.getItem(new GetItemConflictResolveResponse(_resolveAction, _conflictId, log.getGroupId()), log.getGroupId(), log.getUUID(), authToken);
+        mProductetworkController.getItem(new GetItemConflictResolveResponse(_resolveAction, _conflictId, log.getGroupId()), log.getGroupId(), log.getUUID(), authToken);
     }
 
     private class DeleteResponse implements IAuthorizedCallbackCompleted<Void> {
@@ -294,7 +301,7 @@ public class ListSynch implements ISynch {
 
         @Override
         public void onCompleted(Void _next) {
-            mListModelMappingController.delete(mModelMapping);
+            mProductModelMapping.delete(mModelMapping);
         }
 
         @Override
@@ -326,7 +333,7 @@ public class ListSynch implements ISynch {
         public void onCompleted(Void _next) {
             mModelMapping.setLastServerChanged(new Date());
             mModelMapping.setServerSideUUID(mServerSideUuid);
-            mListModelMappingController.update(mModelMapping);
+            mProductModelMapping.update(mModelMapping);
         }
 
         @Override
@@ -351,7 +358,7 @@ public class ListSynch implements ISynch {
 
         @Override
         public void onCompleted(Void _next) {
-            mListModelMappingController.update(mModelMapping);
+            mProductModelMapping.update(mModelMapping);
         }
 
         @Override
@@ -359,7 +366,7 @@ public class ListSynch implements ISynch {
         }
     }
 
-    private class GetListResponse implements IAuthorizedCallbackCompleted<List<ListInfo>> {
+    private class GetListResponse implements IAuthorizedCallbackCompleted<List<ProductInfo>> {
 
         private int mGroupId;
         private Date mLastUpdateDate;
@@ -371,87 +378,92 @@ public class ListSynch implements ISynch {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new ProductSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
-        public void onCompleted(List<ListInfo> _next) {
-            for (ListInfo listInfo : _next) {
-                List<ModelMapping> modelMappingList = mListModelMappingController.get(
+        public void onCompleted(List<ProductInfo> _next) {
+            for (ProductInfo productInfo : _next) {
+                List<ModelMapping> modelMappingList = mProductModelMapping.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND "
                                 + ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?",
-                        new String[]{String.valueOf(mGroupId), listInfo.getUUID()});
+                        new String[]{String.valueOf(mGroupId), productInfo.getUUID()});
 
                 if (modelMappingList.size() == 0) {
+                    IUnitController unitController = ControllerFactory.getUnitController(GlobalObjects.getInstance().getApplicationContext());
+                    Unit unit = unitController.getDefaultUnit();
+                    if (productInfo.getUnitUUID() != null) {
+                        IModelMappingDbController unitMapping = ModelMappingDbFactory.getInstance().getSqliteUnitMappingController();
+                        List<ModelMapping> unitMappingList = unitMapping.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?",
+                                new String[]{productInfo.getUnitUUID(), String.valueOf(mGroupId)});
+                        if (unitMappingList.size() == 1) {
+                            unit = unitController.findById(unitMappingList.get(0).getClientSideUUID());
+                        }
+                    }
                     // new entry
-                    ShoppingList newList = mListController.addList(listInfo.getName());
-                    if (newList == null) {
+                    Product newProduct = mProductController.createProduct(productInfo.getName(),
+                            unit, productInfo.getDefaultAmount(), productInfo.getStepAmount());
+
+                    if (newProduct == null) {
                         // TODO some error happened
                         continue;
                     }
-                    ModelMapping modelMapping = new ModelMapping(null, mGroupId, listInfo.getUUID(),
-                            newList.mUUID, listInfo.getLastChanged(), listInfo.getLastChanged(), false);
-                    mListModelMappingController.insert(modelMapping);
+                    ModelMapping modelMapping = new ModelMapping(null, mGroupId, productInfo.getUUID(),
+                            newProduct.mUUID, productInfo.getLastChanged(), productInfo.getLastChanged(), false);
+                    mProductModelMapping.insert(modelMapping);
                 } else {
                     // entry exists local
                     ModelMapping modelMapping = modelMappingList.get(0);
-                    ShoppingList list = mListController.getListById(modelMapping.getClientSideUUID());
+                    Product product = mProductController.findById(modelMapping.getClientSideUUID());
 
-                    if (listInfo.getDeleted()) {
+                    if (productInfo.getDeleted()) {
                         // was deleted on server side
-                        mListController.removeList(list);
-                        mListModelMappingController.delete(modelMapping);
+                        mProductController.removeProduct(product, true);
+                        mProductModelMapping.delete(modelMapping);
                         continue;
                     }
 
                     // else there was an update!
-                    if (modelMapping.getLastClientChange().after(listInfo.getLastChanged())) {
+                    if (modelMapping.getLastClientChange().after(productInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(listInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(productInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 
-                    ShoppingList renamedList = mListController.renameList(list, listInfo.getName());
-                    if (listInfo.getCategoryUUID() != null) {
-                        List<ModelMapping> categoryMappingList = mCategoryModelMappingController.get(
-                                ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ? AND "
-                                        + ModelMapping.COLUMN.GROUP_ID + " = ?", new String[]{
-                                        listInfo.getCategoryUUID(), String.valueOf(mGroupId)});
-                        if (categoryMappingList.size() != 0) {
-                            ModelMapping categoryMapping = categoryMappingList.get(0);
-                            ICategoryController categoryController = ControllerFactory.getCategoryController(GlobalObjects.getInstance().getApplicationContext());
-                            Category category = categoryController.getCategoryByID(categoryMapping.getClientSideUUID());
-                            // todo category not available yet, check on this condition
-                            if (category != null) {
-                                ShoppingList newCategoryList = mListController.moveToCategory(renamedList, category);
-                                if (newCategoryList == null) {
-                                    Log.e(TAG, "onCompleted: the move to a new category failed! Do a rollback");
-                                }
-                            }
+                    IUnitController unitController = ControllerFactory.getUnitController(GlobalObjects.getInstance().getApplicationContext());
+                    Unit unit = unitController.getDefaultUnit();
+                    if (productInfo.getUnitUUID() != null) {
+                        IModelMappingDbController unitMapping = ModelMappingDbFactory.getInstance().getSqliteUnitMappingController();
+                        List<ModelMapping> unitMappingList = unitMapping.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?",
+                                new String[]{productInfo.getUnitUUID(), String.valueOf(mGroupId)});
+                        if (unitMappingList.size() == 1) {
+                            unit = unitController.findById(unitMappingList.get(0).getClientSideUUID());
                         }
-
                     }
-
-                    modelMapping.setLastServerChanged(listInfo.getLastChanged());
-
-                    if (!renamedList.equals(list)) {
-                        // todo give it another name?
+                    // new entry
+                    Product productWithUpdate = mProductController.createProduct(productInfo.getName(),
+                            unit, productInfo.getDefaultAmount(), productInfo.getStepAmount());
+                    productWithUpdate.mUUID = product.mUUID;
+                    Product updatedProduct = mProductController.modifyProduct(productWithUpdate);
+                    if (updatedProduct == null) {
+                        Log.e(TAG, "onCompleted: update of product failed");
                         continue;
                     }
-                    mListModelMappingController.update(modelMapping);
+                    modelMapping.setLastServerChanged(productInfo.getLastChanged());
+                    mProductModelMapping.update(modelMapping);
                 }
             }
 
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new ProductSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
         public void onError(Throwable _e) {
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new ProductSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
     }
 
-    private class GetItemConflictResolveResponse implements IAuthorizedCallbackCompleted<ListInfo> {
+    private class GetItemConflictResolveResponse implements IAuthorizedCallbackCompleted<ProductInfo> {
         private int mResolveAction;
         private int mCaseId;
         private int mGroupId;
@@ -468,13 +480,13 @@ public class ListSynch implements ISynch {
         }
 
         @Override
-        public void onCompleted(ListInfo _next) {
+        public void onCompleted(ProductInfo _next) {
             if (mResolveAction == ITask.ResolveCodes.RESOLVE_USE_CLIENT_SIDE) {
                 // use client side
                 // no further action needed?
             } else {
                 // use server side
-                List<ModelMapping> modelMappingList = mListModelMappingController.get(
+                List<ModelMapping> modelMappingList = mProductModelMapping.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND "
                                 + ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?",
                         new String[]{String.valueOf(mGroupId), _next.getUUID()});
@@ -483,36 +495,30 @@ public class ListSynch implements ISynch {
                 }
 
                 ModelMapping modelMapping = modelMappingList.get(0);
-                ShoppingList list = mListController.getListById(modelMapping.getClientSideUUID());
-                ShoppingList renamedList = mListController.renameList(list, _next.getName());
+                Product product = mProductController.findById(modelMapping.getClientSideUUID());
+                IUnitController unitController = ControllerFactory.getUnitController(GlobalObjects.getInstance().getApplicationContext());
+                Unit unit = unitController.getDefaultUnit();
 
-                if (_next.getCategoryUUID() != null) {
-                    IModelMappingDbController categoryMappingController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
-                    List<ModelMapping> categoryMappingList = categoryMappingController.get(
-                            ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ? AND "
-                                    + ModelMapping.COLUMN.GROUP_ID + " = ?", new String[]{
-                                    _next.getCategoryUUID(), String.valueOf(mGroupId)});
-                    if (categoryMappingList.size() != 0) {
-                        ModelMapping categoryMapping = categoryMappingList.get(0);
-                        ICategoryController categoryController = ControllerFactory.getCategoryController(GlobalObjects.getInstance().getApplicationContext());
-                        Category category = categoryController.getCategoryByID(categoryMapping.getClientSideUUID());
-                        // todo category not available yet, check on this condition
-                        if (category != null) {
-                            ShoppingList newCategoryList = mListController.moveToCategory(renamedList, category);
-                            if (newCategoryList == null) {
-                                Log.e(TAG, "onCompleted: the move to a new category failed! Do a rollback");
-                                mListController.renameList(renamedList, list.mName);
-                                return;
-                            }
-                        }
+                if (_next.getUnitUUID() != null) {
+                    IModelMappingDbController unitMapping = ModelMappingDbFactory.getInstance().getSqliteUnitMappingController();
+                    List<ModelMapping> unitMappingList = unitMapping.get(ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?",
+                            new String[]{_next.getUnitUUID(), String.valueOf(mGroupId)});
+                    if (unitMappingList.size() == 1) {
+                        unit = unitController.findById(unitMappingList.get(0).getClientSideUUID());
                     }
                 }
-                modelMapping.setLastServerChanged(_next.getLastChanged());
-                if (!renamedList.equals(list)) {
-                    // todo give it another name?
+                // new entry
+                Product productWithUpdate = mProductController.createProduct(_next.getName(),
+                        unit, _next.getDefaultAmount(), _next.getStepAmount());
+                productWithUpdate.mUUID = product.mUUID;
+                Product updatedProduct = mProductController.modifyProduct(productWithUpdate);
+                if (updatedProduct == null) {
+                    Log.e(TAG, "onCompleted: update of product failed");
                     return;
                 }
-                mListModelMappingController.update(modelMapping);
+
+                modelMapping.setLastServerChanged(_next.getLastChanged());
+                mProductModelMapping.update(modelMapping);
             }
             mTaskErrorLogDbController.remove(mCaseId);
         }
