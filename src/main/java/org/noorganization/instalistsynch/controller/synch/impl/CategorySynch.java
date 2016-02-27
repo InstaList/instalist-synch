@@ -117,7 +117,7 @@ public class CategorySynch implements ISynch {
             isLocal = groupAuth.getGroupId() == _groupId;
         }
         Cursor categoryLogCursor =
-                mClientLogDbController.getLogsSince(lastIndexTime, eModelType.CATEGORY);
+                mClientLogDbController.getLogsSince(lastIndexTime, mModelType);
         if (categoryLogCursor.getCount() == 0) {
             categoryLogCursor.close();
             return;
@@ -448,7 +448,7 @@ public class CategorySynch implements ISynch {
             } else {
                 // use server side
                 List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
-                        ModelMapping.COLUMN.GROUP_ID + " = ? "
+                        ModelMapping.COLUMN.GROUP_ID + " = ? AND "
                                 + ModelMapping.COLUMN.SERVER_SIDE_UUID + " LIKE ?",
                         new String[]{String.valueOf(mGroupId), _next.getUUID()});
                 if (modelMappingList.size() == 0) {

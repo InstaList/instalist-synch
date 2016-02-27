@@ -61,6 +61,8 @@ public class ClientLogDbController implements IClientLogDbController {
         } catch (ParseException e) {
             e.printStackTrace();
             return null;
+        }finally {
+            cursor.close();
         }
     }
 
