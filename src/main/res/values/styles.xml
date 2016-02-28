@@ -1,11 +1,56 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="InstalistTheme1" parent="Theme.AppCompat.Light.DarkActionBar">
+
+        <item name="colorPrimary">@color/primary_color</item>
+        <!--        <item name="colorAccent">@color/white</item>-->
+        <item name="colorAccent">@color/light_blue_500</item>
+        <item name="colorPrimaryDark">@color/primary_color_dark</item>w
+
+        <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
+        <item name="android:buttonStyle">@style/RobotoButtonStyle</item>
+        <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
+
+        <item name="android:textSize">@dimen/text_size</item>
+
+        <item name="android:textColor">@color/black</item>
+        <item name="android:editTextColor">@color/black</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/black</item>
+        <item name="colorControlNormal">@color/grey_light</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>k
+        <!-- on API 21 the overflow icon ignores colorControlNormal attr in favor of the native version -->
+        <item name="android:colorControlNormal" tools:ignore="NewApi">?colorControlNormal</item>
+        <!-- Following for toolbar displaying correctly-->
+
+        <item name="android:windowBackground">@color/white</item>
+
+        <item name="windowActionModeOverlay">true</item>
+
+    </style>
+
+
+    <style name="RobotoTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <style name="RobotoButtonStyle" parent="android:Widget.Button">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:colorFocusedHighlight">@color/grey_light</item>
+        <item name="android:background">@drawable/bg_button</item>
+        <item name="android:elevation" tools:ignore="NewApi">2dp</item>
+    </style>
+
+    <style name="RobotoEditTextStyle" parent="android:Widget.EditText">
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-    </style>
+    </style>-->
 
+    <dimen name="text_size">16sp</dimen>
 </resources>
