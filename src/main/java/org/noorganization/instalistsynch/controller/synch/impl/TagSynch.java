@@ -69,7 +69,7 @@ public class TagSynch implements ISynch {
         mSessionController = InMemorySessionController.getInstance();
         mTagController = ControllerFactory.getTagController(context);
         mTagModelMappingController =
-                ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
+                ModelMappingDbFactory.getInstance().getSqliteTagMappingController();
         mClientLogDbController = LocalSqliteDbControllerFactory.getClientLogController(context);
         mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(context);
         mTagNetworkController = RemoteModelAccessControllerFactory.getInstance().getTagNetworkController();
@@ -198,40 +198,42 @@ public class TagSynch implements ISynch {
             return;
         }
 
-        List<ModelMapping> categoryMappingList = mTagModelMappingController.get(
+        List<ModelMapping> tagModelMappingList = mTagModelMappingController.get(
                 ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
-        for (ModelMapping categoryMapping : categoryMappingList) {
-            if (categoryMapping.isDeleted()) {
+        for (ModelMapping tagMapping : tagModelMappingList) {
+            if(tagMapping.getClientSideUUID() == null)
+                continue;
+            if (tagMapping.isDeleted()) {
                 // delete the item
-                mTagNetworkController.deleteItem(new DeleteResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryMapping.getServerSideUUID(), authToken);
-            } else if (categoryMapping.getServerSideUUID() == null) {
+                mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
+            } else if (tagMapping.getServerSideUUID() == null) {
                 // insert new
                 TagInfo tagInfo = new TagInfo();
-                Tag tag = mTagController.findById(categoryMapping.getClientSideUUID());
+                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
                 if (tag == null) {
                     continue;
                 }
                 String uuid = mTagModelMappingController.generateUuid();
                 tagInfo.setUUID(uuid);
                 tagInfo.setName(tag.mName);
-                tagInfo.setLastChanged(categoryMapping.getLastClientChange());
+                tagInfo.setLastChanged(tagMapping.getLastClientChange());
                 tagInfo.setDeleted(false);
-                mTagNetworkController.createItem(new InsertResponse(categoryMapping, uuid), _groupId, tagInfo, authToken);
+                mTagNetworkController.createItem(new InsertResponse(tagMapping, uuid), _groupId, tagInfo, authToken);
             } else {
                 // update existing
                 TagInfo tagInfo = new TagInfo();
-                Tag tag = mTagController.findById(categoryMapping.getClientSideUUID());
+                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
                 if (tag == null) {
                     // probably the category was deleted
                     // delete the item
-                    mTagNetworkController.deleteItem(new DeleteResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryMapping.getServerSideUUID(), authToken);
+                    mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
                     continue;
                 }
-                tagInfo.setUUID(categoryMapping.getServerSideUUID());
+                tagInfo.setUUID(tagMapping.getServerSideUUID());
                 tagInfo.setName(tag.mName);
-                tagInfo.setLastChanged(categoryMapping.getLastClientChange());
+                tagInfo.setLastChanged(tagMapping.getLastClientChange());
                 tagInfo.setDeleted(false);
-                mTagNetworkController.updateItem(new UpdateResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, tagInfo.getUUID(), tagInfo, authToken);
+                mTagNetworkController.updateItem(new UpdateResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagInfo.getUUID(), tagInfo, authToken);
             }
         }
     }
@@ -368,7 +370,8 @@ public class TagSynch implements ISynch {
                     // new entry
                     Tag newTag = mTagController.createTag(tagInfo.getName());
                     if (newTag == null) {
-                        // TODO some error happened
+                        // TODO some error happenedd
+                        Log.e(TAG, "onCompleted: cannot create new tag with name " + tagInfo.getName());
                         continue;
                     }
                     ModelMapping modelMapping = new ModelMapping(null, mGroupId, tagInfo.getUUID(),

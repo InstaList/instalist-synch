@@ -4,13 +4,21 @@ import org.noorganization.instalist.enums.eModelType;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.impl.CategorySynch;
+import org.noorganization.instalistsynch.controller.synch.impl.IngredientSynch;
+import org.noorganization.instalistsynch.controller.synch.impl.ListEntrySynch;
 import org.noorganization.instalistsynch.controller.synch.impl.ListSynch;
 import org.noorganization.instalistsynch.controller.synch.impl.ProductSynch;
+import org.noorganization.instalistsynch.controller.synch.impl.RecipeSynch;
 import org.noorganization.instalistsynch.controller.synch.impl.TagSynch;
+import org.noorganization.instalistsynch.controller.synch.impl.UnitSync;
 import org.noorganization.instalistsynch.events.CategorySynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.IngredientSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.ListEntrySynchFromNetworkFinished;
 import org.noorganization.instalistsynch.events.ListSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.events.ProductSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.RecipeSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.events.TagSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.UnitSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -27,6 +35,21 @@ public class SynchManager {
     private ISynch mListSynch;
     private ISynch mProductSynch;
     private ISynch mTagSynch;
+    private ISynch mIngredientSynch;
+    private ISynch mRecipeSynch;
+    private ISynch mListEntrySynch;
+    private ISynch mUnitSynch;
+
+    private boolean mListSynchDone;
+    private boolean mProductSynchDone;
+    private boolean mTagSynchDone;
+    private boolean mRecipeSynchDone;
+    private boolean mUnitSynchDone;
+    private boolean mIngredientSynchDone;
+    private boolean mListEntrySynchDone;
+    private boolean mCategorySynchDone;
+
+    private IGroupAuthAccessDbController mGroupAuthAccessDbController;
 
     public SynchManager() {
         EventBus.getDefault().register(this);
@@ -34,10 +57,16 @@ public class SynchManager {
         mListSynch = new ListSynch(eModelType.LIST);
         mProductSynch = new ProductSynch(eModelType.PRODUCT);
         mTagSynch = new TagSynch(eModelType.TAG);
+        mIngredientSynch = new IngredientSynch(eModelType.INGREDIENT);
+        mRecipeSynch = new RecipeSynch(eModelType.RECIPE);
+        mListEntrySynch = new ListEntrySynch(eModelType.LIST_ENTRY);
+        mUnitSynch = new UnitSync();
+        mListSynchDone = mProductSynchDone = mTagSynchDone = mRecipeSynchDone = mUnitSynchDone = mIngredientSynchDone = mListEntrySynchDone = mCategorySynchDone = false;
+        mGroupAuthAccessDbController =
+                LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance().getApplicationContext());
     }
 
     public void init(int _groupId) {
-
         mCategorySynch.indexLocalEntries(_groupId);
         mListSynch.indexLocalEntries(_groupId);
         mTagSynch.indexLocalEntries(_groupId);
@@ -45,39 +74,24 @@ public class SynchManager {
     }
 
     public void synchronize(int _groupId) {
-        /*
-        IGroupAuthAccessDbController groupAuthAccessDbController =
-                LocalSqliteDbControllerFactory.getAuthAccessDbController(
-                        GlobalObjects.getInstance()
-                                .getApplicationContext());
-        GroupAccess groupAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
+        /*if (!isSynchDone()) {
+            return;
+        }*/
 
-
-        ISynch listSynch = new ListSynchObsolete();
-       // listSynch.refreshLocalMapping(_groupId, groupAccess.getLastUpdateFromClient());
-        listSynch.synchNetworkToLocal(_groupId, groupAccess.getLastUpdateFromServer());
-        listSynch.synchLocalToNetwork(_groupId,
-                ISO8601Utils.format(groupAccess.getLastUpdateFromClient()));*/
-
-        synchCategory(_groupId);
-    }
-
-
-    public void synchCategory(int _groupId) {
-        IGroupAuthAccessDbController groupAuthAccessDbController =
-                LocalSqliteDbControllerFactory.getAuthAccessDbController(
-                        GlobalObjects.getInstance()
-                                .getApplicationContext());
-        GroupAccess groupAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
+        GroupAccess groupAccess = mGroupAuthAccessDbController.getGroupAuthAccess(_groupId);
         Date lastServerUpdate = groupAccess.getLastUpdateFromServer();
 
+        synchCategory(_groupId, lastServerUpdate);
+        synchUnit(_groupId, lastServerUpdate);
+        synchTag(_groupId, lastServerUpdate);
+        synchRecipe(_groupId, lastServerUpdate);
+    }
+
+    public void synchCategory(int _groupId, Date lastServerUpdate) {
         mCategorySynch.indexLocal(_groupId, lastServerUpdate);
         mCategorySynch.synchNetworkToLocal(_groupId, lastServerUpdate);
 
-        // TODO call this at the end !
-        GroupAccess groupAuthAccess = groupAuthAccessDbController.getGroupAuthAccess(_groupId);
-        groupAuthAccess.setLastUpdateFromServer(new Date());
-        groupAuthAccessDbController.update(groupAuthAccess);
+
     }
 
     private void synchList(int _groupId, Date _lastServerUpdate) {
@@ -95,23 +109,102 @@ public class SynchManager {
         mTagSynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
     }
 
+    private void synchUnit(int _groupId, Date _lastServerUpdate) {
+        mUnitSynch.indexLocal(_groupId, _lastServerUpdate);
+        mUnitSynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
+    }
+
+    private void synchRecipe(int _groupId, Date _lastServerUpdate) {
+        mRecipeSynch.indexLocal(_groupId, _lastServerUpdate);
+        mRecipeSynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
+    }
+
+    private void synchListEntry(int _groupId, Date _lastServerUpdate) {
+        mListEntrySynch.indexLocal(_groupId, _lastServerUpdate);
+        mListEntrySynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
+    }
+
+    private void synchIngredient(int _groupId, Date _lastServerUpdate) {
+        mIngredientSynch.indexLocal(_groupId, _lastServerUpdate);
+        mIngredientSynch.synchNetworkToLocal(_groupId, _lastServerUpdate);
+    }
+
     public void onEvent(CategorySynchFromNetworkFinished _msg) {
         mCategorySynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
         synchList(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mCategorySynchDone = true;
+        reset(_msg.getGroupId());
     }
 
     public void onEvent(ListSynchFromNetworkFinished _msg) {
         mListSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
-        // todo in here call first unit synch
-        synchProduct(_msg.getGroupId(), _msg.getLastUpdateDate());
-        synchTag(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mListSynchDone = true;
+        if (mProductSynchDone) {
+            synchListEntry(_msg.getGroupId(), _msg.getLastUpdateDate());
+        }
+        reset(_msg.getGroupId());
     }
 
     public void onEvent(ProductSynchFromNetworkFinished _msg) {
         mProductSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mProductSynchDone = true;
+        if (mListSynchDone) {
+            synchListEntry(_msg.getGroupId(), _msg.getLastUpdateDate());
+        }
+        reset(_msg.getGroupId());
     }
 
     public void onEvent(TagSynchFromNetworkFinished _msg) {
         mTagSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mTagSynchDone = true;
+        reset(_msg.getGroupId());
+    }
+
+    public void onEvent(ListEntrySynchFromNetworkFinished _msg) {
+        mListEntrySynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mListEntrySynchDone = true;
+        reset(_msg.getGroupId());
+    }
+
+    public void onEvent(UnitSynchFromNetworkFinished _msg) {
+        mUnitSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        synchProduct(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mUnitSynchDone = true;
+        reset(_msg.getGroupId());
+    }
+
+    public void onEvent(IngredientSynchFromNetworkFinished _msg) {
+        mIngredientSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mIngredientSynchDone = true;
+        reset(_msg.getGroupId());
+    }
+
+    public void onEvent(RecipeSynchFromNetworkFinished _msg) {
+        mIngredientSynch.synchLocalToNetwork(_msg.getGroupId(), _msg.getLastUpdateDate());
+        mRecipeSynchDone = true;
+        if (mProductSynchDone) {
+            synchIngredient(_msg.getGroupId(), _msg.getLastUpdateDate());
+        }
+        reset(_msg.getGroupId());
+    }
+
+    private void reset(int _groupId) {
+        if (isSynchDone()) {
+            mListSynchDone = mProductSynchDone = mTagSynchDone = mRecipeSynchDone = mUnitSynchDone = mIngredientSynchDone = mListEntrySynchDone = mCategorySynchDone = false;
+            GroupAccess groupAuthAccess = mGroupAuthAccessDbController.getGroupAuthAccess(_groupId);
+            groupAuthAccess.setLastUpdateFromServer(new Date());
+            mGroupAuthAccessDbController.update(groupAuthAccess);
+        }
+    }
+
+    private boolean isSynchDone() {
+        return mListSynchDone
+                && mProductSynchDone
+                && mTagSynchDone
+                && mRecipeSynchDone
+                && mUnitSynchDone
+                && mIngredientSynchDone
+                && mListEntrySynchDone
+                && mCategorySynchDone;
     }
 }

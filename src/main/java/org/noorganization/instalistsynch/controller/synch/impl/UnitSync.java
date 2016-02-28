@@ -63,7 +63,7 @@ public class UnitSync implements ISynch {
     public UnitSync() {
         Context context = GlobalObjects.getInstance().getApplicationContext();
         mMappingController = ModelMappingDbFactory.getInstance().
-                getSqliteCategoryMappingDbController();
+                getSqliteUnitMappingController();
         mLocalLogController = LocalSqliteDbControllerFactory.getClientLogController(context);
         mSessionController = InMemorySessionController.getInstance();
         mUnitController = ControllerFactory.getUnitController(context);

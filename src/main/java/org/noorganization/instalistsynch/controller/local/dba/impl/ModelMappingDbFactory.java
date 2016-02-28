@@ -123,4 +123,28 @@ public class ModelMappingDbFactory {
         }
         return (IModelMappingDbController) mModelDbMap.get(_modelType.ordinal());
     }
+
+    /**
+     * Get the recipe mapping controller.
+     * @return the recipe mapping controller.
+     */
+    public IModelMappingDbController getSqliteRecipeMappingController() {
+        return getMappingController(eModelType.RECIPE, eModelMappingTableNames.RECIPE);
+    }
+
+    /**
+     * Get the ingredient mapping controller.
+     * @return the ingredient mapping controller.
+     */
+    public IModelMappingDbController getSqliteIngredientMappingDbController() {
+        return getMappingController(eModelType.INGREDIENT, eModelMappingTableNames.INGREDIENT);
+    }
+
+    /**
+     * Get the list entry mapping controller.
+     * @return the list entry mapping controller.
+     */
+    public IModelMappingDbController getSqliteListEntryMappingController() {
+        return getMappingController(eModelType.LIST_ENTRY, eModelMappingTableNames.LIST_ENTRY);
+    }
 }
