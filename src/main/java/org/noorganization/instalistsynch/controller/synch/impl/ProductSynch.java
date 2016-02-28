@@ -70,7 +70,7 @@ public class ProductSynch implements ISynch {
         mSessionController = InMemorySessionController.getInstance();
         mProductController = ControllerFactory.getProductController(context);
         mProductModelMapping =
-                ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
+                ModelMappingDbFactory.getInstance().getSqliteProductMappingController();
 
         mClientLogDbController = LocalSqliteDbControllerFactory.getClientLogController(context);
         mGroupAuthDbController = LocalSqliteDbControllerFactory.getGroupAuthDbController(context);
@@ -246,7 +246,7 @@ public class ProductSynch implements ISynch {
         productInfo.setDefaultAmount(_product.mDefaultAmount);
         productInfo.setRemoveUnit(false);
 
-        if (_product.mUnit != null) {
+        if (_product.mUnit != null && !_product.mUnit.mName.contentEquals("-")) {
             IModelMappingDbController unitModelMappingController = ModelMappingDbFactory.getInstance().getSqliteUnitMappingController();
             List<ModelMapping> unitModelMappingList = unitModelMappingController.get(ModelMapping.COLUMN.CLIENT_SIDE_UUID + " LIKE ? AND " + ModelMapping.COLUMN.GROUP_ID + " = ?",
                     new String[]{_product.mUnit.mUUID, String.valueOf(_groupId)});
@@ -255,7 +255,8 @@ public class ProductSynch implements ISynch {
                 productInfo.setUUID(unitMapping.getServerSideUUID());
             }
         }
-        productInfo.setLastChanged(_modelMapping.getLastClientChange());
+        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime() -Constants.NETWORK_OFFSET);
+        productInfo.setLastChanged(lastChanged);
         productInfo.setDeleted(false);
 
         return productInfo;
@@ -440,15 +441,18 @@ public class ProductSynch implements ISynch {
                             unit = unitController.findById(unitMappingList.get(0).getClientSideUUID());
                         }
                     }
+                    product.mName = productInfo.getName();
+                    product.mUnit = unit;
+                    product.mDefaultAmount = productInfo.getDefaultAmount();
+                    product.mStepAmount = productInfo.getStepAmount();
+
                     // new entry
-                    Product productWithUpdate = mProductController.createProduct(productInfo.getName(),
-                            unit, productInfo.getDefaultAmount(), productInfo.getStepAmount());
-                    productWithUpdate.mUUID = product.mUUID;
-                    Product updatedProduct = mProductController.modifyProduct(productWithUpdate);
-                    if (updatedProduct == null) {
+                    Product productWithUpdate = mProductController.modifyProduct(product);
+                    if(productWithUpdate == null){
                         Log.e(TAG, "onCompleted: update of product failed");
                         continue;
                     }
+
                     modelMapping.setLastServerChanged(productInfo.getLastChanged());
                     mProductModelMapping.update(modelMapping);
                 }

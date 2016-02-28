@@ -99,7 +99,7 @@ public class CategorySynch implements ISynch {
         }
 
         List<Category> categoryList = mCategoryController.getAllCategories();
-        ModelMapping   categoryMapping;
+        ModelMapping categoryMapping;
 
         for (Category category : categoryList) {
             categoryMapping =
@@ -110,9 +110,9 @@ public class CategorySynch implements ISynch {
 
     @Override
     public void indexLocal(int _groupId, Date _lastIndexTime) {
-        String    lastIndexTime = ISO8601Utils.format(_lastIndexTime,false, TimeZone.getTimeZone("GMT+0000"));//.concat("+0000");
-        boolean   isLocal       = false;
-        GroupAuth groupAuth     = mGroupAuthDbController.getLocalGroup();
+        String lastIndexTime = ISO8601Utils.format(_lastIndexTime, false, TimeZone.getTimeZone("GMT+0000"));//.concat("+0000");
+        boolean isLocal = false;
+        GroupAuth groupAuth = mGroupAuthDbController.getLocalGroup();
         if (groupAuth != null) {
             isLocal = groupAuth.getGroupId() == _groupId;
         }
@@ -204,8 +204,8 @@ public class CategorySynch implements ISynch {
 
     @Override
     public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
-        String lastUpdateString = ISO8601Utils.format(_lastUpdate,false, TimeZone.getTimeZone("GMT+0000"));
-        String authToken        = mSessionController.getToken(_groupId);
+        String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, TimeZone.getTimeZone("GMT+0000"));
+        String authToken = mSessionController.getToken(_groupId);
 
         if (authToken == null) {
             // todo do some caching of this action
@@ -228,7 +228,8 @@ public class CategorySynch implements ISynch {
                 String uuid = mCategoryModelMappingController.generateUuid();
                 categoryInfo.setUUID(uuid);
                 categoryInfo.setName(category.mName);
-                categoryInfo.setLastChanged(categoryMapping.getLastClientChange());
+                Date lastChanged = new Date(categoryMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                categoryInfo.setLastChanged(lastChanged);
                 categoryInfo.setDeleted(false);
                 mCategoryInfoNetworkController.createItem(new InsertResponse(categoryMapping, uuid), _groupId, categoryInfo, authToken);
             } else {
@@ -243,7 +244,8 @@ public class CategorySynch implements ISynch {
                 }
                 categoryInfo.setUUID(categoryMapping.getServerSideUUID());
                 categoryInfo.setName(category.mName);
-                categoryInfo.setLastChanged(categoryMapping.getLastClientChange());
+                Date lastChanged = new Date(categoryMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                categoryInfo.setLastChanged(lastChanged);
                 categoryInfo.setDeleted(false);
                 mCategoryInfoNetworkController.updateItem(new UpdateResponse(categoryMapping, categoryMapping.getServerSideUUID()), _groupId, categoryInfo.getUUID(), categoryInfo, authToken);
             }
@@ -257,7 +259,7 @@ public class CategorySynch implements ISynch {
         if (authToken == null) {
             return;
         }
-        mCategoryInfoNetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime,false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
+        mCategoryInfoNetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime, false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
     }
 
     @Override
@@ -418,7 +420,7 @@ public class CategorySynch implements ISynch {
                 }
             }
             IGroupAuthAccessDbController groupAuthAccessDbController = LocalSqliteDbControllerFactory.getAuthAccessDbController(GlobalObjects.getInstance().getApplicationContext());
-            GroupAccess                  access                      = groupAuthAccessDbController.getGroupAuthAccess(mGroupId);
+            GroupAccess access = groupAuthAccessDbController.getGroupAuthAccess(mGroupId);
             access.setLastUpdateFromServer(new Date());
             groupAuthAccessDbController.update(access);
             EventBus.getDefault().post(new CategorySynchFromNetworkFinished(mLastUpdateDate, mGroupId));

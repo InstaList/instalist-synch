@@ -6,6 +6,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -45,6 +46,8 @@ public class ApiServiceGenerator {
      * @return the new request
      */
     public static <S> S createService(Class<S> _serviceClass, final String _token) {
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         if (_token != null) {
             sHttpClient.addInterceptor(new Interceptor() {
@@ -61,7 +64,8 @@ public class ApiServiceGenerator {
                 }
             });
         }
-        OkHttpClient client = sHttpClient.build();
+        OkHttpClient client = sHttpClient.addInterceptor(interceptor).build();
+
         Retrofit retrofit = sBuilder.client(client).build();
         return retrofit.create(_serviceClass);
     }

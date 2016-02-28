@@ -224,8 +224,9 @@ public class ListSynch implements ISynch {
                         listInfo.setCategoryUUID(categoryMapping.getServerSideUUID());
                     }
                 }
+                Date lastChanged = new Date(modelMapping.getLastClientChange().getTime() -Constants.NETWORK_OFFSET);
 
-                listInfo.setLastChanged(modelMapping.getLastClientChange());
+                listInfo.setLastChanged(lastChanged);
                 listInfo.setDeleted(false);
                 mListInfoNetworkController.createItem(new InsertResponse(modelMapping, uuid), _groupId, listInfo, authToken);
             } else {
@@ -247,7 +248,9 @@ public class ListSynch implements ISynch {
                         listInfo.setCategoryUUID(categoryMapping.getServerSideUUID());
                     }
                 }
-                listInfo.setLastChanged(modelMapping.getLastClientChange());
+                Date lastChanged = new Date(modelMapping.getLastClientChange().getTime()-Constants.NETWORK_OFFSET);
+
+                listInfo.setLastChanged(lastChanged);
                 listInfo.setDeleted(false);
                 mListInfoNetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, listInfo.getUUID(), listInfo, authToken);
             }

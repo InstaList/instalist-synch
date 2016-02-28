@@ -28,7 +28,7 @@ public interface IIngredientApiService {
      */
     @GET("groups/{id}/ingredients")
     Call<List<IngredientInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Ingredient with the given id.

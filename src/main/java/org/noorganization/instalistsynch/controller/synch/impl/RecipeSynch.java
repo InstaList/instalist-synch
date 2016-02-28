@@ -212,7 +212,8 @@ public class RecipeSynch implements ISynch {
                 String uuid = mRecipeMappingController.generateUuid();
                 recipeInfo.setUUID(uuid);
                 recipeInfo.setName(recipe.mName);
-                recipeInfo.setLastChanged(modelMapping.getLastClientChange());
+                Date lastChanged = new Date(modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                recipeInfo.setLastChanged(lastChanged);
                 recipeInfo.setDeleted(false);
                 mRecipeInfoNetworkController.createItem(new InsertResponse(modelMapping, uuid), _groupId, recipeInfo, authToken);
             } else {
@@ -226,7 +227,8 @@ public class RecipeSynch implements ISynch {
                 }
                 recipeInfo.setUUID(modelMapping.getServerSideUUID());
                 recipeInfo.setName(recipe.mName);
-                recipeInfo.setLastChanged(modelMapping.getLastClientChange());
+                Date lastChanged = new Date(modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                recipeInfo.setLastChanged(lastChanged);
                 recipeInfo.setDeleted(false);
                 mRecipeInfoNetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, recipeInfo.getUUID(), recipeInfo, authToken);
             }

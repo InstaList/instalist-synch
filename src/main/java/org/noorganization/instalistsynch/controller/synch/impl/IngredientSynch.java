@@ -287,7 +287,9 @@ public class IngredientSynch implements ISynch {
         ingredientInfo.setProductUUID(productMapping.getServerSideUUID());
         ingredientInfo.setRecipeUUID(recipeMapping.getServerSideUUID());
 
-        ingredientInfo.setLastChanged(_modelMapping.getLastClientChange());
+        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+
+        ingredientInfo.setLastChanged(lastChanged);
         ingredientInfo.setDeleted(false);
         return ingredientInfo;
     }

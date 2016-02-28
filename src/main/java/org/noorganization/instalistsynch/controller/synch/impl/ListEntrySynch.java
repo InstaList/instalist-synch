@@ -282,10 +282,14 @@ public class ListEntrySynch implements ISynch {
         ModelMapping productMapping = productMappingList.get(0);
         ModelMapping listMapping = listMappingList.get(0);
 
+        if (productMapping.getServerSideUUID() == null || listMapping.getServerSideUUID() == null) {
+            return null;
+        }
         entryInfo.setProductUUID(productMapping.getServerSideUUID());
         entryInfo.setListUUID(listMapping.getServerSideUUID());
 
-        entryInfo.setLastChanged(_modelMapping.getLastClientChange());
+        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime()-Constants.NETWORK_OFFSET);
+        entryInfo.setLastChanged(lastChanged);
         entryInfo.setDeleted(false);
         return entryInfo;
     }
@@ -502,7 +506,8 @@ public class ListEntrySynch implements ISynch {
                     } else {
                         mListController.unstrikeItem(listEntry1);
                     }
-                    modelMapping.setLastServerChanged(listEntryInfo.getLastChanged());
+                    Date lastChanged = new Date(listEntryInfo.getLastChanged().getTime()-Constants.NETWORK_OFFSET);
+                    modelMapping.setLastServerChanged(lastChanged);
 
                     mListEntryMapping.update(modelMapping);
                 }

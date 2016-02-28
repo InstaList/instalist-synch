@@ -41,15 +41,15 @@ public class SynchDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // nothing to update.
-        db.execSQL("DROP TABLE IF EXISTS " + GroupAccess.TABLE_NAME + ";");
-        db.execSQL("DROP TABLE IF EXISTS " + GroupAuth.TABLE_NAME + ";");
-        db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
-        db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");
-        db.execSQL("DROP TABLE IF EXISTS " + TaskErrorLog.TABLE_NAME + ";");
-        for (eModelMappingTableNames modelMappingTableNames : eModelMappingTableNames.values()) {
-            db.execSQL("DROP TABLE IF EXISTS " + modelMappingTableNames.toString() + ";");
-        }
-        onCreate(db);
+//        db.execSQL("DROP TABLE IF EXISTS " + GroupAccess.TABLE_NAME + ";");
+//        db.execSQL("DROP TABLE IF EXISTS " + GroupAuth.TABLE_NAME + ";");
+//        db.execSQL("DROP TABLE IF EXISTS " + GroupMember.TABLE_NAME + ";");
+//        db.execSQL("DROP TABLE IF EXISTS " + TempGroupAccessToken.TABLE_NAME + ";");
+//        db.execSQL("DROP TABLE IF EXISTS " + TaskErrorLog.TABLE_NAME + ";");
+//        for (eModelMappingTableNames modelMappingTableNames : eModelMappingTableNames.values()) {
+//            db.execSQL("DROP TABLE IF EXISTS " + modelMappingTableNames.toString() + ";");
+//        }
+//        onCreate(db);
     }
 
     @Override

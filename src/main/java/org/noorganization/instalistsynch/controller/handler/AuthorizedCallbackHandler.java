@@ -1,5 +1,7 @@
 package org.noorganization.instalistsynch.controller.handler;
 
+import android.util.Log;
+
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
@@ -16,6 +18,7 @@ import retrofit2.Response;
  * Created by tinos_000 on 08.02.2016.
  */
 public class AuthorizedCallbackHandler<T> implements Callback<T> {
+    private static final String TAG = "AuthorizedCbHandler";
     private static int MAX_RETRIES = 3;
 
     /**
@@ -42,8 +45,9 @@ public class AuthorizedCallbackHandler<T> implements Callback<T> {
 
     @Override
     public void onResponse(Call<T> _call, Response<T> response) {
+        Log.i(TAG, "onResponse: " + _call.request().method());
         if (!NetworkUtils.isSuccessful(response)) {
-            switch (response.code()){
+            switch (response.code()) {
                 case 401:
                     //unauthorized
                     // check if there is not another call to not initiate a new fetch of a new access token for this group.
@@ -64,6 +68,7 @@ public class AuthorizedCallbackHandler<T> implements Callback<T> {
 
     @Override
     public void onFailure(Call<T> _call, Throwable t) {
+        Log.e(TAG, "onResponse: " + _call.request().method(), t);
         if (mRetries > MAX_RETRIES) {
             ++mRetries;
             mCall.clone().enqueue(this);

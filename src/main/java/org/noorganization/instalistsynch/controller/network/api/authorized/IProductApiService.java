@@ -30,7 +30,7 @@ public interface IProductApiService {
      */
     @GET("groups/{id}/products")
     Call<List<ProductInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Product with the given id.

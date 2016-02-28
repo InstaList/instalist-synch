@@ -32,7 +32,7 @@ public interface ICategoryApiService{
      */
     @GET("groups/{id}/categories")
     Call<List<CategoryInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a category with the given id.

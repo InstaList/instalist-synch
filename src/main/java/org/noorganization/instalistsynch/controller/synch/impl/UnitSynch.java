@@ -28,7 +28,7 @@ import org.noorganization.instalistsynch.controller.synch.ISynch;
 import org.noorganization.instalistsynch.controller.synch.impl.generic.IInfoConverter;
 import org.noorganization.instalistsynch.controller.synch.impl.generic.InfoConverterFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
-import org.noorganization.instalistsynch.events.ListSynchFromNetworkFinished;
+import org.noorganization.instalistsynch.events.UnitSynchFromNetworkFinished;
 import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.model.TaskErrorLog;
 import org.noorganization.instalistsynch.utils.Constants;
@@ -37,30 +37,28 @@ import org.noorganization.instalistsynch.utils.GlobalObjects;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TimeZone;
 
 import de.greenrobot.event.EventBus;
 
 /**
  * Class for syncing units. Implemented like ListSynch.
- *
+ * <p/>
  * Created by Michael Wodniok on 27.02.16.
  */
-public class UnitSync implements ISynch {
+public class UnitSynch implements ISynch {
 
-    private static final String TAG = UnitSync.class.getSimpleName();
+    private static final String TAG = UnitSynch.class.getSimpleName();
 
-    private IClientLogDbController       mLocalLogController;
-    private IModelMappingDbController    mMappingController;
-    private ISessionController           mSessionController;
-    private ITaskErrorLogDbController    mErrorLogController;
+    private IClientLogDbController mLocalLogController;
+    private IModelMappingDbController mMappingController;
+    private ISessionController mSessionController;
+    private ITaskErrorLogDbController mErrorLogController;
     private INetworkController<UnitInfo> mNetworkController;
-    private IUnitController              mUnitController;
+    private IUnitController mUnitController;
 
-    public UnitSync() {
+    public UnitSynch() {
         Context context = GlobalObjects.getInstance().getApplicationContext();
         mMappingController = ModelMappingDbFactory.getInstance().
                 getSqliteUnitMappingController();
@@ -79,45 +77,13 @@ public class UnitSync implements ISynch {
             return;
         }
 
-        Date initDate = new Date(Constants.INITIAL_DATE);
-        String initDateStr = ISO8601Utils.format(initDate, false, Constants.TIME_ZONE);
+        List<Unit> unitList = mUnitController.listAll(Unit.COLUMN.NAME, true);
 
-        Set<String> uuidsToUnmap = new HashSet<>();
-        Set<String> uuidsToMap = new HashSet<>();
-        Cursor logEntries = mLocalLogController.getLogsSince(initDateStr, eModelType.UNIT);
-        logEntries.moveToFirst();
-
-        while (!logEntries.isAfterLast()) {
-            int actionId = logEntries.getInt(logEntries.getColumnIndex(LogInfo.COLUMN.ACTION));
-            eActionType actionType = eActionType.getTypeById(actionId);
-
-            if (actionType == null) {
-                Log.w(TAG, "Initial setup: Log-Action was not set.");
+        for (Unit unit : unitList) {
+            if (unit.mUUID.contentEquals("-"))
                 continue;
-            }
 
-            String uuid = logEntries.getString(logEntries.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
-            switch (actionType) {
-                case INSERT:
-                    if (!uuidsToUnmap.contains(uuid)) {
-                        uuidsToMap.add(uuid);
-                    }
-                    break;
-                case DELETE:
-                    if (uuidsToMap.contains(uuid)) {
-                        uuidsToMap.remove(uuid);
-                    }
-                    if (!uuidsToUnmap.contains(uuid)) {
-                        uuidsToUnmap.add(uuid);
-                    }
-                    break;
-            }
-            logEntries.moveToNext();
-        }
-        logEntries.close();
-
-        for (String uuid: uuidsToMap) {
-            ModelMapping newMapping = new ModelMapping(null, _groupId, null, uuid,
+            ModelMapping newMapping = new ModelMapping(null, _groupId, null, unit.mUUID,
                     new Date(Constants.INITIAL_DATE), new Date(), false);
             mMappingController.insert(newMapping);
         }
@@ -126,7 +92,7 @@ public class UnitSync implements ISynch {
     @Override
     public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
         String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, Constants.TIME_ZONE);
-        String authToken        = mSessionController.getToken(_groupId);
+        String authToken = mSessionController.getToken(_groupId);
 
         if (authToken == null) {
             // todo do some caching of this action
@@ -150,9 +116,11 @@ public class UnitSync implements ISynch {
                     continue;
                 }
                 String uuid = mMappingController.generateUuid();
+
+                Date lastUpdate = new Date(modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
                 IInfoConverter<Unit, UnitInfo> converter =
                         (IInfoConverter<Unit, UnitInfo>) InfoConverterFactory.getConverter(Unit.class);
-                UnitInfo elementInfo = converter.toInfo(element, modelMapping.getLastClientChange());
+                UnitInfo elementInfo = converter.toInfo(element, lastUpdate);
 
                 mNetworkController.createItem(new InsertCallback(modelMapping, uuid), _groupId,
                         elementInfo, authToken);
@@ -162,9 +130,11 @@ public class UnitSync implements ISynch {
                 if (element == null) {
                     continue;
                 }
+                Date lastChangeDate = new Date(modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
                 IInfoConverter<Unit, UnitInfo> converter =
                         (IInfoConverter<Unit, UnitInfo>) InfoConverterFactory.getConverter(Unit.class);
-                UnitInfo elementInfo = converter.toInfo(element, modelMapping.getLastClientChange());
+                UnitInfo elementInfo = converter.toInfo(element, lastChangeDate);
+
 
                 mNetworkController.updateItem(
                         new UpdateCallback(modelMapping, modelMapping.getServerSideUUID()),
@@ -178,17 +148,19 @@ public class UnitSync implements ISynch {
         String lastIndexTime = ISO8601Utils.format(_lastIndexTime, false,
                 TimeZone.getTimeZone("GMT+0000"));
         Cursor changeLog = mLocalLogController.getLogsSince(lastIndexTime, eModelType.UNIT);
-        changeLog.moveToFirst();
-        while (!changeLog.isAfterLast()) {
+
+        while (changeLog.moveToNext()) {
             int actionId = changeLog.getInt(changeLog.getColumnIndex(LogInfo.COLUMN.ACTION));
             eActionType actionType = eActionType.getTypeById(actionId);
 
             String uuid = changeLog.getString(changeLog.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
+            if (uuid.contentEquals("-"))
+                continue;
 
             List<ModelMapping> existingMappings = mMappingController.get(
                     ModelMapping.COLUMN.CLIENT_SIDE_UUID + " = ? AND " +
                             ModelMapping.COLUMN.GROUP_ID + " = ?",
-                    new String[]{ uuid, String.valueOf(_groupId) });
+                    new String[]{uuid, String.valueOf(_groupId)});
             ModelMapping existingMapping = (existingMappings.size() == 0 ? null :
                     existingMappings.get(0));
 
@@ -246,7 +218,6 @@ public class UnitSync implements ISynch {
                     break;
                 }
             }
-            changeLog.moveToNext();
         }
         changeLog.close();
     }
@@ -397,7 +368,7 @@ public class UnitSync implements ISynch {
 
         @Override
         public void onUnauthorized(int _groupId) {
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new UnitSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
@@ -451,12 +422,12 @@ public class UnitSync implements ISynch {
                 }
             }
 
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new UnitSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
 
         @Override
         public void onError(Throwable _e) {
-            EventBus.getDefault().post(new ListSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
+            EventBus.getDefault().post(new UnitSynchFromNetworkFinished(mLastUpdateDate, mGroupId));
         }
     }
 

@@ -14,4 +14,5 @@ public class Constants {
     public static final long INITIAL_DATE = 999900000000L;
 
     public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("GMT+0000");
+    public static final long NETWORK_OFFSET = 100000L;
 }

@@ -216,7 +216,8 @@ public class TagSynch implements ISynch {
                 String uuid = mTagModelMappingController.generateUuid();
                 tagInfo.setUUID(uuid);
                 tagInfo.setName(tag.mName);
-                tagInfo.setLastChanged(tagMapping.getLastClientChange());
+                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                tagInfo.setLastChanged(lastChanged);
                 tagInfo.setDeleted(false);
                 mTagNetworkController.createItem(new InsertResponse(tagMapping, uuid), _groupId, tagInfo, authToken);
             } else {
@@ -231,7 +232,9 @@ public class TagSynch implements ISynch {
                 }
                 tagInfo.setUUID(tagMapping.getServerSideUUID());
                 tagInfo.setName(tag.mName);
-                tagInfo.setLastChanged(tagMapping.getLastClientChange());
+                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime()-Constants.NETWORK_OFFSET);
+
+                tagInfo.setLastChanged(lastChanged);
                 tagInfo.setDeleted(false);
                 mTagNetworkController.updateItem(new UpdateResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagInfo.getUUID(), tagInfo, authToken);
             }

@@ -22,14 +22,14 @@ import retrofit2.http.Query;
 public interface ITaggedProductApiService {
 
     /**
-     * Get the taggedProducts since the given time.
+     * Get the taggedproducts since the given time.
      *
      * @param _sinceTimeString in ISO8601 format.
-     * @return the list of taggedProducts changed since this date.
+     * @return the list of taggedproducts changed since this date.
      */
-    @GET("groups/{id}/taggedProducts")
+    @GET("groups/{id}/taggedproducts")
     Call<List<TaggedProductInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a TaggedProduct with the given id.
@@ -37,7 +37,7 @@ public interface ITaggedProductApiService {
      * @param _TaggedProduct the TaggedProduct to create.
      * @return the uuid of the created TaggedProduct.
      */
-    @POST("groups/{id}/taggedProducts")
+    @POST("groups/{id}/taggedproducts")
     Call<Void> createItem(@Path("id") int _id, @Body TaggedProductInfo _TaggedProduct);
 
     /**
@@ -46,7 +46,7 @@ public interface ITaggedProductApiService {
      * @param _uuid the uuid of the affected TaggedProduct.
      * @return the associated TaggedProduct.
      */
-    @GET("groups/{id}/taggedProducts/{uuid}")
+    @GET("groups/{id}/taggedproducts/{uuid}")
     Call<TaggedProductInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
@@ -56,7 +56,7 @@ public interface ITaggedProductApiService {
      * @param _TaggedProduct the TaggedProduct with updates.
      * @return the uuid of the updated TaggedProduct.
      */
-    @PUT("groups/{id}/taggedProducts/{uuid}")
+    @PUT("groups/{id}/taggedproducts/{uuid}")
     Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body TaggedProductInfo _TaggedProduct);
 
@@ -66,6 +66,6 @@ public interface ITaggedProductApiService {
      * @param _uuid the uuid of the affected TaggedProduct.
      * @return the uuid of the deleted element.
      */
-    @DELETE("groups/{id}/taggedProducts/{uuid}")
+    @DELETE("groups/{id}/taggedproducts/{uuid}")
     Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 }

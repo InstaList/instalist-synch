@@ -29,7 +29,7 @@ public interface ITagApiService {
      */
     @GET("groups/{id}/tags")
     Call<List<TagInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Tag with the given id.

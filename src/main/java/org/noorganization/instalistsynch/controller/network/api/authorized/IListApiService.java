@@ -30,7 +30,7 @@ public interface IListApiService {
      */
     @GET("groups/{id}/lists")
     Call<List<ListInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Item with the given id.

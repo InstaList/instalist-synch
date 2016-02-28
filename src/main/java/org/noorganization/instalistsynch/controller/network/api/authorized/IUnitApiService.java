@@ -29,7 +29,7 @@ public interface IUnitApiService {
      */
     @GET("groups/{id}/units")
     Call<List<UnitInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Unit with the given id.

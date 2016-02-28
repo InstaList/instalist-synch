@@ -22,14 +22,14 @@ import retrofit2.http.Query;
 public interface IListEntryApiService {
 
     /**
-     * Get the listEntries since the given time.
+     * Get the listentries since the given time.
      *
      * @param _sinceTimeString in ISO8601 format.
-     * @return the list of listEntries changed since this date.
+     * @return the list of listentries changed since this date.
      */
-    @GET("groups/{id}/listEntries")
+    @GET("groups/{id}/listentries")
     Call<List<EntryInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a ListEntry with the given id.
@@ -37,7 +37,7 @@ public interface IListEntryApiService {
      * @param _ListEntry the ListEntry to create.
      * @return the uuid of the created ListEntry.
      */
-    @POST("groups/{id}/listEntries")
+    @POST("groups/{id}/listentries")
     Call<Void> createItem(@Path("id") int _id, @Body EntryInfo _ListEntry);
 
     /**
@@ -46,7 +46,7 @@ public interface IListEntryApiService {
      * @param _uuid the uuid of the affected ListEntry.
      * @return the associated ListEntry.
      */
-    @GET("groups/{id}/listEntries/{uuid}")
+    @GET("groups/{id}/listentries/{uuid}")
     Call<EntryInfo> getItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
     /**
@@ -56,7 +56,7 @@ public interface IListEntryApiService {
      * @param _ListEntry the ListEntry with updates.
      * @return the uuid of the updated ListEntry.
      */
-    @PUT("groups/{id}/listEntries/{uuid}")
+    @PUT("groups/{id}/listentries/{uuid}")
     Call<Void> updateItem(@Path("id") int _id, @Path("uuid") String _uuid,
             @Body EntryInfo _ListEntry);
 
@@ -66,7 +66,7 @@ public interface IListEntryApiService {
      * @param _uuid the uuid of the affected ListEntry.
      * @return the uuid of the deleted element.
      */
-    @DELETE("groups/{id}/listEntries/{uuid}")
+    @DELETE("groups/{id}/listentries/{uuid}")
     Call<Void> deleteItem(@Path("id") int _id, @Path("uuid") String _uuid);
 
 }

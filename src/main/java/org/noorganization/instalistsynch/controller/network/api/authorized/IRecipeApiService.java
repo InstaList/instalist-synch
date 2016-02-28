@@ -28,7 +28,7 @@ public interface IRecipeApiService {
      */
     @GET("groups/{id}/recipes")
     Call<List<RecipeInfo>> getList(@Path("id") int _id,
-            @Query("changedSince") String _sinceTimeString);
+            @Query("changedsince") String _sinceTimeString);
 
     /**
      * Create a Recipe with the given id.
