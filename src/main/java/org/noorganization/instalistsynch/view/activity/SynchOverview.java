@@ -42,8 +42,8 @@ import org.noorganization.instalistsynch.model.GroupAuth;
 import org.noorganization.instalistsynch.model.GroupMember;
 import org.noorganization.instalistsynch.model.eSortMode;
 import org.noorganization.instalistsynch.service.SyncService;
+import org.noorganization.instalistsynch.utils.NetworkUtils;
 
-import java.sql.Connection;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -89,7 +89,7 @@ public class SynchOverview extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName className,
-                IBinder service) {
+                                       IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             SyncService.LocalBinder binder = (SyncService.LocalBinder) service;
             mSyncService = binder.getService();
@@ -217,8 +217,8 @@ public class SynchOverview extends AppCompatActivity {
         mJoinGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean error      = false;
-                String  deviceName = mDeviceName.getText().toString();
+                boolean error = false;
+                String deviceName = mDeviceName.getText().toString();
                 if (deviceName.length() == 0) {
                     error = true;
                     mDeviceName.setError("Not set");
@@ -244,6 +244,12 @@ public class SynchOverview extends AppCompatActivity {
         mSynchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if (!NetworkUtils.isConnected(mContext)) {
+                    Toast.makeText(mContext, R.string.abc_no_internet_connection, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 IGroupAuthDbController groupAuthDbController =
                         LocalSqliteDbControllerFactory.getGroupAuthDbController(mContext);
                 List<GroupAuth> groups =
@@ -262,7 +268,7 @@ public class SynchOverview extends AppCompatActivity {
         mExpandableListView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu menu, View v,
-                    ContextMenu.ContextMenuInfo _menuInfo) {
+                                            ContextMenu.ContextMenuInfo _menuInfo) {
                 ExpandableListView.ExpandableListContextMenuInfo menuInfo =
                         (ExpandableListView.ExpandableListContextMenuInfo) _menuInfo;
 

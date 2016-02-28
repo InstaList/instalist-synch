@@ -32,6 +32,7 @@ public class NetworkUtils {
         return networkInfo != null && networkInfo.isConnected();
     }
 
+
     /**
      * Checks if the response was succesfull. Sends also the Error with an {@link ErrorMessageEvent} with the {@link EventBus}.
      *
