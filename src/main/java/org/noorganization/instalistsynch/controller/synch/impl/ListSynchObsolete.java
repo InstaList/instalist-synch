@@ -16,55 +16,7 @@
 
 package org.noorganization.instalistsynch.controller.synch.impl;
 
-import android.content.ContentResolver;
-import android.content.Context;
-import android.database.Cursor;
-import android.util.Log;
-
-import com.fasterxml.jackson.databind.util.ISO8601Utils;
-
 import org.noorganization.instalist.comm.message.ListInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eControllerType;
-import org.noorganization.instalist.enums.eModelType;
-import org.noorganization.instalist.model.LogInfo;
-import org.noorganization.instalist.model.ShoppingList;
-import org.noorganization.instalist.presenter.IListController;
-import org.noorganization.instalist.presenter.implementation.ControllerFactory;
-import org.noorganization.instalistsynch.R;
-import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
-import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
-import org.noorganization.instalistsynch.controller.local.dba.IClientLogDbController;
-import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
-import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
-import org.noorganization.instalistsynch.controller.local.dba.ITaskErrorLogDbController;
-import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
-import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
-import org.noorganization.instalistsynch.controller.network.ISessionController;
-import org.noorganization.instalistsynch.controller.network.impl.InMemorySessionController;
-import org.noorganization.instalistsynch.controller.network.model.INetworkController;
-import org.noorganization.instalistsynch.controller.network.model.RemoteModelAccessControllerFactory;
-import org.noorganization.instalistsynch.controller.synch.ISynch;
-import org.noorganization.instalistsynch.controller.synch.task.ITask;
-import org.noorganization.instalistsynch.controller.synch.task.list.ListDeleteTask;
-import org.noorganization.instalistsynch.controller.synch.task.list.ListInsertTask;
-import org.noorganization.instalistsynch.controller.synch.task.list.ListUpdateTask;
-import org.noorganization.instalistsynch.events.ErrorMessageEvent;
-import org.noorganization.instalistsynch.events.MergeConflictMessageEvent;
-import org.noorganization.instalistsynch.events.UnauthorizedErrorMessageEvent;
-import org.noorganization.instalistsynch.model.GroupAccess;
-import org.noorganization.instalistsynch.model.ModelMapping;
-import org.noorganization.instalistsynch.model.TaskErrorLog;
-import org.noorganization.instalistsynch.utils.Constants;
-import org.noorganization.instalistsynch.utils.GlobalObjects;
-
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Synchronization of the list.

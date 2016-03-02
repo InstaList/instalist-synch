@@ -41,6 +41,9 @@ android {
     }
     productFlavors {
     }
+    sourceSets {
+        main.java.srcDirs += "instalist-comm/src/main/java"
+    }
 }
 
 dependencies {
