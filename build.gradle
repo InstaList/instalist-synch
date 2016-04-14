@@ -41,9 +41,6 @@ android {
     }
     productFlavors {
     }
-    sourceSets {
-        main.java.srcDirs += "instalist-comm/src/main/java"
-    }
 }
 
 dependencies {
@@ -52,6 +49,7 @@ dependencies {
     compile (project(':instalist-android-backend')){
         transitive = false
     }
+    compile (project(':instalist-synch:instalist-comm'))
 
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
@@ -64,7 +62,4 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
 
     compile 'org.jetbrains:annotations:13.0'
-
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.1'
 }
