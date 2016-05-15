@@ -15,10 +15,24 @@
  */
 
 apply plugin: 'com.android.application'
+project.ext {
+    compileSdkVersion = 23
+    buildToolsVersion = '23.0.3'
+    minSdkVersion = 16
+    appVersionCode = 1
+    appVersionName = '0.1-Snapshot'
+    targetSdkVersion = 23
+    androidSupportLibVersion = '23.4.0'
+    junitVersion = '4.12'
+    androidSupportLibVersion = '23.4.0'
+    greenrobotVersion = '2.4.0'
+    retrofitVersion = '2.0.2'
+}
+
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
 
     packagingOptions {
         exclude 'META-INF/ASL2.0'
@@ -28,10 +42,10 @@ android {
     }
     defaultConfig {
         applicationId 'org.noorganization.instalistsynch'
-        minSdkVersion 16
-        targetSdkVersion 23
-        versionCode 1
-        versionName "0.01"
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+        versionCode project.appVersionCode
+        versionName project.appVersionName
     }
     buildTypes {
         release {
@@ -45,21 +59,20 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile (project(':instalist-android-backend')){
+    testCompile group: 'junit', name: 'junit', version: project.junitVersion
+    compile(project(':instalist-android-backend')) {
         transitive = false
     }
-    compile (project(':instalist-synch:instalist-comm'))
+    compile(project(':instalist-synch:instalist-comm'))
 
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
-    compile 'com.android.support:support-v4:23.1.1'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: project.androidSupportLibVersion
+    compile group: 'com.android.support', name: 'design', version: project.androidSupportLibVersion
+    compile group: 'com.android.support', name: 'support-v4', version: project.androidSupportLibVersion
 
-    compile 'de.greenrobot:eventbus:2.4.0'
+    compile group: 'de.greenrobot', name: 'eventbus', version: project.greenrobotVersion
 
-    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-jackson:2.0.0-beta4'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
-
-    compile 'org.jetbrains:annotations:13.0'
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version: allprojects.retrofitVersion
+    compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version: allprojects.retrofitVersion
+    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '3.0.1'
+    compile group: 'org.jetbrains', name: 'annotations', version: '13.0'
 }
