@@ -95,12 +95,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="design-23.4.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.4.0" level="project" />
-    <orderEntry type="library" exported="" name="eventbus-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="okio-1.6.0" level="project" />
+    <orderEntry type="library" exported="" name="eventbus-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-2.7.3" level="project" />
     <orderEntry type="library" exported="" name="retrofit-2.0.2" level="project" />
-    <orderEntry type="library" exported="" name="jackson-databind-2.7.3" level="project" />
     <orderEntry type="library" exported="" name="annotations-13.0" level="project" />
+    <orderEntry type="library" exported="" name="jackson-databind-2.7.3" level="project" />
     <orderEntry type="library" exported="" name="jackson-mapper-asl-1.9.7" level="project" />
     <orderEntry type="library" exported="" name="jackson-annotations-2.7.3" level="project" />
     <orderEntry type="library" exported="" name="logging-interceptor-3.0.1" level="project" />
