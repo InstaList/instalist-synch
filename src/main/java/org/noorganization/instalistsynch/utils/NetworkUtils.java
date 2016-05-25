@@ -50,13 +50,13 @@ public class NetworkUtils {
 
 
     /**
-     * Checks if the response was succesfull. Sends also the Error with an {@link ErrorMessageEvent} with the {@link EventBus}.
+     * Checks if the response was successful. Sends also the Error with an {@link ErrorMessageEvent} with the {@link EventBus}.
      *
      * @param _response the response delivered by retrofit.
      * @return true if it was successful, else false.
      */
     public static boolean isSuccessful(Response<?> _response) {
-        if (!_response.isSuccess()) {
+        if (!_response.isSuccessful()) {
             //noinspection finally
             try {
                 String msg = String.valueOf(_response.code()).concat(" ").concat(" ").concat(_response.errorBody().string());
