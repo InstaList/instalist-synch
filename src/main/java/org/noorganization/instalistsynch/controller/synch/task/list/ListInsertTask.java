@@ -22,9 +22,11 @@ import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.ICategoryController;
 import org.noorganization.instalist.presenter.IListController;
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
+import org.noorganization.instalistsynch.controller.synch.task.eModelType;
 import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -57,9 +59,18 @@ public class ListInsertTask implements ITask {
         mGroupId = groupId;
     }
 
+    @Override
+    public void executeAsynch(int _resolveCode, ICallbackCompleted _callback) {
+
+    }
 
     @Override
-    public int execute(int _resolveCode) {
+    public eModelType getTaskModelType() {
+        return null;
+    }
+
+    @Override
+    public int executeSynch(int _resolveCode) {
 
         Date lastServerChange;
         lastServerChange = mListInfo.getLastChanged();

@@ -337,7 +337,7 @@ public class ListSynchObsolete /*implements ISynch*/ {
             }
 
             for (ITask task : tasks) {
-                int returnCode = task.execute(ITask.ResolveCodes.NO_RESOLVE);
+                int returnCode = task.executeSynch(ITask.ResolveCodes.NO_RESOLVE);
                 if (returnCode != ITask.ReturnCodes.SUCCESS) {
                     if (returnCode == ITask.ReturnCodes.MERGE_CONFLICT) {
                         EventBus.getDefault()
@@ -410,7 +410,7 @@ public class ListSynchObsolete /*implements ISynch*/ {
             ITask task =
                     new ListUpdateTask(modelMapping, _next, mTaskErrorLog.getGroupId());
 
-            int returnCode = task.execute(mResolveType);
+            int returnCode = task.executeSynch(mResolveType);
             if (returnCode == ITask.ReturnCodes.SUCCESS) {
                 taskErrorLogDbController.remove(mTaskErrorLog.getId());
             } else {

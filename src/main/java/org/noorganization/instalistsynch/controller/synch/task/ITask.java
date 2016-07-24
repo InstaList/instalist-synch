@@ -16,11 +16,13 @@
 
 package org.noorganization.instalistsynch.controller.synch.task;
 
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
+
 /**
  * Task to process the synchronization.
  * Created by Desnoo on 14.02.2016.
  */
-public interface ITask {
+public interface ITask<T> {
 
     public static class ReturnCodes {
         public final static int MERGE_CONFLICT = 0;
@@ -48,7 +50,13 @@ public interface ITask {
      * @param _resolveCode use one of the {@link org.noorganization.instalistsynch.controller.synch.task.ITask.ResolveCodes}.
      * @return return codes
      */
-    int execute(int _resolveCode);
+    int executeSynch(int _resolveCode);
+
+    void executeAsynch(int _resolveCode, ICallbackCompleted<T> _callback);
 
     String getServerUUID();
+
+    eModelType getTaskModelType();
+
+
 }

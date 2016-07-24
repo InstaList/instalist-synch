@@ -19,9 +19,11 @@ package org.noorganization.instalistsynch.controller.synch.task.list;
 import org.noorganization.instalist.enums.eControllerType;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.IListController;
+import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
 import org.noorganization.instalistsynch.controller.synch.task.ITask;
+import org.noorganization.instalistsynch.controller.synch.task.eModelType;
 import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
 
@@ -42,7 +44,7 @@ public class ListDeleteTask implements ITask {
     }
 
     @Override
-    public int execute(int _resolveCode) {
+    public int executeSynch(int _resolveCode) {
         // if the list was deleted
         ShoppingList list = mController.getListById(mListModelMapping.getClientSideUUID());
         // delete the local list
@@ -55,6 +57,16 @@ public class ListDeleteTask implements ITask {
             return ReturnCodes.INTERNAL_DB_ERROR;
         }
         return ReturnCodes.SUCCESS;
+    }
+
+    @Override
+    public void executeAsynch(int _resolveCode, ICallbackCompleted _callback) {
+
+    }
+
+    @Override
+    public eModelType getTaskModelType() {
+        return null;
     }
 
     @Override
