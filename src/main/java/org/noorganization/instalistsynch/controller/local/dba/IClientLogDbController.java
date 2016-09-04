@@ -18,8 +18,8 @@ package org.noorganization.instalistsynch.controller.local.dba;
 
 import android.database.Cursor;
 
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.LogInfo;
 
 import java.util.Date;
@@ -45,7 +45,7 @@ public interface IClientLogDbController {
      * @param _modelType the type of the model.
      * @return a cursor pointing to the logs that are sorted ascending.
      */
-    Cursor getLogsSince(String _date, eModelType _modelType);
+    Cursor getLogsSince(String _date, @ModelType.Model int _modelType);
 
     /**
      * Get the LogInfo entries since a given time for a specified uuid of a element with the type of the specified model.
@@ -56,8 +56,8 @@ public interface IClientLogDbController {
      * @param _date       the string of the date.
      * @return a list with matching entries.
      */
-    List<LogInfo> getElementByUuid(String _uuid, eActionType _actionType, eModelType _modelType,
-            String _date);
+    List<LogInfo> getElementByUuid(String _uuid, @ActionType.Action int _actionType, @ModelType.Model int _modelType,
+                                   String _date);
 
 
     /**

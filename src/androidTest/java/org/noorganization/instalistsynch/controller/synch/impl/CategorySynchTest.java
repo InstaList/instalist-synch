@@ -19,15 +19,13 @@ package org.noorganization.instalistsynch.controller.synch.impl;
 import android.content.Context;
 import android.test.AndroidTestCase;
 
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.presenter.ICategoryController;
 import org.noorganization.instalist.presenter.implementation.ControllerFactory;
-import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
-import org.noorganization.instalistsynch.controller.network.AuthNetworkControllerFactory;
 import org.noorganization.instalistsynch.db.sqlite.SynchDbHelper;
 import org.noorganization.instalistsynch.model.GroupAccess;
 import org.noorganization.instalistsynch.model.GroupAuth;
@@ -90,7 +88,7 @@ public class CategorySynchTest extends AndroidTestCase {
     }
 
     public void testIndexLocalEntries() throws Exception {
-        CategorySynch categorySynch = new CategorySynch(eModelType.CATEGORY);
+        CategorySynch categorySynch = new CategorySynch(ModelType.CATEGORY);
         categorySynch.indexLocalEntries(-1);
         IModelMappingDbController modelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
         List<ModelMapping> categoryList = modelMappingDbController.get(
@@ -104,7 +102,7 @@ public class CategorySynchTest extends AndroidTestCase {
     }
 
     public void testIndexLocal() throws Exception {
-        CategorySynch categorySynch = new CategorySynch(eModelType.CATEGORY);
+        CategorySynch categorySynch = new CategorySynch(ModelType.CATEGORY);
         categorySynch.indexLocal(-1, new Date(0));
         IModelMappingDbController modelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
         List<ModelMapping> categoryList = modelMappingDbController.get(
@@ -118,7 +116,7 @@ public class CategorySynchTest extends AndroidTestCase {
     }
 
     public void testAddGroupToMapping() throws Exception {
-        CategorySynch categorySynch = new CategorySynch(eModelType.CATEGORY);
+        CategorySynch categorySynch = new CategorySynch(ModelType.CATEGORY);
         categorySynch.indexLocalEntries(1);
 
         categorySynch.addGroupToMapping(2, mCategory.mUUID);
@@ -135,7 +133,7 @@ public class CategorySynchTest extends AndroidTestCase {
     }
 
     public void testRemoveGroupFromMapping() throws Exception {
-        CategorySynch categorySynch = new CategorySynch(eModelType.CATEGORY);
+        CategorySynch categorySynch = new CategorySynch(ModelType.CATEGORY);
         categorySynch.indexLocal(1, new Date(0));
 
         categorySynch.addGroupToMapping(2, mCategory.mUUID);
@@ -156,7 +154,7 @@ public class CategorySynchTest extends AndroidTestCase {
     }
 
     public void testSynchLocalToNetwork() throws Exception {
-        /*CategorySynch categorySynch = new CategorySynch(eModelType.CATEGORY);
+        /*CategorySynch categorySynch = new CategorySynch(ModelType.CATEGORY);
         categorySynch.indexLocalEntries(1);
 
         categorySynch.synchLocalToNetwork(1, new Date());

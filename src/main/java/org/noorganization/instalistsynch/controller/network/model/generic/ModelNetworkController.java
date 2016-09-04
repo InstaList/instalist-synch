@@ -25,7 +25,7 @@ import org.noorganization.instalist.comm.message.RecipeInfo;
 import org.noorganization.instalist.comm.message.TagInfo;
 import org.noorganization.instalist.comm.message.TaggedProductInfo;
 import org.noorganization.instalist.comm.message.UnitInfo;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedCallbackCompleted;
 import org.noorganization.instalistsynch.controller.callback.IAuthorizedInsertCallbackCompleted;
 import org.noorganization.instalistsynch.controller.handler.AuthorizedCallbackHandler;
@@ -66,64 +66,66 @@ public class ModelNetworkController<T> implements INetworkController<T> {
 
       }
   */
-    private final eModelType mModelType;
+    private final
+    @ModelType.Model
+    int mModelType;
 
     /**
      * The generic class;
      *
      * @param _modelType the type of the model.
      */
-    public ModelNetworkController(eModelType _modelType) {
+    public ModelNetworkController(@ModelType.Model int _modelType) {
         mModelType = _modelType;
     }
 
     @Override
     public void getList(IAuthorizedCallbackCompleted<List<T>> _callback, int _groupId, String _time,
-            String _authToken) {
+                        String _authToken) {
         Call call;
 
         switch (mModelType) {
-            case TAGGED_PRODUCT:
+            case ModelType.TAGGED_PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITaggedProductApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case LIST:
+            case ModelType.LIST:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case TAG:
+            case ModelType.TAG:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITagApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case RECIPE:
+            case ModelType.RECIPE:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IRecipeApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case PRODUCT:
+            case ModelType.PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IProductApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case CATEGORY:
+            case ModelType.CATEGORY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ICategoryApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case INGREDIENT:
+            case ModelType.INGREDIENT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IIngredientApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case LIST_ENTRY:
+            case ModelType.LIST_ENTRY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListEntryApiService.class, _authToken)
                         .getList(_groupId, _time);
                 break;
-            case UNIT:
+            case ModelType.UNIT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IUnitApiService.class, _authToken)
                         .getList(_groupId, _time);
@@ -137,51 +139,51 @@ public class ModelNetworkController<T> implements INetworkController<T> {
 
     @Override
     public void getItem(IAuthorizedCallbackCompleted<T> _callback, int _groupId, String _uuid,
-            String _authToken) {
+                        String _authToken) {
         Call call;
 
         switch (mModelType) {
-            case TAGGED_PRODUCT:
+            case ModelType.TAGGED_PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITaggedProductApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case LIST:
+            case ModelType.LIST:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case TAG:
+            case ModelType.TAG:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITagApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case RECIPE:
+            case ModelType.RECIPE:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IRecipeApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case PRODUCT:
+            case ModelType.PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IProductApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case CATEGORY:
+            case ModelType.CATEGORY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ICategoryApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case INGREDIENT:
+            case ModelType.INGREDIENT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IIngredientApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case LIST_ENTRY:
+            case ModelType.LIST_ENTRY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListEntryApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
                 break;
-            case UNIT:
+            case ModelType.UNIT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IUnitApiService.class, _authToken)
                         .getItem(_groupId, _uuid);
@@ -194,50 +196,50 @@ public class ModelNetworkController<T> implements INetworkController<T> {
 
     @Override
     public void createItem(IAuthorizedInsertCallbackCompleted<Void> _callback, int _groupId,
-            T _item, String _authToken) {
+                           T _item, String _authToken) {
         Call<Void> call;
         switch (mModelType) {
-            case TAGGED_PRODUCT:
+            case ModelType.TAGGED_PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITaggedProductApiService.class, _authToken)
                         .createItem(_groupId, (TaggedProductInfo) _item);
                 break;
-            case LIST:
+            case ModelType.LIST:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListApiService.class, _authToken)
                         .createItem(_groupId, (ListInfo) _item);
                 break;
-            case TAG:
+            case ModelType.TAG:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITagApiService.class, _authToken)
                         .createItem(_groupId, (TagInfo) _item);
                 break;
-            case RECIPE:
+            case ModelType.RECIPE:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IRecipeApiService.class, _authToken)
                         .createItem(_groupId, (RecipeInfo) _item);
                 break;
-            case PRODUCT:
+            case ModelType.PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IProductApiService.class, _authToken)
                         .createItem(_groupId, (ProductInfo) _item);
                 break;
-            case CATEGORY:
+            case ModelType.CATEGORY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ICategoryApiService.class, _authToken)
                         .createItem(_groupId, (CategoryInfo) _item);
                 break;
-            case INGREDIENT:
+            case ModelType.INGREDIENT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IIngredientApiService.class, _authToken)
                         .createItem(_groupId, (IngredientInfo) _item);
                 break;
-            case LIST_ENTRY:
+            case ModelType.LIST_ENTRY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListEntryApiService.class, _authToken)
                         .createItem(_groupId, (EntryInfo) _item);
                 break;
-            case UNIT:
+            case ModelType.UNIT:
                 call = ApiUtils.getInstance().getAuthorizedApiService(IUnitApiService.class,
                         _authToken)
                         .createItem(_groupId, (UnitInfo) _item);
@@ -251,50 +253,50 @@ public class ModelNetworkController<T> implements INetworkController<T> {
 
     @Override
     public void updateItem(IAuthorizedCallbackCompleted<Void> _callback, int _groupId, String _uuid,
-            T _item, String _authToken) {
+                           T _item, String _authToken) {
         Call<Void> call;
         switch (mModelType) {
-            case TAGGED_PRODUCT:
+            case ModelType.TAGGED_PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITaggedProductApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (TaggedProductInfo) _item);
                 break;
-            case LIST:
+            case ModelType.LIST:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (ListInfo) _item);
                 break;
-            case TAG:
+            case ModelType.TAG:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITagApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (TagInfo) _item);
                 break;
-            case RECIPE:
+            case ModelType.RECIPE:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IRecipeApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (RecipeInfo) _item);
                 break;
-            case PRODUCT:
+            case ModelType.PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IProductApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (ProductInfo) _item);
                 break;
-            case CATEGORY:
+            case ModelType.CATEGORY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ICategoryApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (CategoryInfo) _item);
                 break;
-            case INGREDIENT:
+            case ModelType.INGREDIENT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IIngredientApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (IngredientInfo) _item);
                 break;
-            case LIST_ENTRY:
+            case ModelType.LIST_ENTRY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListEntryApiService.class, _authToken)
                         .updateItem(_groupId, _uuid, (EntryInfo) _item);
                 break;
-            case UNIT:
+            case ModelType.UNIT:
                 call = ApiUtils.getInstance().getAuthorizedApiService(IUnitApiService.class,
                         _authToken)
                         .updateItem(_groupId, _uuid, (UnitInfo) _item);
@@ -308,51 +310,51 @@ public class ModelNetworkController<T> implements INetworkController<T> {
 
     @Override
     public void deleteItem(IAuthorizedCallbackCompleted<Void> _callback, int _groupId, String _uuid,
-            String _authToken) {
+                           String _authToken) {
 
         Call<Void> call;
         switch (mModelType) {
-            case TAGGED_PRODUCT:
+            case ModelType.TAGGED_PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITaggedProductApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case LIST:
+            case ModelType.LIST:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case TAG:
+            case ModelType.TAG:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ITagApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case RECIPE:
+            case ModelType.RECIPE:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IRecipeApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case PRODUCT:
+            case ModelType.PRODUCT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IProductApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case CATEGORY:
+            case ModelType.CATEGORY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(ICategoryApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case INGREDIENT:
+            case ModelType.INGREDIENT:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IIngredientApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case LIST_ENTRY:
+            case ModelType.LIST_ENTRY:
                 call = ApiUtils.getInstance()
                         .getAuthorizedApiService(IListEntryApiService.class, _authToken)
                         .deleteItem(_groupId, _uuid);
                 break;
-            case UNIT:
+            case ModelType.UNIT:
                 call = ApiUtils.getInstance().getAuthorizedApiService(IUnitApiService.class,
                         _authToken)
                         .deleteItem(_groupId, _uuid);

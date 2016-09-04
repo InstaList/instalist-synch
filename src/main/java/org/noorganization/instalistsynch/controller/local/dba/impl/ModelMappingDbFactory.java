@@ -16,7 +16,7 @@
 
 package org.noorganization.instalistsynch.controller.local.dba.impl;
 
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.exception.SqliteMappingDbControllerException;
 import org.noorganization.instalistsynch.model.eModelMappingTableNames;
@@ -52,16 +52,16 @@ public class ModelMappingDbFactory {
      */
     public IModelMappingDbController getSqliteShoppingListMappingDbController() {
 
-        if (mModelDbMap.get(eModelType.LIST.ordinal()) == null) {
+        if (mModelDbMap.get(ModelType.LIST) == null) {
             try {
-                mModelDbMap.put(eModelType.LIST.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.LIST,
+                mModelDbMap.put(ModelType.LIST, new SqliteMappingDbController(eModelMappingTableNames.LIST,
                         GlobalObjects.getInstance().getApplicationContext()));
             } catch (SqliteMappingDbControllerException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-        return (IModelMappingDbController) mModelDbMap.get(eModelType.LIST.ordinal());
+        return (IModelMappingDbController) mModelDbMap.get(ModelType.LIST);
     }
 
     /**
@@ -70,16 +70,16 @@ public class ModelMappingDbFactory {
      * @return the category mapping controller.
      */
     public IModelMappingDbController getSqliteCategoryMappingDbController() {
-        if (mModelDbMap.get(eModelType.CATEGORY.ordinal()) == null) {
+        if (mModelDbMap.get(ModelType.CATEGORY) == null) {
             try {
-                mModelDbMap.put(eModelType.CATEGORY.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.CATEGORY,
+                mModelDbMap.put(ModelType.CATEGORY, new SqliteMappingDbController(eModelMappingTableNames.CATEGORY,
                         GlobalObjects.getInstance().getApplicationContext()));
             } catch (SqliteMappingDbControllerException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-        return (IModelMappingDbController) mModelDbMap.get(eModelType.CATEGORY.ordinal());
+        return (IModelMappingDbController) mModelDbMap.get(ModelType.CATEGORY);
     }
 
     /**
@@ -88,16 +88,16 @@ public class ModelMappingDbFactory {
      * @return the producht mappig controller.
      */
     public IModelMappingDbController getSqliteProductMappingController() {
-        if (mModelDbMap.get(eModelType.PRODUCT.ordinal()) == null) {
+        if (mModelDbMap.get(ModelType.PRODUCT) == null) {
             try {
-                mModelDbMap.put(eModelType.PRODUCT.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.PRODUCT,
+                mModelDbMap.put(ModelType.PRODUCT, new SqliteMappingDbController(eModelMappingTableNames.PRODUCT,
                         GlobalObjects.getInstance().getApplicationContext()));
             } catch (SqliteMappingDbControllerException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-        return (IModelMappingDbController) mModelDbMap.get(eModelType.PRODUCT.ordinal());
+        return (IModelMappingDbController) mModelDbMap.get(ModelType.PRODUCT);
     }
 
     /**
@@ -106,16 +106,16 @@ public class ModelMappingDbFactory {
      * @return the unit mapping controller.
      */
     public IModelMappingDbController getSqliteUnitMappingController() {
-        if (mModelDbMap.get(eModelType.UNIT.ordinal()) == null) {
+        if (mModelDbMap.get(ModelType.UNIT) == null) {
             try {
-                mModelDbMap.put(eModelType.UNIT.ordinal(), new SqliteMappingDbController(eModelMappingTableNames.UNIT,
+                mModelDbMap.put(ModelType.UNIT, new SqliteMappingDbController(eModelMappingTableNames.UNIT,
                         GlobalObjects.getInstance().getApplicationContext()));
             } catch (SqliteMappingDbControllerException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-        return (IModelMappingDbController) mModelDbMap.get(eModelType.UNIT.ordinal());
+        return (IModelMappingDbController) mModelDbMap.get(ModelType.UNIT);
     }
 
     /***
@@ -124,43 +124,46 @@ public class ModelMappingDbFactory {
      * @return the tag mapping controller.
      */
     public IModelMappingDbController getSqliteTagMappingController() {
-        return getMappingController(eModelType.TAG, eModelMappingTableNames.TAG);
+        return getMappingController(ModelType.TAG, eModelMappingTableNames.TAG);
     }
 
-    private IModelMappingDbController getMappingController(eModelType _modelType, eModelMappingTableNames _modelTableNames) {
-        if (mModelDbMap.get(_modelType.ordinal()) == null) {
+    private IModelMappingDbController getMappingController(@ModelType.Model int _modelType, eModelMappingTableNames _modelTableNames) {
+        if (mModelDbMap.get(_modelType) == null) {
             try {
-                mModelDbMap.put(_modelType.ordinal(), new SqliteMappingDbController(_modelTableNames,
+                mModelDbMap.put(_modelType, new SqliteMappingDbController(_modelTableNames,
                         GlobalObjects.getInstance().getApplicationContext()));
             } catch (SqliteMappingDbControllerException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-        return (IModelMappingDbController) mModelDbMap.get(_modelType.ordinal());
+        return (IModelMappingDbController) mModelDbMap.get(_modelType);
     }
 
     /**
      * Get the recipe mapping controller.
+     *
      * @return the recipe mapping controller.
      */
     public IModelMappingDbController getSqliteRecipeMappingController() {
-        return getMappingController(eModelType.RECIPE, eModelMappingTableNames.RECIPE);
+        return getMappingController(ModelType.RECIPE, eModelMappingTableNames.RECIPE);
     }
 
     /**
      * Get the ingredient mapping controller.
+     *
      * @return the ingredient mapping controller.
      */
     public IModelMappingDbController getSqliteIngredientMappingDbController() {
-        return getMappingController(eModelType.INGREDIENT, eModelMappingTableNames.INGREDIENT);
+        return getMappingController(ModelType.INGREDIENT, eModelMappingTableNames.INGREDIENT);
     }
 
     /**
      * Get the list entry mapping controller.
+     *
      * @return the list entry mapping controller.
      */
     public IModelMappingDbController getSqliteListEntryMappingController() {
-        return getMappingController(eModelType.LIST_ENTRY, eModelMappingTableNames.LIST_ENTRY);
+        return getMappingController(ModelType.LIST_ENTRY, eModelMappingTableNames.LIST_ENTRY);
     }
 }

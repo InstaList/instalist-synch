@@ -16,7 +16,7 @@
 
 package org.noorganization.instalistsynch.controller.synch;
 
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalistsynch.controller.local.dba.IGroupAuthAccessDbController;
 import org.noorganization.instalistsynch.controller.local.dba.LocalSqliteDbControllerFactory;
 import org.noorganization.instalistsynch.controller.synch.impl.CategorySynch;
@@ -25,7 +25,6 @@ import org.noorganization.instalistsynch.controller.synch.impl.ListEntrySynch;
 import org.noorganization.instalistsynch.controller.synch.impl.ListSynch;
 import org.noorganization.instalistsynch.controller.synch.impl.ProductSynch;
 import org.noorganization.instalistsynch.controller.synch.impl.RecipeSynch;
-import org.noorganization.instalistsynch.controller.synch.impl.TagSynch;
 import org.noorganization.instalistsynch.controller.synch.impl.UnitSynch;
 import org.noorganization.instalistsynch.events.CategorySynchFromNetworkFinished;
 import org.noorganization.instalistsynch.events.IngredientSynchFromNetworkFinished;
@@ -69,13 +68,13 @@ public class SynchManager {
 
     public SynchManager() {
         EventBus.getDefault().register(this);
-        mCategorySynch = new CategorySynch(eModelType.CATEGORY);
-        mListSynch = new ListSynch(eModelType.LIST);
-        mProductSynch = new ProductSynch(eModelType.PRODUCT);
-      //  mTagSynch = new TagSynch(eModelType.TAG);
-        mIngredientSynch = new IngredientSynch(eModelType.INGREDIENT);
-        mRecipeSynch = new RecipeSynch(eModelType.RECIPE);
-        mListEntrySynch = new ListEntrySynch(eModelType.LIST_ENTRY);
+        mCategorySynch = new CategorySynch(ModelType.CATEGORY);
+        mListSynch = new ListSynch(ModelType.LIST);
+        mProductSynch = new ProductSynch(ModelType.PRODUCT);
+      //  mTagSynch = new TagSynch(ModelType.TAG);
+        mIngredientSynch = new IngredientSynch(ModelType.INGREDIENT);
+        mRecipeSynch = new RecipeSynch(ModelType.RECIPE);
+        mListEntrySynch = new ListEntrySynch(ModelType.LIST_ENTRY);
         mUnitSynch = new UnitSynch();
         mListSynchDone = mProductSynchDone = mTagSynchDone = mRecipeSynchDone = mUnitSynchDone = mIngredientSynchDone = mListEntrySynchDone = mCategorySynchDone = false;
         mGroupAuthAccessDbController =

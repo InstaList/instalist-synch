@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.CategoryInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.presenter.ICategoryController;
@@ -75,10 +75,12 @@ public class CategorySynch implements ISynch {
     private INetworkController<CategoryInfo> mCategoryInfoNetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    private eModelType mModelType;
+    private
+    @ModelType.Model
+    int mModelType;
     private EventBus mEventBus;
 
-    public CategorySynch(eModelType _type) {
+    public CategorySynch(@ModelType.Model int _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -93,7 +95,7 @@ public class CategorySynch implements ISynch {
         mEventBus = EventBus.getDefault();
     }
 
-    public CategorySynch(eModelType _type, IModelMappingDbController _modelMappingDbController) {
+    public CategorySynch(@ModelType.Model int _type, IModelMappingDbController _modelMappingDbController) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -142,8 +144,7 @@ public class CategorySynch implements ISynch {
         try {
             while (categoryLogCursor.moveToNext()) {
                 // fetch the action type
-                int actionId = categoryLogCursor.getInt(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
-                eActionType actionType = eActionType.getTypeById(actionId);
+                @ActionType.Action int actionId = categoryLogCursor.getInt(categoryLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
 
                 List<ModelMapping> modelMappingList = mCategoryModelMappingController.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
@@ -153,8 +154,8 @@ public class CategorySynch implements ISynch {
                 ModelMapping modelMapping =
                         modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
-                switch (actionType) {
-                    case INSERT:
+                switch (actionId) {
+                    case ActionType.INSERT:
                         // skip insertion because this should be decided by the user if the non local groups should have access to the category
                         // and also skip if a mapping for this case already exists!
                         if (!isLocal || modelMapping != null) {
@@ -166,7 +167,7 @@ public class CategorySynch implements ISynch {
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
                         mCategoryModelMappingController.insert(modelMapping);
                         break;
-                    case UPDATE:
+                    case ActionType.UPDATE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -176,7 +177,7 @@ public class CategorySynch implements ISynch {
                         modelMapping.setLastClientChange(clientDate);
                         mCategoryModelMappingController.update(modelMapping);
                         break;
-                    case DELETE:
+                    case ActionType.DELETE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -421,7 +422,7 @@ public class CategorySynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(categoryInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(categoryInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(categoryInfo.getUUID(), mModelType, ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 

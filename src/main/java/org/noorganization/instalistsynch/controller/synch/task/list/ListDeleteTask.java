@@ -16,7 +16,7 @@
 
 package org.noorganization.instalistsynch.controller.synch.task.list;
 
-import org.noorganization.instalist.enums.eControllerType;
+import org.noorganization.instalist.types.ControllerType;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.IListController;
 import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
@@ -39,8 +39,8 @@ public class ListDeleteTask implements ITask {
 
     public ListDeleteTask(ModelMapping _modelMapping) {
         mListModelMapping = _modelMapping;
-        mController = (IListController) GlobalObjects.sControllerMapping.get(eControllerType.LIST);
-        mListModelMappingDbController =  ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
+        mController = (IListController) GlobalObjects.sControllerMapping.get(ControllerType.LIST);
+        mListModelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
     }
 
     @Override

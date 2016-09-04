@@ -17,7 +17,7 @@
 package org.noorganization.instalistsynch.controller.synch.task.list;
 
 import org.noorganization.instalist.comm.message.ListInfo;
-import org.noorganization.instalist.enums.eControllerType;
+import org.noorganization.instalist.types.ControllerType;
 import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.ICategoryController;
@@ -52,8 +52,8 @@ public class ListInsertTask implements ITask {
 
     public ListInsertTask(ListInfo listInfo, int groupId) {
         mListInfo = listInfo;
-        mListController = (IListController) GlobalObjects.sControllerMapping.get(eControllerType.LIST);
-        mCategoryController = (ICategoryController) GlobalObjects.sControllerMapping.get(eControllerType.CATEGORY);
+        mListController = (IListController) GlobalObjects.sControllerMapping.get(ControllerType.LIST);
+        mCategoryController = (ICategoryController) GlobalObjects.sControllerMapping.get(ControllerType.CATEGORY);
         mListModelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
         mCategoryModelMappingDbController = ModelMappingDbFactory.getInstance().getSqliteCategoryMappingDbController();
         mGroupId = groupId;

@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.TagInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.model.Tag;
 import org.noorganization.instalist.presenter.ITagController;
@@ -75,10 +75,10 @@ public class TagSynch implements ISynch {
     private INetworkController<TagInfo> mTagNetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    private eModelType mModelType;
+    private @ModelType.Model int mModelType;
     private EventBus mEventBus;
 
-    public TagSynch(eModelType _type) {
+    public TagSynch(@ModelType.Model int _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -111,6 +111,59 @@ public class TagSynch implements ISynch {
     }
 
     @Override
+    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
+        String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, TimeZone.getTimeZone("GMT+0000"));
+        String authToken = mSessionController.getToken(_groupId);
+
+        if (authToken == null) {
+            // todo do some caching of this action
+            return;
+        }
+
+        List<ModelMapping> tagModelMappingList = mTagModelMappingController.get(
+                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
+        for (ModelMapping tagMapping : tagModelMappingList) {
+            if (tagMapping.getClientSideUUID() == null)
+                continue;
+            if (tagMapping.isDeleted()) {
+                // delete the item
+                mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
+            } else if (tagMapping.getServerSideUUID() == null) {
+                // insert new
+                TagInfo tagInfo = new TagInfo();
+                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
+                if (tag == null) {
+                    continue;
+                }
+                String uuid = mTagModelMappingController.generateUuid();
+                tagInfo.setUUID(uuid);
+                tagInfo.setName(tag.mName);
+                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+                tagInfo.setLastChanged(lastChanged);
+                tagInfo.setDeleted(false);
+                mTagNetworkController.createItem(new InsertResponse(tagMapping, uuid), _groupId, tagInfo, authToken);
+            } else {
+                // update existing
+                TagInfo tagInfo = new TagInfo();
+                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
+                if (tag == null) {
+                    // probably the category was deleted
+                    // delete the item
+                    mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
+                    continue;
+                }
+                tagInfo.setUUID(tagMapping.getServerSideUUID());
+                tagInfo.setName(tag.mName);
+                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
+
+                tagInfo.setLastChanged(lastChanged);
+                tagInfo.setDeleted(false);
+                mTagNetworkController.updateItem(new UpdateResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagInfo.getUUID(), tagInfo, authToken);
+            }
+        }
+    }
+
+    @Override
     public void indexLocal(int _groupId, Date _lastIndexTime) {
         String lastIndexTime = ISO8601Utils.format(_lastIndexTime, false, TimeZone.getTimeZone("GMT+0000"));//.concat("+0000");
         boolean isLocal = false;
@@ -128,8 +181,7 @@ public class TagSynch implements ISynch {
         try {
             while (tagLogCursor.moveToNext()) {
                 // fetch the action type
-                int actionId = tagLogCursor.getInt(tagLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
-                eActionType actionType = eActionType.getTypeById(actionId);
+                @ActionType.Action int action = tagLogCursor.getInt(tagLogCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
 
                 List<ModelMapping> modelMappingList = mTagModelMappingController.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
@@ -139,8 +191,8 @@ public class TagSynch implements ISynch {
                 ModelMapping modelMapping =
                         modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
-                switch (actionType) {
-                    case INSERT:
+                switch (action) {
+                    case ActionType.INSERT:
                         // skip insertion because this should be decided by the user if the non local groups should have access to the category
                         // and also skip if a mapping for this case already exists!
                         if (!isLocal || modelMapping != null) {
@@ -152,7 +204,7 @@ public class TagSynch implements ISynch {
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
                         mTagModelMappingController.insert(modelMapping);
                         break;
-                    case UPDATE:
+                    case ActionType.UPDATE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -162,7 +214,7 @@ public class TagSynch implements ISynch {
                         modelMapping.setLastClientChange(clientDate);
                         mTagModelMappingController.update(modelMapping);
                         break;
-                    case DELETE:
+                    case ActionType.DELETE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -203,60 +255,6 @@ public class TagSynch implements ISynch {
         }
         mTagModelMappingController.delete(modelMappingList.get(0));
     }
-
-    @Override
-    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
-        String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, TimeZone.getTimeZone("GMT+0000"));
-        String authToken = mSessionController.getToken(_groupId);
-
-        if (authToken == null) {
-            // todo do some caching of this action
-            return;
-        }
-
-        List<ModelMapping> tagModelMappingList = mTagModelMappingController.get(
-                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
-        for (ModelMapping tagMapping : tagModelMappingList) {
-            if(tagMapping.getClientSideUUID() == null)
-                continue;
-            if (tagMapping.isDeleted()) {
-                // delete the item
-                mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
-            } else if (tagMapping.getServerSideUUID() == null) {
-                // insert new
-                TagInfo tagInfo = new TagInfo();
-                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
-                if (tag == null) {
-                    continue;
-                }
-                String uuid = mTagModelMappingController.generateUuid();
-                tagInfo.setUUID(uuid);
-                tagInfo.setName(tag.mName);
-                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
-                tagInfo.setLastChanged(lastChanged);
-                tagInfo.setDeleted(false);
-                mTagNetworkController.createItem(new InsertResponse(tagMapping, uuid), _groupId, tagInfo, authToken);
-            } else {
-                // update existing
-                TagInfo tagInfo = new TagInfo();
-                Tag tag = mTagController.findById(tagMapping.getClientSideUUID());
-                if (tag == null) {
-                    // probably the category was deleted
-                    // delete the item
-                    mTagNetworkController.deleteItem(new DeleteResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagMapping.getServerSideUUID(), authToken);
-                    continue;
-                }
-                tagInfo.setUUID(tagMapping.getServerSideUUID());
-                tagInfo.setName(tag.mName);
-                Date lastChanged = new Date(tagMapping.getLastClientChange().getTime()-Constants.NETWORK_OFFSET);
-
-                tagInfo.setLastChanged(lastChanged);
-                tagInfo.setDeleted(false);
-                mTagNetworkController.updateItem(new UpdateResponse(tagMapping, tagMapping.getServerSideUUID()), _groupId, tagInfo.getUUID(), tagInfo, authToken);
-            }
-        }
-    }
-
 
     @Override
     public void synchNetworkToLocal(int _groupId, Date _sinceTime) {
@@ -411,7 +409,7 @@ public class TagSynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(tagInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(tagInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(tagInfo.getUUID(), mModelType, ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 

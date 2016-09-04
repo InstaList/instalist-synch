@@ -17,7 +17,7 @@
 package org.noorganization.instalistsynch.controller.synch.task.list;
 
 import org.noorganization.instalist.comm.message.ListInfo;
-import org.noorganization.instalist.enums.eControllerType;
+import org.noorganization.instalist.types.ControllerType;
 import org.noorganization.instalist.model.Category;
 import org.noorganization.instalist.model.ShoppingList;
 import org.noorganization.instalist.presenter.ICategoryController;
@@ -25,9 +25,9 @@ import org.noorganization.instalist.presenter.IListController;
 import org.noorganization.instalistsynch.controller.callback.ICallbackCompleted;
 import org.noorganization.instalistsynch.controller.local.dba.IModelMappingDbController;
 import org.noorganization.instalistsynch.controller.local.dba.impl.ModelMappingDbFactory;
-import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.comparator.ISynchComperator;
 import org.noorganization.instalistsynch.controller.synch.comparator.impl.ListComperator;
+import org.noorganization.instalistsynch.controller.synch.task.ITask;
 import org.noorganization.instalistsynch.controller.synch.task.eModelType;
 import org.noorganization.instalistsynch.model.ModelMapping;
 import org.noorganization.instalistsynch.utils.GlobalObjects;
@@ -44,14 +44,14 @@ public class ListUpdateTask implements ITask {
 
     private ListInfo mListInfo;
 
-    private IListController     mListController;
+    private IListController mListController;
     private ICategoryController mCategoryController;
 
     private IModelMappingDbController mListModelMappingDbController;
     private IModelMappingDbController mCategoryModelMappingDbController;
 
 
-    private int          mGroupId;
+    private int mGroupId;
     private ModelMapping mListModelMapping;
 
     private ISynchComperator<ShoppingList, ListInfo> mComperator;
@@ -63,9 +63,9 @@ public class ListUpdateTask implements ITask {
         mComperator = new ListComperator();
 
         mListController =
-                (IListController) GlobalObjects.sControllerMapping.get(eControllerType.LIST);
+                (IListController) GlobalObjects.sControllerMapping.get(ControllerType.LIST);
         mCategoryController = (ICategoryController) GlobalObjects.sControllerMapping
-                .get(eControllerType.CATEGORY);
+                .get(ControllerType.CATEGORY);
         mListModelMappingDbController =
                 ModelMappingDbFactory.getInstance().getSqliteShoppingListMappingDbController();
         mCategoryModelMappingDbController =
@@ -80,7 +80,7 @@ public class ListUpdateTask implements ITask {
 
         // there is a local shoppinglist
         // get the local uuid
-        String       uuid = mListModelMapping.getClientSideUUID();
+        String uuid = mListModelMapping.getClientSideUUID();
         ShoppingList list = mListController.getListById(uuid);
 
         // changes on server are ahead of the last local server update
@@ -117,7 +117,7 @@ public class ListUpdateTask implements ITask {
     }
 
     private int changeShoppingList(ShoppingList list, Date _lastServerChange) {
-        Category oldCategory    = list.mCategory;
+        Category oldCategory = list.mCategory;
         Category clientCategory = null;
 
         if (mListInfo.getCategoryUUID() != null) {

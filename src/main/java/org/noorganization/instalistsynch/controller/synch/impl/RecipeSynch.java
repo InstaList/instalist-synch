@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.RecipeInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.model.Recipe;
 import org.noorganization.instalist.presenter.IRecipeController;
@@ -74,10 +74,10 @@ public class RecipeSynch implements ISynch {
     private INetworkController<RecipeInfo> mRecipeInfoNetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    private eModelType mModelType;
+    private @ModelType.Model int mModelType;
     private EventBus mEventBus;
 
-    public RecipeSynch(eModelType _type) {
+    public RecipeSynch(@ModelType.Model int _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -126,8 +126,7 @@ public class RecipeSynch implements ISynch {
         try {
             while (logCursor.moveToNext()) {
                 // fetch the action type
-                int actionId = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
-                eActionType actionType = eActionType.getTypeById(actionId);
+                @ActionType.Action int action = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
 
                 List<ModelMapping> modelMappingList = mRecipeMappingController.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
@@ -137,8 +136,8 @@ public class RecipeSynch implements ISynch {
                 ModelMapping modelMapping =
                         modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
-                switch (actionType) {
-                    case INSERT:
+                switch (action) {
+                    case ActionType.INSERT:
                         // skip insertion because this should be decided by the user if the non local groups should have access to the category
                         // and also skip if a mapping for this case already exists!
                         if (!isLocal || modelMapping != null) {
@@ -150,7 +149,7 @@ public class RecipeSynch implements ISynch {
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
                         mRecipeMappingController.insert(modelMapping);
                         break;
-                    case UPDATE:
+                    case ActionType.UPDATE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -160,7 +159,7 @@ public class RecipeSynch implements ISynch {
                         modelMapping.setLastClientChange(clientDate);
                         mRecipeMappingController.update(modelMapping);
                         break;
-                    case DELETE:
+                    case ActionType.DELETE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -404,7 +403,7 @@ public class RecipeSynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(recipeInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(recipeInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(recipeInfo.getUUID(), mModelType, ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 

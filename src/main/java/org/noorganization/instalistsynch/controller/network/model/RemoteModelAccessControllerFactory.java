@@ -25,7 +25,7 @@ import org.noorganization.instalist.comm.message.RecipeInfo;
 import org.noorganization.instalist.comm.message.TagInfo;
 import org.noorganization.instalist.comm.message.TaggedProductInfo;
 import org.noorganization.instalist.comm.message.UnitInfo;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalistsynch.controller.network.model.generic.ModelNetworkController;
 
 import java.util.Map;
@@ -37,8 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RemoteModelAccessControllerFactory {
 
-    private static RemoteModelAccessControllerFactory  sInstance;
-    private        Map<eModelType, INetworkController> mMapping;
+    private static RemoteModelAccessControllerFactory sInstance;
+    private Map<Integer, INetworkController> mMapping;
 
     /**
      * Get the instance of the factory.
@@ -53,7 +53,7 @@ public class RemoteModelAccessControllerFactory {
     }
 
     private RemoteModelAccessControllerFactory() {
-        mMapping = new ConcurrentHashMap<>(eModelType.ALL.ordinal());
+        mMapping = new ConcurrentHashMap<>(ModelType.ALL);
         init();
     }
 
@@ -61,24 +61,24 @@ public class RemoteModelAccessControllerFactory {
      * Initializes the mapping map for the network interaction.
      */
     public void init() {
-        mMapping.put(eModelType.CATEGORY,
-                new ModelNetworkController<CategoryInfo>(eModelType.CATEGORY));
-        mMapping.put(eModelType.LIST,
-                new ModelNetworkController<ListInfo>(eModelType.LIST));
-        mMapping.put(eModelType.LIST_ENTRY,
-                new ModelNetworkController<EntryInfo>(eModelType.LIST_ENTRY));
-        mMapping.put(eModelType.INGREDIENT,
-                new ModelNetworkController<IngredientInfo>(eModelType.INGREDIENT));
-        mMapping.put(eModelType.PRODUCT,
-                new ModelNetworkController<ProductInfo>(eModelType.PRODUCT));
-        mMapping.put(eModelType.RECIPE,
-                new ModelNetworkController<RecipeInfo>(eModelType.RECIPE));
-        mMapping.put(eModelType.TAG,
-                new ModelNetworkController<TagInfo>(eModelType.TAG));
-        mMapping.put(eModelType.TAGGED_PRODUCT,
-                new ModelNetworkController<TaggedProductInfo>(eModelType.TAGGED_PRODUCT));
-        mMapping.put(eModelType.UNIT,
-                new ModelNetworkController<UnitInfo>(eModelType.UNIT));
+        mMapping.put(ModelType.CATEGORY,
+                new ModelNetworkController<CategoryInfo>(ModelType.CATEGORY));
+        mMapping.put(ModelType.LIST,
+                new ModelNetworkController<ListInfo>(ModelType.LIST));
+        mMapping.put(ModelType.LIST_ENTRY,
+                new ModelNetworkController<EntryInfo>(ModelType.LIST_ENTRY));
+        mMapping.put(ModelType.INGREDIENT,
+                new ModelNetworkController<IngredientInfo>(ModelType.INGREDIENT));
+        mMapping.put(ModelType.PRODUCT,
+                new ModelNetworkController<ProductInfo>(ModelType.PRODUCT));
+        mMapping.put(ModelType.RECIPE,
+                new ModelNetworkController<RecipeInfo>(ModelType.RECIPE));
+        mMapping.put(ModelType.TAG,
+                new ModelNetworkController<TagInfo>(ModelType.TAG));
+        mMapping.put(ModelType.TAGGED_PRODUCT,
+                new ModelNetworkController<TaggedProductInfo>(ModelType.TAGGED_PRODUCT));
+        mMapping.put(ModelType.UNIT,
+                new ModelNetworkController<UnitInfo>(ModelType.UNIT));
     }
 
     /**
@@ -87,7 +87,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the List networkcontroller interface.
      */
     public INetworkController<ListInfo> getListNetworkController() {
-        return mMapping.get(eModelType.LIST);
+        return mMapping.get(ModelType.LIST);
     }
 
     /**
@@ -96,7 +96,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the category networkcontroller interface.
      */
     public INetworkController<CategoryInfo> getCategoryNetworkController() {
-        return mMapping.get(eModelType.CATEGORY);
+        return mMapping.get(ModelType.CATEGORY);
     }
 
     /**
@@ -105,7 +105,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the tag networkcontroller interface.
      */
     public INetworkController<TagInfo> getTagNetworkController() {
-        return mMapping.get(eModelType.TAG);
+        return mMapping.get(ModelType.TAG);
     }
 
     /**
@@ -114,7 +114,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the recipe networkcontroller interface.
      */
     public INetworkController<RecipeInfo> getRecipeNetworkController() {
-        return mMapping.get(eModelType.RECIPE);
+        return mMapping.get(ModelType.RECIPE);
     }
 
     /**
@@ -123,7 +123,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the ingredient networkcontroller interface.
      */
     public INetworkController<IngredientInfo> getIngredientNetworkController() {
-        return mMapping.get(eModelType.INGREDIENT);
+        return mMapping.get(ModelType.INGREDIENT);
     }
 
     /**
@@ -132,7 +132,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the ingredient networkcontroller interface.
      */
     public INetworkController<EntryInfo> getListEntryNetworkController() {
-        return mMapping.get(eModelType.LIST_ENTRY);
+        return mMapping.get(ModelType.LIST_ENTRY);
     }
 
     /**
@@ -141,7 +141,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the product networkcontroller interface.
      */
     public INetworkController<ProductInfo> getProductNetworkController() {
-        return mMapping.get(eModelType.PRODUCT);
+        return mMapping.get(ModelType.PRODUCT);
     }
 
     /**
@@ -150,7 +150,7 @@ public class RemoteModelAccessControllerFactory {
      * @return the taggedproduct networkcontroller interface.
      */
     public INetworkController<TaggedProductInfo> getTaggedProductNetworkController() {
-        return mMapping.get(eModelType.TAGGED_PRODUCT);
+        return mMapping.get(ModelType.TAGGED_PRODUCT);
     }
 
     /**
@@ -159,6 +159,6 @@ public class RemoteModelAccessControllerFactory {
      * @return the unit networkcontroller interface.
      */
     public INetworkController<UnitInfo> getUnitNetworkController() {
-        return mMapping.get(eModelType.UNIT);
+        return mMapping.get(ModelType.UNIT);
     }
 }

@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.ProductInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.model.Product;
 import org.noorganization.instalist.model.Unit;
@@ -76,10 +76,10 @@ public class ProductSynch implements ISynch {
     private INetworkController<ProductInfo> mProductetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    private eModelType mModelType;
+    private @ModelType.Model int mModelType;
     private EventBus mEventBus;
 
-    public ProductSynch(eModelType _type) {
+    public ProductSynch(@ModelType.Model int _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -113,6 +113,45 @@ public class ProductSynch implements ISynch {
     }
 
     @Override
+    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
+        String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, TimeZone.getTimeZone("GMT+0000"));
+        String authToken = mSessionController.getToken(_groupId);
+
+        if (authToken == null) {
+            // todo do some caching of this action
+            return;
+        }
+
+        List<ModelMapping> modelMappingList = mProductModelMapping.get(
+                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
+        for (ModelMapping modelMapping : modelMappingList) {
+            if (modelMapping.isDeleted()) {
+                // delete the item
+                mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
+            } else if (modelMapping.getServerSideUUID() == null) {
+                // insert new
+                Product product = mProductController.findById(modelMapping.getClientSideUUID());
+                if (product == null) {
+                    continue;
+                }
+                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
+                mProductetworkController.createItem(new InsertResponse(modelMapping, productInfo.getUUID()), _groupId, productInfo, authToken);
+            } else {
+                // update existing
+                Product product = mProductController.findById(modelMapping.getClientSideUUID());
+                if (product == null) {
+                    // probably the item was deleted
+                    mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
+                    continue;
+                }
+
+                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
+                mProductetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, productInfo.getUUID(), productInfo, authToken);
+            }
+        }
+    }
+
+    @Override
     public void indexLocal(int _groupId, Date _lastIndexTime) {
         String lastIndexTime = ISO8601Utils.format(_lastIndexTime, false, TimeZone.getTimeZone("GMT+0000"));//.concat("+0000");
         boolean isLocal = false;
@@ -130,8 +169,7 @@ public class ProductSynch implements ISynch {
         try {
             while (logCursor.moveToNext()) {
                 // fetch the action type
-                int actionId = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
-                eActionType actionType = eActionType.getTypeById(actionId);
+                @ActionType.Action int action = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
 
                 List<ModelMapping> modelMappingList = mProductModelMapping.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
@@ -141,8 +179,8 @@ public class ProductSynch implements ISynch {
                 ModelMapping modelMapping =
                         modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
-                switch (actionType) {
-                    case INSERT:
+                switch (action) {
+                    case ActionType.INSERT:
                         // skip insertion because this should be decided by the user if the non local groups should have access to the category
                         // and also skip if a mapping for this case already exists!
                         if (!isLocal || modelMapping != null) {
@@ -154,7 +192,7 @@ public class ProductSynch implements ISynch {
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
                         mProductModelMapping.insert(modelMapping);
                         break;
-                    case UPDATE:
+                    case ActionType.UPDATE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -164,7 +202,7 @@ public class ProductSynch implements ISynch {
                         modelMapping.setLastClientChange(clientDate);
                         mProductModelMapping.update(modelMapping);
                         break;
-                    case DELETE:
+                    case ActionType.DELETE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -207,42 +245,26 @@ public class ProductSynch implements ISynch {
     }
 
     @Override
-    public void synchLocalToNetwork(int _groupId, Date _lastUpdate) {
-        String lastUpdateString = ISO8601Utils.format(_lastUpdate, false, TimeZone.getTimeZone("GMT+0000"));
+    public void synchNetworkToLocal(int _groupId, Date _sinceTime) {
         String authToken = mSessionController.getToken(_groupId);
-
         if (authToken == null) {
-            // todo do some caching of this action
+            return;
+        }
+        mProductetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime, false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
+    }
+
+    @Override
+    public void resolveConflict(int _conflictId, int _resolveAction) {
+        TaskErrorLog log = mTaskErrorLogDbController.findById(_conflictId);
+        if (log == null) {
+            return;
+        }
+        String authToken = mSessionController.getToken(log.getGroupId());
+        if (authToken == null) {
             return;
         }
 
-        List<ModelMapping> modelMappingList = mProductModelMapping.get(
-                ModelMapping.COLUMN.LAST_CLIENT_CHANGE + " >= ? ", new String[]{lastUpdateString});
-        for (ModelMapping modelMapping : modelMappingList) {
-            if (modelMapping.isDeleted()) {
-                // delete the item
-                mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
-            } else if (modelMapping.getServerSideUUID() == null) {
-                // insert new
-                Product product = mProductController.findById(modelMapping.getClientSideUUID());
-                if (product == null) {
-                    continue;
-                }
-                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
-                mProductetworkController.createItem(new InsertResponse(modelMapping, productInfo.getUUID()), _groupId, productInfo, authToken);
-            } else {
-                // update existing
-                Product product = mProductController.findById(modelMapping.getClientSideUUID());
-                if (product == null) {
-                    // probably the item was deleted
-                    mProductetworkController.deleteItem(new DeleteResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, modelMapping.getServerSideUUID(), authToken);
-                    continue;
-                }
-
-                ProductInfo productInfo = getProductInfo(product, _groupId, modelMapping);
-                mProductetworkController.updateItem(new UpdateResponse(modelMapping, modelMapping.getServerSideUUID()), _groupId, productInfo.getUUID(), productInfo, authToken);
-            }
-        }
+        mProductetworkController.getItem(new GetItemConflictResolveResponse(_resolveAction, _conflictId, log.getGroupId()), log.getGroupId(), log.getUUID(), authToken);
     }
 
     /**
@@ -271,35 +293,11 @@ public class ProductSynch implements ISynch {
                 productInfo.setUUID(unitMapping.getServerSideUUID());
             }
         }
-        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime() -Constants.NETWORK_OFFSET);
+        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
         productInfo.setLastChanged(lastChanged);
         productInfo.setDeleted(false);
 
         return productInfo;
-    }
-
-
-    @Override
-    public void synchNetworkToLocal(int _groupId, Date _sinceTime) {
-        String authToken = mSessionController.getToken(_groupId);
-        if (authToken == null) {
-            return;
-        }
-        mProductetworkController.getList(new GetListResponse(_groupId, _sinceTime), _groupId, ISO8601Utils.format(_sinceTime, false, TimeZone.getTimeZone("GMT+0000")).concat("+0000"), authToken);
-    }
-
-    @Override
-    public void resolveConflict(int _conflictId, int _resolveAction) {
-        TaskErrorLog log = mTaskErrorLogDbController.findById(_conflictId);
-        if (log == null) {
-            return;
-        }
-        String authToken = mSessionController.getToken(log.getGroupId());
-        if (authToken == null) {
-            return;
-        }
-
-        mProductetworkController.getItem(new GetItemConflictResolveResponse(_resolveAction, _conflictId, log.getGroupId()), log.getGroupId(), log.getUUID(), authToken);
     }
 
     private class DeleteResponse implements IAuthorizedCallbackCompleted<Void> {
@@ -443,7 +441,7 @@ public class ProductSynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(productInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(productInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(productInfo.getUUID(), mModelType, ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 
@@ -464,7 +462,7 @@ public class ProductSynch implements ISynch {
 
                     // new entry
                     Product productWithUpdate = mProductController.modifyProduct(product);
-                    if(productWithUpdate == null){
+                    if (productWithUpdate == null) {
                         Log.e(TAG, "onCompleted: update of product failed");
                         continue;
                     }

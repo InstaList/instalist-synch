@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.EntryInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.ListEntry;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.model.Product;
@@ -81,10 +81,10 @@ public class ListEntrySynch implements ISynch {
     private INetworkController<EntryInfo> mListEntryInfoNetworkController;
     private ITaskErrorLogDbController mTaskErrorLogDbController;
 
-    private eModelType mModelType;
+    private @ModelType.Model int mModelType;
     private EventBus mEventBus;
 
-    public ListEntrySynch(eModelType _type) {
+    public ListEntrySynch(@ModelType.Model int _type) {
         mModelType = _type;
 
         Context context = GlobalObjects.getInstance().getApplicationContext();
@@ -142,8 +142,7 @@ public class ListEntrySynch implements ISynch {
         try {
             while (logCursor.moveToNext()) {
                 // fetch the action type
-                int actionId = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
-                eActionType actionType = eActionType.getTypeById(actionId);
+                @ActionType.Action int action = logCursor.getInt(logCursor.getColumnIndex(LogInfo.COLUMN.ACTION));
 
                 List<ModelMapping> modelMappingList = mListEntryMapping.get(
                         ModelMapping.COLUMN.GROUP_ID + " = ? AND " +
@@ -153,8 +152,8 @@ public class ListEntrySynch implements ISynch {
                 ModelMapping modelMapping =
                         modelMappingList.size() == 0 ? null : modelMappingList.get(0);
 
-                switch (actionType) {
-                    case INSERT:
+                switch (action) {
+                    case ActionType.INSERT:
                         // skip insertion because this should be decided by the user if the non local groups should have access to the category
                         // and also skip if a mapping for this case already exists!
                         if (!isLocal || modelMapping != null) {
@@ -166,7 +165,7 @@ public class ListEntrySynch implements ISynch {
                         modelMapping = new ModelMapping(null, groupAuth.getGroupId(), null, clientUuid, new Date(Constants.INITIAL_DATE), clientDate, false);
                         mListEntryMapping.insert(modelMapping);
                         break;
-                    case UPDATE:
+                    case ActionType.UPDATE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -176,7 +175,7 @@ public class ListEntrySynch implements ISynch {
                         modelMapping.setLastClientChange(clientDate);
                         mListEntryMapping.update(modelMapping);
                         break;
-                    case DELETE:
+                    case ActionType.DELETE:
                         if (modelMapping == null) {
                             Log.i(TAG, "indexLocal: the model is null but shouldn't be");
                             continue;
@@ -304,7 +303,7 @@ public class ListEntrySynch implements ISynch {
         entryInfo.setProductUUID(productMapping.getServerSideUUID());
         entryInfo.setListUUID(listMapping.getServerSideUUID());
 
-        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime()-Constants.NETWORK_OFFSET);
+        Date lastChanged = new Date(_modelMapping.getLastClientChange().getTime() - Constants.NETWORK_OFFSET);
         entryInfo.setLastChanged(lastChanged);
         entryInfo.setDeleted(false);
         return entryInfo;
@@ -508,7 +507,7 @@ public class ListEntrySynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(listEntryInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mTaskErrorLogDbController.insert(listEntryInfo.getUUID(), mModelType.ordinal(), ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
+                        mTaskErrorLogDbController.insert(listEntryInfo.getUUID(), mModelType, ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
 
@@ -522,7 +521,7 @@ public class ListEntrySynch implements ISynch {
                     } else {
                         mListController.unstrikeItem(listEntry1);
                     }
-                    Date lastChanged = new Date(listEntryInfo.getLastChanged().getTime()-Constants.NETWORK_OFFSET);
+                    Date lastChanged = new Date(listEntryInfo.getLastChanged().getTime() - Constants.NETWORK_OFFSET);
                     modelMapping.setLastServerChanged(lastChanged);
 
                     mListEntryMapping.update(modelMapping);

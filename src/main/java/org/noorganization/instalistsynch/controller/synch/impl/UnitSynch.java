@@ -23,8 +23,8 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import org.noorganization.instalist.comm.message.UnitInfo;
-import org.noorganization.instalist.enums.eActionType;
-import org.noorganization.instalist.enums.eModelType;
+import org.noorganization.instalist.types.ActionType;
+import org.noorganization.instalist.types.ModelType;
 import org.noorganization.instalist.model.LogInfo;
 import org.noorganization.instalist.model.Unit;
 import org.noorganization.instalist.presenter.IUnitController;
@@ -163,11 +163,10 @@ public class UnitSynch implements ISynch {
     public void indexLocal(int _groupId, Date _lastIndexTime) {
         String lastIndexTime = ISO8601Utils.format(_lastIndexTime, false,
                 TimeZone.getTimeZone("GMT+0000"));
-        Cursor changeLog = mLocalLogController.getLogsSince(lastIndexTime, eModelType.UNIT);
+        Cursor changeLog = mLocalLogController.getLogsSince(lastIndexTime, ModelType.UNIT);
 
         while (changeLog.moveToNext()) {
-            int actionId = changeLog.getInt(changeLog.getColumnIndex(LogInfo.COLUMN.ACTION));
-            eActionType actionType = eActionType.getTypeById(actionId);
+            int action = changeLog.getInt(changeLog.getColumnIndex(LogInfo.COLUMN.ACTION));
 
             String uuid = changeLog.getString(changeLog.getColumnIndex(LogInfo.COLUMN.ITEM_UUID));
             if (uuid.contentEquals("-"))
@@ -180,13 +179,8 @@ public class UnitSynch implements ISynch {
             ModelMapping existingMapping = (existingMappings.size() == 0 ? null :
                     existingMappings.get(0));
 
-            if (actionType == null) {
-                Log.w(TAG, "Changelog contains entry without action.");
-                continue;
-            }
-
-            switch (actionType) {
-                case INSERT: {
+            switch (action) {
+                case ActionType.INSERT: {
                     if (existingMapping == null) {
                         ModelMapping newMapping = new ModelMapping(null, _groupId, null, uuid,
                                 new Date(Constants.INITIAL_DATE), new Date(), false);
@@ -194,7 +188,7 @@ public class UnitSynch implements ISynch {
                     }
                     break;
                 }
-                case UPDATE: {
+                case ActionType.UPDATE: {
                     if (existingMapping == null) {
                         Log.e(TAG, "Changelog contains update, but mapping does not exist. " +
                                 "Ignoring.");
@@ -213,7 +207,7 @@ public class UnitSynch implements ISynch {
                     }
                     break;
                 }
-                case DELETE: {
+                case ActionType.DELETE: {
                     if (existingMapping == null) {
                         Log.e(TAG, "Changelog contains deletion, but mapping does not exist. " +
                                 "Ignoring.");
@@ -233,6 +227,9 @@ public class UnitSynch implements ISynch {
                     }
                     break;
                 }
+                default:
+                    Log.w(TAG, "Changelog contains entry without action.");
+                    continue;
             }
         }
         changeLog.close();
@@ -421,7 +418,7 @@ public class UnitSynch implements ISynch {
                     // else there was an update!
                     if (modelMapping.getLastClientChange().after(elementInfo.getLastChanged())) {
                         // use server side or client side, let the user decide
-                        mErrorLogController.insert(elementInfo.getUUID(), eModelType.UNIT.ordinal(),
+                        mErrorLogController.insert(elementInfo.getUUID(), ModelType.UNIT,
                                 ITask.ReturnCodes.MERGE_CONFLICT, mGroupId);
                         continue;
                     }
