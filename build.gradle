@@ -16,15 +16,14 @@
 
 apply plugin: 'com.android.application'
 project.ext {
-    compileSdkVersion = 23
-    buildToolsVersion = '23.0.3'
+    compileSdkVersion = 24
+    buildToolsVersion = '24'
     minSdkVersion = 16
     appVersionCode = 1
     appVersionName = '0.1-Snapshot'
-    targetSdkVersion = 23
-    androidSupportLibVersion = '23.4.0'
+    targetSdkVersion = 24
+    androidSupportLibVersion = '24.2.1'
     junitVersion = '4.12'
-    androidSupportLibVersion = '23.4.0'
     greenrobotVersion = '2.4.0'
     retrofitVersion = '2.0.2'
 }
@@ -55,6 +54,11 @@ android {
     }
     productFlavors {
     }
+    lintOptions {
+        enable 'NewerVersionAvailable'
+
+        abortOnError false
+    }
 }
 
 dependencies {
@@ -73,6 +77,6 @@ dependencies {
 
     compile group: 'com.squareup.retrofit2', name: 'retrofit', version: allprojects.retrofitVersion
     compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version: allprojects.retrofitVersion
-    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '3.0.1'
-    compile group: 'org.jetbrains', name: 'annotations', version: '13.0'
+    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '3.4.1'
+    compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
 }
