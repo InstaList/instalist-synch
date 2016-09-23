@@ -17,7 +17,7 @@
 apply plugin: 'com.android.application'
 project.ext {
     compileSdkVersion = 24
-    buildToolsVersion = '24'
+    buildToolsVersion = '24.0.2'
     minSdkVersion = 16
     appVersionCode = 1
     appVersionName = '0.1-Snapshot'
