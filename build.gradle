@@ -45,6 +45,9 @@ android {
         targetSdkVersion project.targetSdkVersion
         versionCode project.appVersionCode
         versionName project.appVersionName
+        jackOptions {
+            enabled true
+        }
     }
     buildTypes {
         release {
@@ -53,6 +56,10 @@ android {
         }
     }
     productFlavors {
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     lintOptions {
         enable 'NewerVersionAvailable'
